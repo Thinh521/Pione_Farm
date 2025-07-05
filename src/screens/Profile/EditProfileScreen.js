@@ -24,6 +24,7 @@ import {verifyOtp} from '../../api/verifyOtpApi';
 import Background_2 from '../../components/Background/Background_2';
 import {CameraIcon, RightIcon} from '../../assets/icons/Icons';
 import Button from '../../components/ui/Button/ButtonComponent';
+import Images from '../../assets/images/Images';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -38,8 +39,6 @@ const EditProfileScreen = () => {
   const [newVerifiedValue, setNewVerifiedValue] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentOtpIndex, setCurrentOtpIndex] = useState(0);
-  const [password, setPassword] = useState('');
-  const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [resendCount, setResendCount] = useState(0);
 
@@ -68,7 +67,6 @@ const EditProfileScreen = () => {
     defaultValues: form,
   });
 
-  // Watch nationality value from form controller
   const watchedNationality = watch('nationality');
 
   const handleChange = (key, value) => {
@@ -77,7 +75,6 @@ const EditProfileScreen = () => {
       setValue('nationality', value);
     }
   };
-
 
   const handlePickImage = async () => {
     try {
@@ -160,27 +157,22 @@ const EditProfileScreen = () => {
       setBottomSheetVisible(false);
       setOtpCodes(['', '', '', '', '', '']);
       setCurrentOtpIndex(0);
-      setPassword('');
-      setShowPasswordInput(false);
     });
   };
 
   const animateOtpInput = index => {
-    const inputRef = otpInputRefs.current[index];
-    if (inputRef) {
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1.1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1.1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const handleOtpChange = (text, index) => {
@@ -190,10 +182,7 @@ const EditProfileScreen = () => {
 
     if (text.length === 1) {
       animateOtpInput(index);
-      if (Platform.OS === 'ios') {
-        Vibration.vibrate(10);
-      }
-
+      if (Platform.OS === 'ios') Vibration.vibrate(10);
       if (index < 5) {
         setCurrentOtpIndex(index + 1);
         otpInputRefs.current[index + 1]?.focus();
@@ -234,7 +223,6 @@ const EditProfileScreen = () => {
             type: otpInfo.type,
             value: otpInfo.type.includes('phone') ? form.phone : form.email,
           });
-          setShowPasswordInput(true);
           showBottomSheet();
         } else {
           Alert.alert(
@@ -247,38 +235,15 @@ const EditProfileScreen = () => {
         Alert.alert('Thất bại', res.message || 'Có lỗi xảy ra khi cập nhật');
       }
     } catch (error) {
-      if (error.message.includes('Email already exists')) {
-        Alert.alert('Lỗi', 'Email này đã được sử dụng');
-      } else if (error.message.includes('Phone already exists')) {
-        Alert.alert('Lỗi', 'Số điện thoại này đã được sử dụng');
-      } else if (error.message.includes('UserName already exists')) {
-        Alert.alert('Lỗi', 'Tên đăng nhập này đã được sử dụng');
-      } else if (error.message.includes('Token is invalid or expired')) {
-        Alert.alert(
-          'Lỗi',
-          'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại',
-        );
-      } else if (error.message.includes('Unexpected field: avatar')) {
-        Alert.alert('Lỗi', 'Chỉ được chọn một ảnh đại diện');
-      } else {
-        Alert.alert('Thất bại', error.message || 'Có lỗi xảy ra');
-      }
+      const msg = error.message;
+      if (msg.includes('Email already exists'))
+        Alert.alert('Lỗi', 'Email đã tồn tại');
+      else if (msg.includes('Phone already exists'))
+        Alert.alert('Lỗi', 'Số điện thoại đã tồn tại');
+      else Alert.alert('Thất bại', msg || 'Có lỗi xảy ra');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handlePasswordSubmit = () => {
-    if (!password.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu');
-      return;
-    }
-    setShowPasswordInput(false);
-    setOtpCodes(['', '', '', '', '', '']);
-    setCurrentOtpIndex(0);
-    setTimeout(() => {
-      otpInputRefs.current[0]?.focus();
-    }, 100);
   };
 
   const handleVerifyOtp = async () => {
@@ -297,72 +262,43 @@ const EditProfileScreen = () => {
         otp: otpCode,
         userId: otpData.userId,
         type: otpData.type,
-        password: password,
       });
       if (res?.success) {
         const updatePayload = new FormData();
-        const isPhoneType = otpData.type.includes('phone');
-        const otpTypeLabel = isPhoneType ? 'số điện thoại' : 'email';
-
-        if (!newVerifiedValue?.value) {
-          Alert.alert(
-            'Lỗi',
-            `Không tìm thấy giá trị ${otpTypeLabel} để xác thực`,
-          );
-          return;
-        }
-        if (isPhoneType) {
-          updatePayload.append('phone', newVerifiedValue.value);
-        } else {
-          updatePayload.append('email', newVerifiedValue.value);
-        }
+        const isPhone = otpData.type.includes('phone');
+        const field = isPhone ? 'phone' : 'email';
+        updatePayload.append(field, newVerifiedValue.value);
         updatePayload.append('verify', 'true');
-        const updateRes = await updateUser(updatePayload);
+        await updateUser(updatePayload);
 
-        Alert.alert(
-          'Xác thực thành công',
-          `${
-            otpTypeLabel.charAt(0).toUpperCase() + otpTypeLabel.slice(1)
-          } đã được cập nhật và xác thực thành công`,
-        );
-
+        Alert.alert('Thành công', `${field.toUpperCase()} đã được xác thực`);
         hideBottomSheet();
         setOtpData(null);
         setNewVerifiedValue(null);
         navigation.goBack();
       } else {
-        Alert.alert(
-          'Xác thực thất bại',
-          res.message || 'Mã OTP không chính xác',
-        );
+        Alert.alert('Thất bại', res.message || 'Xác thực không thành công');
       }
     } catch (error) {
-      Alert.alert(
-        'Xác thực thất bại',
-        error.message || 'Có lỗi xảy ra khi xác thực OTP',
-      );
+      Alert.alert('Lỗi', error.message || 'Có lỗi khi xác thực');
     } finally {
       setIsLoading(false);
     }
   };
 
   const closeBottomSheet = () => {
-    Alert.alert(
-      'Xác nhận',
-      'Bạn có chắc muốn hủy xác thực? Thông tin sẽ không được cập nhật.',
-      [
-        {text: 'Tiếp tục xác thực', style: 'cancel'},
-        {
-          text: 'Hủy',
-          style: 'destructive',
-          onPress: () => {
-            hideBottomSheet();
-            setOtpData(null);
-            setNewVerifiedValue(null);
-          },
+    Alert.alert('Xác nhận', 'Bạn có muốn hủy xác thực?', [
+      {text: 'Tiếp tục', style: 'cancel'},
+      {
+        text: 'Hủy',
+        style: 'destructive',
+        onPress: () => {
+          hideBottomSheet();
+          setOtpData(null);
+          setNewVerifiedValue(null);
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const formatTime = seconds => {
@@ -371,137 +307,69 @@ const EditProfileScreen = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // Xử lý callback từ màn hình chọn quốc gia
-  const handleNationalitySelect = selectedNationality => {
-    handleChange('nationality', selectedNationality);
-  };
-
-  const renderOtpInputs = () => {
-    return (
-      <View style={styles.otpContainer}>
-        {otpCodes.map((code, index) => (
-          <Animated.View
-            key={index}
+  const renderOtpInputs = () => (
+    <View style={styles.otpContainer}>
+      {otpCodes.map((code, index) => (
+        <Animated.View
+          key={index}
+          style={[
+            styles.otpInputWrapper,
+            {
+              transform: [{scale: currentOtpIndex === index ? scaleAnim : 1}],
+            },
+          ]}>
+          <TextInput
+            ref={ref => (otpInputRefs.current[index] = ref)}
             style={[
-              styles.otpInputWrapper,
+              styles.otpInput,
               {
-                transform: [
-                  {
-                    scale: currentOtpIndex === index ? scaleAnim : 1,
-                  },
-                ],
-              },
-            ]}>
-            <TextInput
-              ref={ref => (otpInputRefs.current[index] = ref)}
-              style={[
-                styles.otpInput,
-                {
-                  borderColor: code
-                    ? '#4CAF50'
-                    : currentOtpIndex === index
-                    ? '#FF9800'
-                    : '#C8E6C9',
-                  backgroundColor: code ? '#E8F5E8' : '#FFFFFF',
-                },
-              ]}
-              value={code}
-              onChangeText={text => handleOtpChange(text, index)}
-              onKeyPress={e => handleKeyPress(e, index)}
-              keyboardType="numeric"
-              maxLength={1}
-              selectTextOnFocus
-              onFocus={() => setCurrentOtpIndex(index)}
-            />
-          </Animated.View>
-        ))}
-      </View>
-    );
-  };
-
-  const renderPasswordInput = () => {
-    return (
-      <View style={styles.bottomSheetSection}>
-        <View style={styles.bottomSheetHeader}>
-          <Text style={styles.bottomSheetTitle}>Xác thực mật khẩu</Text>
-          <Text style={styles.bottomSheetSubtitle}>
-            Nhập mật khẩu để tiếp tục xác thực
-          </Text>
-        </View>
-        <View style={styles.passwordInputContainer}>
-          <Input
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Nhập mật khẩu của bạn"
-            secureTextEntry
-            containerStyle={styles.passwordInput}
-          />
-        </View>
-        <Button.Main
-          title="Xác nhận mật khẩu"
-          style={styles.passwordSubmitButton}
-          onPress={handlePasswordSubmit}
-          disabled={password.trim()}
-        />
-      </View>
-    );
-  };
-
-  const renderOtpSection = () => {
-    return (
-      <View style={styles.bottomSheetSection}>
-        <View style={styles.bottomSheetHeader}>
-          <Text style={styles.bottomSheetTitle}>Nhập mã OTP</Text>
-          <Text style={styles.bottomSheetSubtitle}>
-            {otpData?.type === 'verify-phone'
-              ? 'Mã xác thực đã được gửi đến số điện thoại mới'
-              : 'Mã xác thực đã được gửi đến email mới'}
-          </Text>
-        </View>
-
-        {renderOtpInputs()}
-
-        <View style={styles.otpActions}>
-          <View style={styles.resendContainer}>
-            {cooldown > 0 ? (
-              <Text style={styles.resendText}>
-                Vui lòng chờ {formatTime(cooldown)} để gửi lại mã
-              </Text>
-            ) : resendCount >= 3 ? (
-              <Text style={styles.resendText}>
-                Bạn đã vượt quá số lần gửi lại mã
-              </Text>
-            ) : (
-              <>
-                <View style={styles.buttomResendText}>
-                  <Text style={styles.resendText}>Không nhận được mã? </Text>
-                  <Button.Text
-                    title="Gửi lại"
-                    disabled={isLoading}
-                    textStyle={styles.resendTextGui}
-                  />
-                </View>
-              </>
-            )}
-          </View>
-
-          <Button.Main
-            title={isLoading ? 'Đang xác thực...' : 'Xác thực OTP'}
-            onPress={handleVerifyOtp}
-            style={[
-              styles.verifyButton,
-              {
-                backgroundColor:
-                  otpCodes.join('').length === 6 ? '#4CAF50' : '#A5D6A7',
-                opacity: otpCodes.join('').length === 6 ? 1 : 0.6,
+                borderColor: code
+                  ? '#4CAF50'
+                  : currentOtpIndex === index
+                  ? '#FF9800'
+                  : '#C8E6C9',
               },
             ]}
-            disabled={isLoading || otpCodes.join('').length !== 6}
+            value={code}
+            onChangeText={text => handleOtpChange(text, index)}
+            onKeyPress={e => handleKeyPress(e, index)}
+            keyboardType="numeric"
+            maxLength={1}
+            selectTextOnFocus
           />
-        </View>
+        </Animated.View>
+      ))}
+    </View>
+  );
+
+  const renderOtpSection = () => (
+    <View style={styles.bottomSheetSection}>
+      <Text style={styles.bottomSheetTitle}>Nhập mã OTP</Text>
+      <Text style={styles.bottomSheetSubtitle}>
+        {otpData?.type === 'verify-phone'
+          ? 'Mã xác thực đã gửi tới số điện thoại mới'
+          : 'Mã xác thực đã gửi tới email mới'}
+      </Text>
+
+      {renderOtpInputs()}
+
+      <View style={styles.otpActions}>
+        {cooldown > 0 ? (
+          <Text>Chờ {formatTime(cooldown)} để gửi lại mã</Text>
+        ) : resendCount >= 3 ? (
+          <Text>Đã quá số lần gửi lại</Text>
+        ) : (
+          <Button.Text title="Gửi lại" />
+        )}
+
+        <Button.Main
+          title={isLoading ? 'Đang xác thực...' : 'Xác thực OTP'}
+          onPress={handleVerifyOtp}
+          disabled={isLoading || otpCodes.join('').length !== 6}
+        />
       </View>
-    );
-  };
+    </View>
+  );
 
   return (
     <>
@@ -658,7 +526,6 @@ const EditProfileScreen = () => {
       <View style={styles.bottomContainer}>
         <Button.Main
           title={isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-          style={[styles.buttonSave, isLoading && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={isLoading}
         />
@@ -670,22 +537,14 @@ const EditProfileScreen = () => {
           <TouchableOpacity
             style={styles.bottomSheetBackdrop}
             onPress={closeBottomSheet}
-            activeOpacity={1}
           />
           <Animated.View
             style={[
               styles.bottomSheetContent,
-              {
-                transform: [
-                  {
-                    translateY: slideAnim,
-                  },
-                ],
-              },
+              {transform: [{translateY: slideAnim}]},
             ]}>
             <View style={styles.bottomSheetHandle} />
-
-            {showPasswordInput ? renderPasswordInput() : renderOtpSection()}
+            {renderOtpSection()}
           </Animated.View>
         </View>
       )}
