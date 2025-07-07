@@ -1,5 +1,12 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Dimensions, FlatList, View, Text, TouchableOpacity} from 'react-native';
+import {
+  Dimensions,
+  FlatList,
+  View,
+  Text,
+  TouchableOpacity,
+  StatusBar,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
 import MaskedView from '@react-native-masked-view/masked-view';
@@ -88,41 +95,45 @@ const OnboardingScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={onboardingData}
-        keyExtractor={(_, index) => `slide-${index}`}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        renderItem={renderItem}
-        getItemLayout={(_, index) => ({
-          length: ITEM_WIDTH,
-          offset: ITEM_WIDTH * index,
-          index,
-        })}
-        initialNumToRender={1}
-        maxToRenderPerBatch={2}
-        windowSize={3}
-        removeClippedSubviews
-      />
+    <>
+      <StatusBar backgroundColor="transparent" barStyle="dark-content" />
 
-      <View style={styles.fixedFooter}>
-        <Button.Main
-          title={currentIndex === dataLength - 1 ? 'Get Started' : 'Continue'}
-          onPress={
-            currentIndex === dataLength - 1
-              ? completeOnboarding
-              : () => goToSlide(currentIndex + 1)
-          }
-          style={styles.continueButton}
-          textStyle={styles.continueButtonText}
+      <View style={styles.container}>
+        <FlatList
+          ref={flatListRef}
+          data={onboardingData}
+          keyExtractor={(_, index) => `slide-${index}`}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          renderItem={renderItem}
+          getItemLayout={(_, index) => ({
+            length: ITEM_WIDTH,
+            offset: ITEM_WIDTH * index,
+            index,
+          })}
+          initialNumToRender={1}
+          maxToRenderPerBatch={2}
+          windowSize={3}
+          removeClippedSubviews
         />
+
+        <View style={styles.fixedFooter}>
+          <Button.Main
+            title={currentIndex === dataLength - 1 ? 'Get Started' : 'Continue'}
+            onPress={
+              currentIndex === dataLength - 1
+                ? completeOnboarding
+                : () => goToSlide(currentIndex + 1)
+            }
+            style={styles.continueButton}
+            textStyle={styles.continueButtonText}
+          />
+        </View>
       </View>
-    </View>
+    </>
   );
 };
 

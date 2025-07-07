@@ -107,10 +107,10 @@ const ForgotPasswordScreen = ({navigation}) => {
 
     setIsLoading(true);
     try {
-      const isEmail = VALIDATION_RULES.EMAIL_REGEX.test(trimmed);
+      const isEmail = VALIDATION_RULES.email.pattern.value.test(trimmed);
       const payload = {
         phone:
-          !isEmail && VALIDATION_RULES.PHONE_REGEX.test(trimmed)
+          !isEmail && VALIDATION_RULES.phone.pattern.value.test(trimmed)
             ? trimmed
             : undefined,
         email: isEmail ? trimmed : undefined,
@@ -122,7 +122,7 @@ const ForgotPasswordScreen = ({navigation}) => {
         setTimer(60);
         setCanResend(false);
         setResendCount(0);
-        setUserId(response.data?.userId || null); // Lưu userId từ phản hồi
+        setUserId(response.data?.userId || null); 
         setContactType(isEmail ? 'email' : 'phone');
         showMessage({
           message: 'Thành công',
@@ -269,10 +269,10 @@ const ForgotPasswordScreen = ({navigation}) => {
 
     setIsLoading(true);
     try {
-      const isEmail = VALIDATION_RULES.EMAIL_REGEX.test(trimmed);
+      const isEmail = VALIDATION_RULES.email.test(trimmed);
       const payload = {
         phone:
-          !isEmail && VALIDATION_RULES.PHONE_REGEX.test(trimmed)
+          !isEmail && VALIDATION_RULES.phone.test(trimmed)
             ? trimmed
             : undefined,
         email: isEmail ? trimmed : undefined,
@@ -379,7 +379,7 @@ const ForgotPasswordScreen = ({navigation}) => {
               <Controller
                 control={control}
                 name="contact"
-                rules={VALIDATION_RULES.contact}
+                rules={VALIDATION_RULES.emailOrPhone}
                 render={({field: {onChange, onBlur, value}}) => (
                   <Input
                     placeholder="Email hoặc số điện thoại"

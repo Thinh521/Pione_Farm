@@ -2,7 +2,7 @@ import {showMessage} from 'react-native-flash-message';
 import {scale} from '~/utils/scaling';
 
 const defaultStyle = {
-  marginTop: scale(30),
+  marginTop: scale(10),
   paddingVertical: scale(16),
 };
 

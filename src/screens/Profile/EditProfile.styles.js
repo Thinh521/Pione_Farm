@@ -42,12 +42,6 @@ export default StyleSheet.create({
   input: {
     backgroundColor: Colors.background,
     borderRadius: scale(12),
-    borderColor: 'transparent',
-    shadowColor: Colors.shadow,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   label: {
     fontSize: FontSizes.small,
@@ -104,6 +98,8 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   nationalityButton: {
+    borderWidth: 1,
+    borderColor: Colors.border,
     marginLeft: scale(14),
     backgroundColor: Colors.background,
     flexDirection: 'row',
@@ -131,8 +127,6 @@ export default StyleSheet.create({
     shadowOpacity: 0.1,
     elevation: 2,
   },
-
-  // Bottom Sheet Styles
   bottomSheetOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
@@ -163,8 +157,6 @@ export default StyleSheet.create({
     borderRadius: scale(2),
     marginBottom: scale(20),
   },
-
-  // Password Section Styles
   bottomSheetSection: {
     alignItems: 'center',
     paddingVertical: scale(24),
@@ -186,32 +178,6 @@ export default StyleSheet.create({
     textAlign: 'center',
     lineHeight: scale(20),
   },
-  passwordInputContainer: {
-    width: '100%',
-    marginBottom: scale(24),
-  },
-  passwordInput: {
-    borderRadius: scale(25),
-    shadowColor: Colors.black,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  passwordSubmitButton: {
-    width: '100%',
-    backgroundColor: '#4CAF50',
-    paddingVertical: scale(14),
-    paddingHorizontal: scale(40),
-    borderRadius: scale(25),
-    shadowColor: '#2E7D32',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-
-  // OTP Section Styles
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -334,5 +300,16 @@ export default StyleSheet.create({
 
   largeScreen: {
     paddingHorizontal: scale(32),
+  },
+
+  errorText: {
+    color: Colors.red,
+    marginTop: scale(6),
+    marginLeft: scale(4),
+    fontSize: FontSizes.small,
+  },
+  inputError: {
+    borderWidth: 1,
+    borderColor: Colors.red,
   },
 });

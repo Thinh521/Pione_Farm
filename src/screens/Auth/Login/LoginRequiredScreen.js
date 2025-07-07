@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Text, View, Image} from 'react-native';
+import {StyleSheet, Text, View, Image, StatusBar} from 'react-native';
 import Images from '~/assets/images/Images';
 import Button from '~/components/ui/Button/ButtonComponent';
 import {useNavigation} from '@react-navigation/core';
@@ -20,33 +20,37 @@ const LoginRequiredScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={Images.splash_screen}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Text style={styles.description}>
-        🌾 Quản lý thị trường nông sản dễ dàng, chính xác và thông minh hơn bao
-        giờ hết.
-      </Text>
-      <Image
-        source={Images.Login_Required}
-        style={styles.illustration}
-        resizeMode="contain"
-      />
-      <Button.Main
-        title="Create an account"
-        style={styles.createButton}
-        onPress={NavigationToLogin}
-      />
-      <Button.Main
-        title="Sign In"
-        style={styles.signInButton}
-        textStyle={styles.signInButtonText}
-        onPress={NavigationToRegister}
-      />
-    </View>
+    <>
+      <StatusBar backgroundColor="transparent" barStyle="dark-content" />
+
+      <View style={styles.container}>
+        <Image
+          source={Images.splash_screen}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.description}>
+          🌾 Quản lý thị trường nông sản dễ dàng, chính xác và thông minh hơn
+          bao giờ hết.
+        </Text>
+        <Image
+          source={Images.Login_Required}
+          style={styles.illustration}
+          resizeMode="contain"
+        />
+        <Button.Main
+          title="Create an account"
+          style={styles.createButton}
+          onPress={NavigationToLogin}
+        />
+        <Button.Main
+          title="Sign In"
+          style={styles.signInButton}
+          textStyle={styles.signInButtonText}
+          onPress={NavigationToRegister}
+        />
+      </View>
+    </>
   );
 };
 

@@ -16,15 +16,15 @@ import FastImage from 'react-native-fast-image';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {API_BASE_URL} from '@env';
 import {Controller, useForm} from 'react-hook-form';
-
 import styles from './EditProfile.styles';
 import Input from '../../components/ui/Input/InputComponents';
 import {updateUser} from '../../api/userApi';
-import {verifyOtp} from '../../api/verifyOtpApi';
+import {resendOtp, verifyOtp} from '../../api/verifyOtpApi';
 import Background_2 from '../../components/Background/Background_2';
 import {CameraIcon, RightIcon} from '../../assets/icons/Icons';
 import Button from '../../components/ui/Button/ButtonComponent';
 import Images from '../../assets/images/Images';
+import {VALIDATION_RULES} from '../../validations/authValidations';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -52,29 +52,41 @@ const EditProfileScreen = () => {
     {label: 'Khác', value: 'other'},
   ];
 
-  const [form, setForm] = useState({
-    fullName: user?.fullName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    userName: user?.userName || '',
-    yearOfBirth: user?.yearOfBirth?.toString() || '',
-    address: user?.address || '',
-    gender: user?.gender || '',
-    nationality: user?.nationality || 'Vietnam',
+  const {
+    control,
+    handleSubmit,
+    formState: {errors},
+  } = useForm({
+    defaultValues: {
+      fullName: user?.fullName || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      userName: user?.userName || '',
+      yearOfBirth: user?.yearOfBirth?.toString() || '',
+      address: user?.address || '',
+      gender: user?.gender || '',
+      nationality: user?.nationality || 'Vietnam',
+    },
+    mode: 'onChange',
   });
 
-  const {control, handleSubmit, setValue, watch} = useForm({
-    defaultValues: form,
-  });
+  useEffect(() => {
+    let interval;
 
-  const watchedNationality = watch('nationality');
-
-  const handleChange = (key, value) => {
-    setForm(prev => ({...prev, [key]: value}));
-    if (key === 'nationality') {
-      setValue('nationality', value);
+    if (cooldown > 0) {
+      interval = setInterval(() => {
+        setCooldown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
-  };
+
+    return () => clearInterval(interval);
+  }, [cooldown, bottomSheetVisible]);
 
   const handlePickImage = async () => {
     try {
@@ -90,31 +102,9 @@ const EditProfileScreen = () => {
     }
   };
 
-  const validateForm = () => {
-    if (form.phone && form.phone.length > 10) {
-      Alert.alert('Lỗi', 'Số điện thoại không được quá 10 số');
-      return false;
-    }
-    if (
-      form.yearOfBirth &&
-      (isNaN(form.yearOfBirth) || form.yearOfBirth.length !== 4)
-    ) {
-      Alert.alert('Lỗi', 'Năm sinh phải là 4 chữ số');
-      return false;
-    }
-    if (
-      form.gender &&
-      !['male', 'female', 'other'].includes(form.gender.toLowerCase())
-    ) {
-      Alert.alert('Lỗi', 'Giới tính chỉ có thể là: male, female, hoặc other');
-      return false;
-    }
-    return true;
-  };
-
-  const prepareFormData = () => {
+  const prepareFormData = data => {
     const formData = new FormData();
-    Object.entries(form).forEach(([key, value]) => {
+    Object.entries(data).forEach(([key, value]) => {
       const trimmedValue = value?.toString().trim();
       const originalValue = user?.[key]?.toString() || '';
       if (trimmedValue !== '' && trimmedValue !== originalValue) {
@@ -204,11 +194,10 @@ const EditProfileScreen = () => {
     }
   };
 
-  const handleSave = async () => {
-    if (!validateForm()) return;
+  const handleSave = async data => {
     setIsLoading(true);
     try {
-      const formData = prepareFormData();
+      const formData = prepareFormData(data);
       if (!avatar?.uri && formData._parts?.length === 0) {
         Alert.alert('Thông báo', 'Không có thông tin nào thay đổi');
         setIsLoading(false);
@@ -221,7 +210,7 @@ const EditProfileScreen = () => {
           setOtpData(otpInfo);
           setNewVerifiedValue({
             type: otpInfo.type,
-            value: otpInfo.type.includes('phone') ? form.phone : form.email,
+            value: otpInfo.type.includes('phone') ? data.phone : data.email,
           });
           showBottomSheet();
         } else {
@@ -263,6 +252,7 @@ const EditProfileScreen = () => {
         userId: otpData.userId,
         type: otpData.type,
       });
+
       if (res?.success) {
         const updatePayload = new FormData();
         const isPhone = otpData.type.includes('phone');
@@ -281,6 +271,92 @@ const EditProfileScreen = () => {
       }
     } catch (error) {
       Alert.alert('Lỗi', error.message || 'Có lỗi khi xác thực');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  console.log('OTP DATA:', otpData);
+
+  const handleResendCode = async () => {
+    if (!otpData?.userId || !newVerifiedValue?.value || !otpData?.type) {
+      showMessage({
+        message: 'Thiếu thông tin',
+        description: 'Không thể gửi lại mã OTP do thiếu thông tin liên lạc',
+        type: 'danger',
+        duration: 3000,
+        floating: true,
+      });
+      return;
+    }
+
+    if (cooldown > 0) return;
+
+    setIsLoading(true);
+
+    try {
+      const res = await resendOtp({
+        userId: otpData.userId,
+        contact: otpData.type.includes('phone')
+          ? newVerifiedValue.value
+          : undefined,
+        type: otpData.type,
+      });
+      if (res.success) {
+        setResendCount(prev => prev + 1);
+        setCooldown(30);
+        setOtp(['', '', '', '', '', '']);
+        otpInputRefs.current[0]?.focus();
+
+        showMessage({
+          message: 'Mã OTP mới đã được gửi',
+          description: 'Vui lòng kiểm tra điện thoại hoặc email',
+          type: 'success',
+          duration: 2500,
+          floating: true,
+        });
+      } else {
+        const isExceeded = res.message?.includes(
+          'You have exceeded the maximum number',
+        );
+        if (isExceeded) {
+          showMessage({
+            message: 'Tài khoản đã bị xóa',
+            description: 'Bạn đã gửi lại mã quá 3 lần. Vui lòng đăng ký lại.',
+            type: 'danger',
+            duration: 4000,
+            floating: true,
+          });
+          navigation.replace('Register');
+        } else {
+          showMessage({
+            message: 'Không thể gửi lại mã',
+            description: res.message || 'Vui lòng thử lại sau',
+            type: 'danger',
+            duration: 3000,
+            floating: true,
+          });
+        }
+      }
+    } catch (err) {
+      if (isExceeded) {
+        showMessage({
+          message: 'Quá số lần gửi lại',
+          description: 'Bạn đã gửi lại mã quá 3 lần',
+          type: 'danger',
+          duration: 4000,
+          floating: true,
+        });
+        navigation.goBack();
+      } else {
+        showMessage({
+          message: 'Lỗi hệ thống',
+          description: err.message || 'Gửi lại OTP thất bại',
+          type: 'danger',
+          duration: 3000,
+          floating: true,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -359,7 +435,7 @@ const EditProfileScreen = () => {
         ) : resendCount >= 3 ? (
           <Text>Đã quá số lần gửi lại</Text>
         ) : (
-          <Button.Text title="Gửi lại" />
+          <Button.Text title="Gửi lại" onPress={handleResendCode} />
         )}
 
         <Button.Main
@@ -374,7 +450,6 @@ const EditProfileScreen = () => {
   return (
     <>
       <Background_2 />
-
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}>
@@ -399,139 +474,240 @@ const EditProfileScreen = () => {
         <View style={styles.formGroup}>
           {/* Full name */}
           <View>
-            <Input
-              label="Họ và tên"
-              placeholder="Nhập họ và tên"
-              value={form.fullName}
-              onChangeText={value => handleChange('fullName', value)}
-              containerStyle={styles.input}
+            <Controller
+              control={control}
+              name="fullName"
+              rules={VALIDATION_RULES.fullName}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <Input
+                  label="Họ và tên"
+                  placeholder="Nhập họ và tên"
+                  value={value}
+                  onChangeText={onChange}
+                  error={error?.message}
+                  containerStyle={[
+                    errors.fullName && styles.inputError,
+                    styles.input,
+                  ]}
+                />
+              )}
             />
+            {errors.fullName && (
+              <Text style={styles.errorText}>{errors.fullName.message}</Text>
+            )}
           </View>
 
           {/* Login name */}
           <View>
-            <Input
-              label="Tên đăng nhập"
-              placeholder="Nhập tên đăng nhập"
-              value={form.userName}
-              onChangeText={value => handleChange('userName', value)}
-              containerStyle={styles.input}
+            <Controller
+              control={control}
+              name="userName"
+              rules={VALIDATION_RULES.userName}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <Input
+                  label="Tên đăng nhập"
+                  placeholder="Nhập tên đăng nhập"
+                  value={value}
+                  onChangeText={onChange}
+                  containerStyle={[
+                    errors.userName && styles.inputError,
+                    styles.input,
+                  ]}
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.userName && (
+              <Text style={styles.errorText}>{errors.userName.message}</Text>
+            )}
           </View>
 
           {/* Gender */}
-          <Controller
-            control={control}
-            name="gender"
-            defaultValue={form.gender}
-            render={({field: {onChange, value}}) => (
-              <View style={styles.gender}>
-                <Text style={styles.label}>Giới tính: </Text>
-                <View style={styles.genderContainer}>
-                  {genderOptions.map(option => (
-                    <TouchableOpacity
-                      key={option.value}
-                      style={styles.genderItem}
-                      onPress={() => {
-                        handleChange('gender', option.value);
-                        onChange(option.value);
-                      }}>
-                      <View style={styles.radio}>
-                        {value === option.value && (
-                          <View style={styles.radioSelected} />
-                        )}
-                      </View>
-                      <Text style={styles.optionText}>{option.label}</Text>
-                    </TouchableOpacity>
-                  ))}
+          <View>
+            <Controller
+              control={control}
+              name="gender"
+              rules={VALIDATION_RULES.gender}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <View style={styles.gender}>
+                  <Text style={styles.label}>Giới tính: </Text>
+                  <View style={styles.genderContainer}>
+                    {genderOptions.map(option => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={styles.genderItem}
+                        onPress={() => onChange(option.value)}>
+                        <View style={styles.radio}>
+                          {value === option.value && (
+                            <View style={styles.radioSelected} />
+                          )}
+                        </View>
+                        <Text style={styles.optionText}>{option.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
-              </View>
-            )}
-          />
-
-          {/* Year of birthday */}
-          <View style={styles.yearOfBirth}>
-            <Text style={styles.label}>Năm sinh: </Text>
-            <Input
-              style={styles.yearOfBirthContainer}
-              keyboardType="numeric"
-              placeholder="YYYY"
-              value={form.yearOfBirth}
-              onChangeText={value => handleChange('yearOfBirth', value)}
-              maxLength={4}
-              containerStyle={[styles.input, styles.inputYearOfBirth]}
+              )}
             />
+            {errors.gender && (
+              <Text style={styles.errorText}>{errors.gender.message}</Text>
+            )}
+          </View>
+
+          {/* Year of birth */}
+          <View>
+            <Controller
+              control={control}
+              name="yearOfBirth"
+              rules={VALIDATION_RULES.yearOfBirth}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <View style={styles.yearOfBirth}>
+                  <Text style={styles.label}>Năm sinh: </Text>
+                  <Input
+                    style={styles.yearOfBirthContainer}
+                    keyboardType="numeric"
+                    placeholder="YYYY"
+                    value={value}
+                    onChangeText={onChange}
+                    maxLength={4}
+                    containerStyle={[
+                      errors.yearOfBirth && styles.inputError,
+                      styles.input,
+                      styles.inputYearOfBirth,
+                    ]}
+                    error={error?.message}
+                  />
+                </View>
+              )}
+            />
+            {errors.yearOfBirth && (
+              <Text style={styles.errorText}>{errors.yearOfBirth.message}</Text>
+            )}
           </View>
 
           {/* Email */}
-          <Input
-            label="Email"
-            placeholder="Nhập email"
-            keyboardType="email-address"
-            value={form.email}
-            onChangeText={value => handleChange('email', value)}
-            containerStyle={styles.input}
-          />
+          <View>
+            <Controller
+              control={control}
+              name="email"
+              rules={VALIDATION_RULES.email}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <Input
+                  label="Email"
+                  placeholder="Nhập email"
+                  keyboardType="email-address"
+                  value={value}
+                  onChangeText={onChange}
+                  containerStyle={[
+                    errors.email && styles.inputError,
+                    styles.input,
+                  ]}
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.email && (
+              <Text style={styles.errorText}>{errors.email.message}</Text>
+            )}
+          </View>
 
           {/* Phone */}
-          <Input
-            label="Số điện thoại"
-            placeholder="Nhập số điện thoại (tối đa 10 số)"
-            keyboardType="phone-pad"
-            value={form.phone}
-            onChangeText={value => handleChange('phone', value)}
-            maxLength={10}
-            containerStyle={styles.input}
-          />
+          <View>
+            <Controller
+              control={control}
+              name="phone"
+              rules={VALIDATION_RULES.phone}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <Input
+                  label="Số điện thoại"
+                  placeholder="Nhập số điện thoại (tối đa 10 số)"
+                  keyboardType="phone-pad"
+                  value={value}
+                  onChangeText={onChange}
+                  maxLength={10}
+                  containerStyle={[
+                    errors.phone && styles.inputError,
+                    styles.input,
+                  ]}
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.phone && (
+              <Text style={styles.errorText}>{errors.phone.message}</Text>
+            )}
+          </View>
 
           {/* Nationality */}
-          <Controller
-            control={control}
-            name="nationality"
-            render={({field: {onChange, value}}) => (
-              <View style={[styles.nationality]}>
-                <Text style={styles.label}>Quốc gia: </Text>
-                <TouchableOpacity
-                  style={[styles.nationalityButton, styles.input]}
-                  onPress={() =>
-                    navigation.navigate('Language', {
-                      onSelect: selectedNationality => {
-                        handleChange('nationality', selectedNationality);
-                        onChange(selectedNationality);
-                      },
-                      selectedValue: value || form.nationality,
-                    })
-                  }
-                  accessibilityLabel="Chọn quốc gia">
-                  <Text style={styles.nationalityText}>
-                    {value || form.nationality || 'Chọn quốc gia'}
-                  </Text>
-                  <RightIcon style={styles.rightIcon} />
-                </TouchableOpacity>
-              </View>
+          <View>
+            <Controller
+              control={control}
+              name="nationality"
+              rules={VALIDATION_RULES.nationality}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <View style={[styles.nationality]}>
+                  <Text style={styles.label}>Quốc gia: </Text>
+                  <TouchableOpacity
+                    style={[styles.nationalityButton, styles.input]}
+                    onPress={() =>
+                      navigation.navigate('Language', {
+                        onSelect: selectedNationality =>
+                          onChange(selectedNationality),
+                        selectedValue: value,
+                      })
+                    }
+                    accessibilityLabel="Chọn quốc gia">
+                    <Text style={styles.nationalityText}>
+                      {value || 'Chọn quốc gia'}
+                    </Text>
+                    <RightIcon style={styles.rightIcon} />
+                  </TouchableOpacity>
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
+                </View>
+              )}
+            />
+            {errors.nationality && (
+              <Text style={styles.errorText}>{errors.nationality.message}</Text>
             )}
-          />
+          </View>
 
           {/* Address */}
-          <Input
-            label="Địa chỉ"
-            value={form.address}
-            placeholder="Nhập địa chỉ"
-            onChangeText={value => handleChange('address', value)}
-            containerStyle={styles.input}
-          />
+          <View>
+            <Controller
+              control={control}
+              name="address"
+              rules={VALIDATION_RULES.address}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <Input
+                  label="Địa chỉ"
+                  value={value}
+                  placeholder="Nhập địa chỉ"
+                  onChangeText={onChange}
+                  error={error?.message}
+                  containerStyle={[
+                    errors.address && styles.inputError,
+                    styles.input,
+                  ]}
+                />
+              )}
+            />
+            {errors.address && (
+              <Text style={styles.errorText}>{errors.address.message}</Text>
+            )}
+          </View>
         </View>
       </ScrollView>
 
       <View style={styles.bottomContainer}>
         <Button.Main
           title={isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-          onPress={handleSave}
+          onPress={handleSubmit(handleSave)}
           disabled={isLoading}
         />
       </View>
 
-      {/* Bottom Sheet */}
       {bottomSheetVisible && (
         <View style={styles.bottomSheetOverlay}>
           <TouchableOpacity

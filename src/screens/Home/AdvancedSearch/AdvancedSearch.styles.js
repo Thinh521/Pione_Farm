@@ -22,7 +22,7 @@ export default StyleSheet.create({
   title: {
     fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
-    marginBottom: scale(16),
+    marginBlock: scale(16),
   },
   buttonContainer: {
     gap: scale(20),

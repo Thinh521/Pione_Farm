@@ -6,7 +6,7 @@ import {
   PermissionsAndroid,
   Platform,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import RNFS from 'react-native-fs';
 import XLSX from 'xlsx';
 
@@ -16,6 +16,7 @@ import CustomTable from '../../../components/CustomTable/CustomTable';
 import {scale} from '../../../utils/scaling';
 import Button from '../../../components/ui/Button/ButtonComponent';
 import ChatBot from '../../../components/ChatBot/ChatBot';
+import {getAllCategories} from '../../../api/categogyApi';
 
 const FILTER_OPTIONS = [
   {label: 'Ngày BĐ', options: []},
@@ -33,8 +34,6 @@ const DROPDOWN_OPTIONS = [
   {label: 'Thị trường trong nước và ngoài nước', route: 'Market'},
   {label: 'Tin tức', route: 'News'},
 ];
-
-const FRUIT_OPTIONS = ['Tất cả', 'Xoài', 'Táo', 'Mít', 'Chuối'];
 
 const columns = [
   {title: 'ĐVT', key: 'unit', flex: 1},
@@ -172,7 +171,22 @@ const AdvancedSearchScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [exportingTable, setExportingTable] = useState(null); // 'table1' | 'table2' | null
+  const [exportingTable, setExportingTable] = useState(null);
+  const [fruitCategory, setFruitCategory] = useState(['Tất cả']);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categories = await getAllCategories();
+        const names = categories.data.map(c => c.name);
+        setFruitCategory(['Tất cả', ...names]);
+      } catch (error) {
+        console.log('Lỗi khi lấy danh mục:', error.message);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const parseDate = date => {
     const [day, month, year] = date.split('/');
@@ -301,7 +315,7 @@ const AdvancedSearchScreen = () => {
           setSearchText={setSearchText}
           filterOptions={FILTER_OPTIONS}
           dropdownOptions={DROPDOWN_OPTIONS}
-          itemOptions={FRUIT_OPTIONS}
+          itemOptions={fruitCategory}
           showProductButton
           placeholder="Tìm kiếm trái cây"
           onFilterSelect={handleFilterSelect}
