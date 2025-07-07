@@ -24,6 +24,11 @@ export default StyleSheet.create({
     fontWeight: FontWeights.semiBold,
     marginBlock: scale(16),
   },
+  tableTitle: {
+    marginBottom: scale(16),
+    fontSize: FontSizes.regular,
+    fontWeight: FontWeights.semiBold,
+  },
   buttonContainer: {
     gap: scale(20),
     marginBottom: scale(20),

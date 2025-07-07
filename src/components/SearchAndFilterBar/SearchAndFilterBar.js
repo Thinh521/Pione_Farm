@@ -23,6 +23,9 @@ const DROPDOWN_OPTIONS = [
   {label: 'Tin tức', route: 'News'},
 ];
 
+// In hoa chữ cái đầu
+const capitalizeFirstLetter = str => str.charAt(0).toUpperCase() + str.slice(1);
+
 const SearchAndFilterBar = ({
   searchText,
   setSearchText,
@@ -31,6 +34,7 @@ const SearchAndFilterBar = ({
   itemOptions,
   placeholder,
   showProductButton,
+  selectedFilters,
 }) => {
   const navigation = useNavigation();
   const dropdownAnim = useRef(new Animated.Value(0)).current;
@@ -42,7 +46,6 @@ const SearchAndFilterBar = ({
   });
   const [isFocused, setIsFocused] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [dateType, setDateType] = useState('');
@@ -144,18 +147,17 @@ const SearchAndFilterBar = ({
       const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
       const year = selectedDate.getFullYear();
       const formatted = `${day}/${month}/${year}`;
-
       onFilterSelect(dateType, formatted);
     }
   };
 
-  const handleDateSelection = filterLabel => {
-    setDateType(filterLabel);
+  const handleDateSelection = label => {
+    setDateType(label);
     setShowPicker(true);
   };
 
-  const handleFilterSelection = (filterLabel, option) => {
-    onFilterSelect(filterLabel, option);
+  const handleFilterSelection = (label, option) => {
+    onFilterSelect(label, option);
     toggleFilter(activeFilter.index);
   };
 
@@ -164,9 +166,12 @@ const SearchAndFilterBar = ({
     toggleFilter(filterOptions.length);
   };
 
+  const getSelectedValue = label =>
+    capitalizeFirstLetter(selectedFilters?.[label] || label);
+
   return (
     <View style={styles.container}>
-      {/* Search + dropdown */}
+      {/* Search and dropdown */}
       <View style={styles.wrapper}>
         <View style={styles.row}>
           <View style={styles.inputWrapper}>
@@ -228,15 +233,14 @@ const SearchAndFilterBar = ({
         )}
       </View>
 
-      {/* Filter options */}
+      {/* Filter buttons */}
       <View style={styles.filterContainer}>
         {filterOptions.map((filter, index) => {
-          // Handle date filters
           if (filter.label === 'Ngày BĐ' || filter.label === 'Ngày KT') {
             return (
               <View key={index} style={{flex: 1}}>
                 <Button.Select
-                  title={filter.label}
+                  title={getSelectedValue(filter.label)}
                   iconRight={<DownIcon_3 style={{color: Colors.white}} />}
                   onPress={() => handleDateSelection(filter.label)}
                 />
@@ -244,11 +248,10 @@ const SearchAndFilterBar = ({
             );
           }
 
-          // Handle province filter
           return (
             <View key={index} style={{flex: 1}}>
               <Button.Select
-                title={filter.label}
+                title={getSelectedValue(filter.label)}
                 testID={`filter-label-${index}`}
                 iconRight={
                   activeFilter.index === index ? (
@@ -285,7 +288,9 @@ const SearchAndFilterBar = ({
                       onPress={() =>
                         handleFilterSelection(filter.label, option)
                       }>
-                      <Text style={styles.filterOptionText}>{option}</Text>
+                      <Text style={styles.filterOptionText}>
+                        {capitalizeFirstLetter(option)}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </Animated.View>
@@ -295,11 +300,11 @@ const SearchAndFilterBar = ({
         })}
       </View>
 
-      {/* Product/Fruit dropdown */}
+      {/* Product selection */}
       {showProductButton && itemOptions?.length > 0 && (
         <View style={{marginTop: scale(16)}}>
           <Button.Select
-            title="Mặt hàng"
+            title={getSelectedValue('Mặt hàng')}
             testID="filter-label-item"
             iconRight={
               activeFilter.index === filterOptions.length ? (
@@ -333,7 +338,9 @@ const SearchAndFilterBar = ({
                   key={i}
                   style={styles.filterOption}
                   onPress={() => handleItemSelection(option)}>
-                  <Text style={styles.filterOptionText}>{option}</Text>
+                  <Text style={styles.filterOptionText}>
+                    {capitalizeFirstLetter(option)}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </Animated.View>
@@ -341,7 +348,6 @@ const SearchAndFilterBar = ({
         </View>
       )}
 
-      {/* Date Picker */}
       {showPicker && (
         <DateTimePicker
           value={date}
@@ -355,21 +361,10 @@ const SearchAndFilterBar = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: scale(16),
-  },
-  wrapper: {
-    position: 'relative',
-    marginBottom: scale(16),
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  inputWrapper: {
-    flex: 1,
-    marginRight: scale(8),
-  },
+  container: {marginBottom: scale(16)},
+  wrapper: {position: 'relative', marginBottom: scale(16)},
+  row: {flexDirection: 'row', alignItems: 'center'},
+  inputWrapper: {flex: 1, marginRight: scale(8)},
   searchContainer: {
     borderRadius: scale(8),
     backgroundColor: '#F5F5F5',
@@ -380,9 +375,7 @@ const styles = StyleSheet.create({
     paddingVertical: scale(10),
     fontSize: FontSizes.regular,
   },
-  searchInputActive: {
-    borderColor: '#D9D9D9',
-  },
+  searchInputActive: {borderColor: '#D9D9D9'},
   buttonDown: {
     width: scale(50),
     height: scale(50),
@@ -401,11 +394,15 @@ const styles = StyleSheet.create({
     borderRadius: scale(8),
     paddingVertical: scale(6),
     paddingHorizontal: scale(16),
-    elevation: Platform.OS === 'android' ? 4 : undefined,
-    shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
-    shadowOffset: Platform.OS === 'ios' ? {width: 0, height: 2} : undefined,
-    shadowOpacity: Platform.OS === 'ios' ? 0.1 : undefined,
-    shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
+    ...Platform.select({
+      android: {elevation: 4},
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+    }),
   },
   headerText: {
     paddingTop: scale(10),
@@ -413,9 +410,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
   },
-  option: {
-    paddingVertical: scale(10),
-  },
+  option: {paddingVertical: scale(10)},
   optionText: {
     fontSize: FontSizes.medium,
     fontWeight: FontWeights.regular,
@@ -436,15 +431,17 @@ const styles = StyleSheet.create({
     borderRadius: scale(6),
     paddingVertical: scale(6),
     paddingHorizontal: scale(12),
-    elevation: Platform.OS === 'android' ? 5 : undefined,
-    shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
-    shadowOffset: Platform.OS === 'ios' ? {width: 0, height: 2} : undefined,
-    shadowOpacity: Platform.OS === 'ios' ? 0.15 : undefined,
-    shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
+    ...Platform.select({
+      android: {elevation: 5},
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+      },
+    }),
   },
-  filterOption: {
-    paddingVertical: scale(8),
-  },
+  filterOption: {paddingVertical: scale(8)},
   filterOptionText: {
     fontSize: FontSizes.small,
     color: '#333',

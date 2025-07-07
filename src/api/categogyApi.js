@@ -13,9 +13,6 @@ const api = axios.create({
 export const getAllCategories = async () => {
   try {
     const res = await api.get('/api/category');
-
-    console.log('res', res.data);
-
     return res.data;
   } catch (error) {
     const message =
