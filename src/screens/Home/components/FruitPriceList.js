@@ -11,59 +11,35 @@ import {SearchIcon} from '../../../assets/icons/Icons';
 import {scale} from '../../../utils/scaling';
 import {Colors, FontSizes, FontWeights} from '../../../theme/theme';
 
-const fruitData = [
-  {name: 'Cam sành loại 1', price: 5000},
-  {name: 'Cam sành loại 2', price: 3000},
-  {name: 'Quýt đường loại 1', price: 40000},
-  {name: 'Bưởi Năm Roi loại 1', price: 25000},
-  {name: 'Bưởi Năm Roi loại 2', price: 15000},
-  {name: 'Xoài cát Hòa Lộc loại 1', price: 25000},
-  {name: 'Xoài Cát Chu loại 1', price: 20000},
-  {name: 'Dưa hấu loại 1', price: 10000},
-  {name: 'Thanh Long ruột trắng loại 1', price: 8000},
-  {name: 'Chôm chôm Java loại 1', price: 28000},
-  {name: 'Chôm chôm Thái loại 1', price: 45000},
-  {name: 'Chôm chôm đường', price: 50000},
-  {name: 'Nhãn tiêu da bò loại 1', price: 25000},
-  {name: 'Sầu riêng cơm vàng hạt lép', price: 50000},
-];
-
-const FruitPriceList = () => {
+const FruitPriceList = ({products = []}) => {
   const [searchText, setSearchText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  const filteredFruits = useMemo(
-    () =>
-      fruitData.filter(item =>
-        item.name.toLowerCase().includes(searchText.toLowerCase()),
-      ),
-    [searchText],
-  );
-
-  const limitedFruits = useMemo(
-    () => filteredFruits.slice(0, 6),
-    [filteredFruits],
-  );
+  const filteredFruits = useMemo(() => {
+    return products.filter(item =>
+      item.productName?.toLowerCase().includes(searchText.toLowerCase()),
+    );
+  }, [searchText, products]);
 
   useEffect(() => {
+    if (!searchText) return setIsSearching(false);
     setIsSearching(true);
-    const delayDebounce = setTimeout(() => {
-      setIsSearching(false);
-    }, 1000);
-
-    return () => clearTimeout(delayDebounce);
+    const timer = setTimeout(() => setIsSearching(false), 500);
+    return () => clearTimeout(timer);
   }, [searchText]);
 
   const renderItem = ({item}) => (
     <View style={styles.row}>
       <View style={styles.nameCol}>
-        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemName}>{item.productName}</Text>
       </View>
       <View style={styles.unitCol}>
         <Text style={styles.unit}>đ/Kg</Text>
       </View>
       <View style={styles.priceCol}>
-        <Text style={styles.price}>{item.price.toLocaleString('vi-VN')}</Text>
+        <Text style={styles.price}>
+          {(item.marketPrice || 0).toLocaleString('vi-VN')}
+        </Text>
         <Text style={styles.currency}>VNĐ</Text>
       </View>
     </View>
@@ -71,11 +47,13 @@ const FruitPriceList = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Bảng Giá Mặt Hàng Trái Cây </Text>
+        <Text style={styles.title}>Bảng Giá Mặt Hàng Trái Cây</Text>
         <Text style={styles.subtitle}>Cập nhật giá cả mới nhất tại chợ</Text>
       </View>
 
+      {/* Search */}
       <View style={styles.searchContainer}>
         <Input
           placeholder="Tìm kiếm tên trái cây..."
@@ -88,6 +66,7 @@ const FruitPriceList = () => {
         />
       </View>
 
+      {/* Footer thống kê */}
       <View style={styles.footer}>
         <View style={styles.dot} />
         <Text style={styles.footerText}>
@@ -108,15 +87,16 @@ const FruitPriceList = () => {
         </Text>
       </View>
 
+      {/* Danh sách */}
       {isSearching ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color={Colors.green} />
         </View>
       ) : (
         <FlatList
-          data={limitedFruits}
+          data={filteredFruits}
           renderItem={renderItem}
-          keyExtractor={item => item.name}
+          keyExtractor={item => `${item.productId}`}
           initialNumToRender={6}
           ListEmptyComponent={
             <View style={styles.empty}>

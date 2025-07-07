@@ -1,35 +1,47 @@
 import React from 'react';
+import {API_BASE_URL} from '@env';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import LineChartWrapper from '../../../components/LineChart/LineChartWrapper';
 import {scale} from '../../../utils/scaling';
 
 const WalletItem = ({
-  image,
-  name,
-  symbol,
-  price,
-  change,
-  chartData,
-  chartColor,
-  gradientId,
+  images,
+  productName,
+  provinceName,
+  marketPrice = '0.00',
+  priceChange = 0,
+  priceTrend = [],
+  chartColor = '#10b981',
+  gradientId = '#10b981',
 }) => {
-  const isUp = change > 0;
+  const isUp = priceChange > 0;
 
   return (
     <View style={styles.itemContainer}>
+      {/* Left Column */}
       <View style={styles.columnLeft}>
-        <FastImage source={image} style={styles.image} />
+        <FastImage
+          source={{uri: `${API_BASE_URL}/api/upload/${images}`}}
+          style={styles.image}
+        />
         <View style={styles.assetInfo}>
           <Text style={styles.assetName} numberOfLines={1} ellipsizeMode="tail">
-            {name}
+            {provinceName}
           </Text>
-          <Text style={styles.assetSymbol}>{symbol}</Text>
+          <Text
+            style={styles.assetSymbol}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {productName}
+          </Text>
         </View>
       </View>
+
+      {/* Center Column - Chart */}
       <View style={styles.columnCenter}>
         <LineChartWrapper
-          data={chartData}
+          data={priceTrend}
           mode="animated"
           height={50}
           width={80}
@@ -39,11 +51,13 @@ const WalletItem = ({
           showGradient
         />
       </View>
+
+      {/* Right Column - Price */}
       <View style={styles.columnRight}>
-        <Text style={styles.price}>${price}</Text>
+        <Text style={styles.price}>${marketPrice}</Text>
         <Text style={[styles.change, {color: isUp ? '#10b981' : '#ef4444'}]}>
           {isUp ? '+' : ''}
-          {change}
+          {priceChange}
         </Text>
       </View>
     </View>
@@ -51,11 +65,13 @@ const WalletItem = ({
 };
 
 const WalletList = ({data}) => {
+  console.log('data', data);
+
   return (
     <View style={styles.container}>
       <FlatList
         data={data}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={item => `${item.productId || item._productId}`}
         renderItem={({item}) => <WalletItem {...item} />}
         scrollEnabled={false}
         ListEmptyComponent={
