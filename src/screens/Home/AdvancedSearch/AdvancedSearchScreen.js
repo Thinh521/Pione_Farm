@@ -21,140 +21,24 @@ import Button from '../../../components/ui/Button/ButtonComponent';
 import ChatBot from '../../../components/ChatBot/ChatBot';
 import {getAllCategories} from '../../../api/categogyApi';
 import {getAllProvinceApii} from '../../../api/provinceApi';
-import {getProductTypesByProvince} from '../../../api/productApi';
+import {
+  getFarmMarketPrices,
+  getProductTypesByProvince,
+  getTodayHarvestSummary,
+} from '../../../api/productApi';
 import {DownIcon} from '../../../assets/icons/Icons';
 import {Colors} from '../../../theme/theme';
 
 const columns = [
-  {title: 'ĐVT', key: 'unit', flex: 1},
+  {title: 'Khu vực', key: 'provinceName', flex: 1},
   {title: 'Giá tại chợ', key: 'marketPrice', flex: 1},
   {title: 'Giá tại Vườn', key: 'farmPrice', flex: 1},
 ];
 
 const columns_2 = [
   {title: 'Ngày tháng', key: 'date', flex: 1},
-  {title: 'Nơi thu thập', key: 'province', flex: 1},
-  {title: 'Số lượng', key: 'quantity', flex: 1},
-];
-
-const initialData_1 = [
-  {
-    id: 1,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '10/7/2025',
-    fruit: 'Xoài',
-    province: 'Long An',
-  },
-  {
-    id: 2,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '11/7/2025',
-    fruit: 'Táo',
-    province: 'HCM',
-  },
-  {
-    id: 3,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '12/7/2025',
-    fruit: 'Mít',
-    province: 'Hà Nội',
-  },
-  {
-    id: 4,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '13/7/2025',
-    fruit: 'Chuối',
-    province: 'Tiền Giang',
-  },
-  {
-    id: 5,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '14/7/2025',
-    fruit: 'Xoài',
-    province: 'An Giang',
-  },
-  {
-    id: 6,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '15/7/2025',
-    fruit: 'Táo',
-    province: 'Long An',
-  },
-];
-
-const initialData_2 = [
-  {
-    id: 1,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '10/7/2025',
-    fruit: 'Xoài',
-    province: 'Long An',
-    quantity: '100T',
-  },
-  {
-    id: 2,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '11/7/2025',
-    fruit: 'Táo',
-    province: 'HCM',
-    quantity: '10T',
-  },
-  {
-    id: 3,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '12/7/2025',
-    fruit: 'Mít',
-    province: 'Hà Nội',
-    quantity: '990T',
-  },
-  {
-    id: 4,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '13/7/2025',
-    fruit: 'Chuối',
-    province: 'Tiền Giang',
-    quantity: '9T',
-  },
-  {
-    id: 5,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '14/7/2025',
-    fruit: 'Xoài',
-    province: 'An Giang',
-    quantity: '14T',
-  },
-  {
-    id: 6,
-    unit: 'KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '15/7/2025',
-    fruit: 'Táo',
-    province: 'Long An',
-    quantity: '1T',
-  },
+  {title: 'Nơi thu thập', key: 'provinceName', flex: 1},
+  {title: 'Số lượng', key: 'quantitySum', flex: 1},
 ];
 
 const AdvancedSearchScreen = () => {
@@ -166,8 +50,9 @@ const AdvancedSearchScreen = () => {
   const [provinceOptions, setProvinceOptions] = useState(['Tất cả']);
   const [productTypeOptions, setProductTypeOptions] = useState(['Tất cả']);
   const [selectedFruitFilter, setSelectedFruitFilter] = useState('Tất cả');
-
   const [allProvinces, setAllProvinces] = useState([]);
+  const [collectionAndYieldData, setCollectionAndYieldData] = useState([]);
+  const [todayHarvestData, setTodayHarvestData] = useState([]);
 
   const [activeFilter, setActiveFilter] = useState({
     index: null,
@@ -175,16 +60,23 @@ const AdvancedSearchScreen = () => {
   });
   const filterRotate = useRef(new Animated.Value(0)).current;
 
+  // Api lấy all tỉnh và mặt hàng
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         // Fetch trái cây
         const categories = await getAllCategories();
+
+        console.log('categories', categories);
+
         const categoryNames = categories.data.map(c => c.name);
         setFruitCategory(['Tất cả', ...categoryNames]);
 
         // Fetch tỉnh
         const province = await getAllProvinceApii();
+
+        console.log('province', province);
+
         const provinceNames = province.data.map(p => p.name);
         setProvinceOptions(['Tất cả', ...provinceNames]);
         setAllProvinces(province.data);
@@ -194,6 +86,76 @@ const AdvancedSearchScreen = () => {
     };
 
     fetchCategories();
+  }, []);
+
+  // Api lấy dữ liệu đã lọc
+  useEffect(() => {
+    const autoFetchFilteredPrices = async () => {
+      const provinceName = selectedFilters['Tỉnh'];
+      const categoryName = selectedFilters['Mặt hàng'];
+      const startDate = selectedFilters['Ngày BĐ'];
+      const endDate = selectedFilters['Ngày KT'];
+
+      if (
+        !provinceName ||
+        !categoryName ||
+        !startDate ||
+        !endDate ||
+        provinceName === 'Tất cả' ||
+        categoryName === 'Tất cả'
+      ) {
+        return;
+      }
+
+      const selectedProvince = allProvinces.find(p => p.name === provinceName);
+      if (!selectedProvince) return;
+
+      try {
+        const allCategories = await getAllCategories();
+        const selectedCategory = allCategories.data.find(
+          c => c.name === categoryName,
+        );
+        if (!selectedCategory) return;
+
+        const payload = {
+          provinceId: selectedProvince._id,
+          categoryId: selectedCategory._id,
+          date: {
+            start: formatDate(startDate),
+            end: formatDate(endDate),
+          },
+        };
+
+        console.log('Gửi API theo filter:', payload);
+
+        const res = await getFarmMarketPrices(payload);
+        setCollectionAndYieldData(res.data);
+      } catch (error) {
+        console.error('Lỗi khi gọi API theo filter:', error.message);
+      }
+    };
+
+    autoFetchFilteredPrices();
+  }, [
+    selectedFilters['Tỉnh'],
+    selectedFilters['Mặt hàng'],
+    selectedFilters['Ngày BĐ'],
+    selectedFilters['Ngày KT'],
+    allProvinces,
+  ]);
+
+  // Api lấy dữ liệu sản lượng
+  useEffect(() => {
+    const fetchTodaySummary = async () => {
+      try {
+        const res = await getTodayHarvestSummary();
+        setTodayHarvestData(res.data);
+      } catch (error) {
+        console.log('Lỗi khi fetch sản lượng hôm nay:', err.message);
+      }
+    };
+
+    fetchTodaySummary();
   }, []);
 
   const getFilterOptions = () => [
@@ -274,85 +236,6 @@ const AdvancedSearchScreen = () => {
     selectedFilters['Ngày KT'],
     allProvinces,
   ]);
-
-  // Filter data based on selected filters
-  const filteredData = initialData_1.filter(item => {
-    // Search text filter
-    const searchMatch =
-      !searchText ||
-      item.fruit.toLowerCase().includes(searchText.toLowerCase());
-
-    // Date range filter
-    const inDateRange = isDateInRange(
-      item.date,
-      selectedFilters['Ngày BĐ'],
-      selectedFilters['Ngày KT'],
-    );
-
-    // Province filter
-    const provinceMatch =
-      !selectedFilters['Tỉnh'] ||
-      selectedFilters['Tỉnh'] === 'Tất cả' ||
-      item.province === selectedFilters['Tỉnh'];
-
-    // Product type filter
-    const fruitMatchHeader =
-      !selectedFilters['Mặt hàng'] ||
-      selectedFilters['Mặt hàng'] === 'Tất cả' ||
-      item.fruit === selectedFilters['Mặt hàng'];
-
-    const fruitMatchBody =
-      !selectedFruitFilter ||
-      selectedFruitFilter === 'Tất cả' ||
-      item.fruit === selectedFruitFilter;
-
-    return (
-      searchMatch &&
-      inDateRange &&
-      provinceMatch &&
-      fruitMatchHeader &&
-      fruitMatchBody
-    );
-  });
-
-  const filteredData_2 = initialData_2.filter(item => {
-    // Search text filter
-    const searchMatch =
-      !searchText ||
-      item.fruit.toLowerCase().includes(searchText.toLowerCase());
-
-    // Date range filter
-    const inDateRange = isDateInRange(
-      item.date,
-      selectedFilters['Ngày BĐ'],
-      selectedFilters['Ngày KT'],
-    );
-
-    // Province filter
-    const provinceMatch =
-      !selectedFilters['Tỉnh'] ||
-      selectedFilters['Tỉnh'] === 'Tất cả' ||
-      item.province === selectedFilters['Tỉnh'];
-
-    // Product type filter
-    const fruitMatchHeader =
-      !selectedFilters['Mặt hàng'] ||
-      selectedFilters['Mặt hàng'] === 'Tất cả' ||
-      item.fruit === selectedFilters['Mặt hàng'];
-
-    const fruitMatchBody =
-      !selectedFruitFilter ||
-      selectedFruitFilter === 'Tất cả' ||
-      item.fruit === selectedFruitFilter;
-
-    return (
-      searchMatch &&
-      inDateRange &&
-      provinceMatch &&
-      fruitMatchHeader &&
-      fruitMatchBody
-    );
-  });
 
   const exportDataToExcel = async (data, tableKey) => {
     if (!data || data.length === 0) {
@@ -497,7 +380,9 @@ const AdvancedSearchScreen = () => {
           contentContainerStyle={{paddingBottom: scale(20)}}
           showsVerticalScrollIndicator={false}>
           <View style={styles.bodyWrapper}>
-            <Text style={styles.title}>Kết quả: {filteredData.length}</Text>
+            <Text style={styles.title}>
+              Kết quả: {collectionAndYieldData.length}
+            </Text>
 
             <View style={styles.buttonContainer}>
               <View
@@ -612,7 +497,7 @@ const AdvancedSearchScreen = () => {
             <View style={styles.tableContainer}>
               <Text style={styles.tableTitle}>Bảng giá</Text>
               <CustomTable
-                data={filteredData}
+                data={collectionAndYieldData}
                 columns={columns}
                 scrollable
                 bodyHeight={scale(200)}
@@ -620,7 +505,7 @@ const AdvancedSearchScreen = () => {
                 rowStyle={{width: '100%'}}
                 containerStyle={{marginBottom: scale(20)}}
                 emptyText={
-                  filteredData.length === 0
+                  collectionAndYieldData.length === 0
                     ? 'Không có dữ liệu phù hợp'
                     : undefined
                 }
@@ -630,8 +515,12 @@ const AdvancedSearchScreen = () => {
                 title={
                   exportingTable === 'table1' ? 'Đang xuất...' : 'Xuất bảng giá'
                 }
-                disabled={exportingTable !== null || filteredData.length === 0}
-                onPress={() => exportDataToExcel(filteredData, 'bang_gia')}
+                disabled={
+                  exportingTable !== null || collectionAndYieldData.length === 0
+                }
+                onPress={() =>
+                  exportDataToExcel(collectionAndYieldData, 'bang_gia')
+                }
                 style={styles.buttonExcel}
               />
             </View>
@@ -640,7 +529,7 @@ const AdvancedSearchScreen = () => {
             <View style={styles.tableContainer}>
               <Text style={styles.tableTitle}>Bảng sản lượng</Text>
               <CustomTable
-                data={filteredData_2}
+                data={todayHarvestData}
                 columns={columns_2}
                 scrollable
                 bodyHeight={scale(200)}
@@ -648,7 +537,7 @@ const AdvancedSearchScreen = () => {
                 rowStyle={{width: '100%'}}
                 containerStyle={{marginBottom: scale(20)}}
                 emptyText={
-                  filteredData_2.length === 0
+                  todayHarvestData.length === 0
                     ? 'Không có dữ liệu phù hợp'
                     : undefined
                 }
@@ -661,10 +550,10 @@ const AdvancedSearchScreen = () => {
                     : 'Xuất bảng sản lượng'
                 }
                 disabled={
-                  exportingTable !== null || filteredData_2.length === 0
+                  exportingTable !== null || todayHarvestData.length === 0
                 }
                 onPress={() =>
-                  exportDataToExcel(filteredData_2, 'bang_san_luong')
+                  exportDataToExcel(todayHarvestData, 'bang_san_luong')
                 }
                 style={styles.buttonExcel}
               />

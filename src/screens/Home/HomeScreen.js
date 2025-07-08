@@ -1,12 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {
-  View,
-  ScrollView,
-  Text,
-  StatusBar,
-  ActivityIndicator,
-  FlatList,
-} from 'react-native';
+import {View, Text, StatusBar, ActivityIndicator, FlatList} from 'react-native';
 
 import WalletList from './components/WalletList';
 import FruitPriceList from './components/FruitPriceList';
@@ -38,12 +31,9 @@ const HomeScreen = () => {
     Tỉnh: 'Tất cả',
     'Số lượng': 'Tất cả',
   });
-
   const [walletData, setWalletData] = useState([]);
   const [productList, setProductList] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  console.log('walletData', walletData);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,7 +59,7 @@ const HomeScreen = () => {
 
         setWalletData(merged);
       } catch (err) {
-        console.error('Lỗi khi tải dữ liệu:', err.message);
+        console.log('Lỗi khi tải dữ liệu:', err.message);
       } finally {
         setLoading(false);
       }
