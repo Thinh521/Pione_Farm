@@ -12,37 +12,38 @@ export default StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: scale(16),
+    paddingHorizontal: scale(20),
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: scale(40),
   },
   title: {
     fontSize: FontSizes.huge,
     fontWeight: FontWeights.bold,
-    marginBottom: 8,
+    marginBottom: scale(6),
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: FontSizes.regular,
+    color: Colors.title,
+    fontSize: FontSizes.small,
     textAlign: 'center',
-    lineHeight: 24,
-    paddingHorizontal: 20,
+    lineHeight: scale(20),
+    paddingHorizontal: scale(20),
   },
   form: {
     width: '100%',
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: scale(20),
     position: 'relative',
   },
   input: {
     backgroundColor: Colors.white,
   },
   inputError: {
-    borderColor: Colors.red,
     borderWidth: 1,
+    borderColor: Colors.red,
   },
   errorText: {
     color: Colors.red,

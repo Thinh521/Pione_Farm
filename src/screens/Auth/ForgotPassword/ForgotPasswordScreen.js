@@ -22,8 +22,6 @@ import {
 import {VALIDATION_RULES} from '../../../validations/authValidations';
 import {verifyOtp} from '../../../api/verifyOtpApi';
 
-const {width, height} = Dimensions.get('window');
-
 const ForgotPasswordScreen = ({navigation}) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -122,7 +120,7 @@ const ForgotPasswordScreen = ({navigation}) => {
         setTimer(60);
         setCanResend(false);
         setResendCount(0);
-        setUserId(response.data?.userId || null); 
+        setUserId(response.data?.userId || null);
         setContactType(isEmail ? 'email' : 'phone');
         showMessage({
           message: 'Thành công',

@@ -18,6 +18,7 @@ import LanguageScreen from '../screens/Settings/Language/LanguageScreen';
 import TestScreen from '../screens/Test/TestScreen';
 import FruitListScreen from '../screens/FruitList/FruitList';
 import CustomHeader from '../components/CustomNavigation/CustomHeader';
+import WalletAllScreen from '../screens/Home/WalletAll/WalletAllScreen';
 
 const routerNoBottomTab = [
   {
@@ -183,6 +184,13 @@ const routerNoBottomTab = [
     component: LanguageScreen,
     options: ({navigation}) => ({
       header: () => <CustomHeader title="Ngôn ngữ" navigation={navigation} />,
+    }),
+  },
+  {
+    name: 'WalletAll',
+    component: WalletAllScreen,
+    options: ({navigation}) => ({
+      header: () => <CustomHeader title="Thị trường" navigation={navigation} />,
     }),
   },
 ];

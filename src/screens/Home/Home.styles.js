@@ -20,8 +20,13 @@ export default StyleSheet.create({
     paddingBottom: scale(90),
   },
   title: {
-    paddingBottom: scale(20),
     fontSize: FontSizes.xlarge,
     fontWeight: FontWeights.semiBold,
+  },
+  box: {
+    marginBottom: scale(16),
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
   },
 });

@@ -1,5 +1,12 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {View, Text, StatusBar, ActivityIndicator, FlatList} from 'react-native';
+import {
+  View,
+  Text,
+  StatusBar,
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 
 import WalletList from './components/WalletList';
 import FruitPriceList from './components/FruitPriceList';
@@ -8,6 +15,7 @@ import SearchAndFilterBar from '../../components/SearchAndFilterBar/SearchAndFil
 import styles from './Home.styles';
 import {Colors} from '../../theme/theme';
 import {getProductPriceStats, getProvinceProducts} from '~/api/homeApi';
+import {useNavigation} from '@react-navigation/core';
 
 const FILTER_OPTIONS = [
   {
@@ -25,6 +33,8 @@ const FILTER_OPTIONS = [
 ];
 
 const HomeScreen = () => {
+  const navigation = useNavigation();
+
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({
     Giá: 'Tất cả',
@@ -113,6 +123,12 @@ const HomeScreen = () => {
     return data;
   }, [searchText, selectedFilters, walletData]);
 
+  const navigateToWalletAll = () => {
+    navigation.navigate('NoBottomTab', {
+      screen: 'WalletAll',
+    });
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" style={{marginTop: 50}} />;
   }
@@ -142,7 +158,14 @@ const HomeScreen = () => {
           showsVerticalScrollIndicator={false}
           renderItem={() => (
             <>
-              <Text style={styles.title}>Danh sách</Text>
+              <View style={styles.box}>
+                <Text style={styles.title}>Danh sách</Text>
+                <TouchableOpacity
+                  style={styles.buttonMore}
+                  onPress={navigateToWalletAll}>
+                  <Text>Xem tất cả</Text>
+                </TouchableOpacity>
+              </View>
               <WalletList data={filteredWalletData} />
               <FruitPriceList products={productList} />
             </>
