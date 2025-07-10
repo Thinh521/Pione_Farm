@@ -4,6 +4,7 @@ import {View, Text, StyleSheet, FlatList} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import LineChartWrapper from '../../../components/LineChart/LineChartWrapper';
 import {scale} from '../../../utils/scaling';
+import {formatCurrencyVND} from '../../../utils/format';
 
 const WalletItem = ({
   images,
@@ -54,10 +55,10 @@ const WalletItem = ({
 
       {/* Right Column - Price */}
       <View style={styles.columnRight}>
-        <Text style={styles.price}>${marketPrice}</Text>
+        <Text style={styles.price}>{formatCurrencyVND(marketPrice)}</Text>
         <Text style={[styles.change, {color: isUp ? '#10b981' : '#ef4444'}]}>
           {isUp ? '+' : ''}
-          {priceChange}
+          {formatCurrencyVND(priceChange)}
         </Text>
       </View>
     </View>
@@ -65,8 +66,6 @@ const WalletItem = ({
 };
 
 const WalletList = ({data}) => {
-  console.log('data', data);
-
   return (
     <View style={styles.container}>
       <FlatList

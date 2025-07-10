@@ -13,6 +13,8 @@ const WalletListSkeleton = ({itemCount = 3}) => {
             flexDirection: 'row',
             alignItems: 'center',
             marginBottom: scale(16),
+            marginTop: scale(8),
+            marginBottom: scale(15),
           }}>
           <View
             style={{

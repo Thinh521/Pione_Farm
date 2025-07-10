@@ -19,6 +19,7 @@ import TestScreen from '../screens/Test/TestScreen';
 import FruitListScreen from '../screens/FruitList/FruitList';
 import CustomHeader from '../components/CustomNavigation/CustomHeader';
 import WalletAllScreen from '../screens/Home/WalletAll/WalletAllScreen';
+import ChatbotScreen from '../screens/Chatbot/ChatbotScreen';
 
 const routerNoBottomTab = [
   {
@@ -192,6 +193,15 @@ const routerNoBottomTab = [
     options: ({navigation}) => ({
       header: () => <CustomHeader title="Thị trường" navigation={navigation} />,
     }),
+  },
+  {
+    name: 'Chatbot',
+    component: ChatbotScreen,
+    options: {
+      title: 'Chat bot',
+      headerShown: false,
+      animation: 'slide_from_bottom',
+    },
   },
 ];
 

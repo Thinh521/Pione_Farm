@@ -1,12 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {
-  View,
-  Text,
-  StatusBar,
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Text, StatusBar, FlatList, TouchableOpacity} from 'react-native';
 
 import WalletList from './components/WalletList';
 import FruitPriceList from './components/FruitPriceList';
@@ -14,22 +7,19 @@ import SearchAndFilterBar from '../../components/SearchAndFilterBar/SearchAndFil
 
 import styles from './Home.styles';
 import {Colors} from '../../theme/theme';
-import {getProductPriceStats, getProvinceProducts} from '~/api/homeApi';
 import {useNavigation} from '@react-navigation/core';
+import useWalletStore from '~/store/useWalletStore';
+import WalletListSkeleton from '../../components/Skeleton/WalletListSkeleton';
+import ChatBot from '../../components/ChatBot/ChatBot';
+import {scale} from '../../utils/scaling';
 
 const FILTER_OPTIONS = [
-  {
-    label: 'Giá',
-    options: ['Tất cả', 'Tăng dần', 'Giảm dần'],
-  },
+  {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
   {
     label: 'Tỉnh',
     options: ['Tất cả', 'Long An', 'Tiền Giang', 'HCM', 'Hà Nội', 'An Giang'],
   },
-  {
-    label: 'Số lượng',
-    options: ['Tất cả', 'Dưới 100', '100 - 500', 'Trên 500'],
-  },
+  {label: 'Số lượng', options: ['Tất cả', 'Dưới 100', '100 - 500', 'Trên 500']},
 ];
 
 const HomeScreen = () => {
@@ -41,79 +31,58 @@ const HomeScreen = () => {
     Tỉnh: 'Tất cả',
     'Số lượng': 'Tất cả',
   });
-  const [walletData, setWalletData] = useState([]);
-  const [productList, setProductList] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const {walletData, productList, loading, fetchWalletData, hasFetched} =
+    useWalletStore();
+
+  console.log('walletData', walletData);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await getProvinceProducts();
-        const products = res?.data || [];
-        setProductList(products);
-
-        const productIds = products.map(p => p.productId || p._id);
-
-        const provinceId = products.map(p => p.provinceId || p._id);
-
-        const priceRes = await getProductPriceStats(productIds, provinceId);
-        const stats = priceRes?.data || [];
-
-        const merged = products.map(p => {
-          const match = stats.find(
-            s => s.productId === p.productId || s.productId === p._id,
-          );
-          return {...p, ...match};
-        });
-
-        setWalletData(merged);
-      } catch (err) {
-        console.log('Lỗi khi tải dữ liệu:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    if (!hasFetched) {
+      fetchWalletData();
+    }
   }, []);
 
   const filteredWalletData = useMemo(() => {
     let data = [...walletData];
 
-    // Search
     if (searchText.trim()) {
       const keyword = searchText.toLowerCase();
-      data = data.filter(
-        item =>
-          item.name?.toLowerCase().includes(keyword) ||
-          item.symbol?.toLowerCase().includes(keyword),
-      );
+      data = data.filter(item => {
+        const productName = item.productName?.toLowerCase() || '';
+        const provinceName = item.provinceName?.toLowerCase() || '';
+        const typeName = item.typeName?.toLowerCase() || '';
+
+        return (
+          productName.includes(keyword) ||
+          provinceName.includes(keyword) ||
+          typeName.includes(keyword)
+        );
+      });
     }
 
-    // Sort by price
     const priceFilter = selectedFilters['Giá'];
     if (priceFilter === 'Tăng dần' || priceFilter === 'Giảm dần') {
       data.sort((a, b) => {
-        const priceA = parseFloat((a.price || '0').replace(/,/g, ''));
-        const priceB = parseFloat((b.price || '0').replace(/,/g, ''));
+        const priceA = parseFloat(
+          (a.marketPrice || '0').toString().replace(/,/g, ''),
+        );
+        const priceB = parseFloat(
+          (b.marketPrice || '0').toString().replace(/,/g, ''),
+        );
         return priceFilter === 'Tăng dần' ? priceA - priceB : priceB - priceA;
       });
     }
 
-    // Filter by province
     const province = selectedFilters['Tỉnh'];
     if (province !== 'Tất cả') {
-      data = data.filter(
-        item => item.province === province || item.name === province,
-      );
+      data = data.filter(item => item.provinceName === province);
     }
 
-    // Filter by quantity
     const quantity = selectedFilters['Số lượng'];
     if (quantity !== 'Tất cả') {
       data = data.filter(item => {
-        const qty = item.quantity || 0;
+        const qty = parseFloat(item.quantity || 0);
         if (quantity === 'Dưới 100') return qty < 100;
         if (quantity === '100 - 500') return qty >= 100 && qty <= 500;
         return qty > 500;
@@ -129,13 +98,10 @@ const HomeScreen = () => {
     });
   };
 
-  if (loading) {
-    return <ActivityIndicator size="large" style={{marginTop: 50}} />;
-  }
-
   return (
     <>
       <StatusBar backgroundColor={Colors.headerBack} barStyle="light-content" />
+
       <View style={styles.container}>
         <View style={styles.header}>
           <SearchAndFilterBar
@@ -166,11 +132,17 @@ const HomeScreen = () => {
                   <Text>Xem tất cả</Text>
                 </TouchableOpacity>
               </View>
-              <WalletList data={filteredWalletData} />
+              {loading ? (
+                <WalletListSkeleton itemCount={5} />
+              ) : (
+                <WalletList data={filteredWalletData.slice(0, 5)} />
+              )}
               <FruitPriceList products={productList} />
             </>
           )}
         />
+
+        <ChatBot style={{bottom: scale(100)}} />
       </View>
     </>
   );

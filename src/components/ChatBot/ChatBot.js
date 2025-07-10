@@ -3,12 +3,21 @@ import {StyleSheet, TouchableOpacity} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {scale} from '../../utils/scaling';
 import Images from '../../assets/images/Images';
+import {useNavigation} from '@react-navigation/core';
 
-const ChatBot = ({style, onPress}) => {
+const ChatBot = ({style}) => {
+  const navigation = useNavigation();
+
+  const navigateToChatbot = () => {
+    navigation.navigate('NoBottomTab', {
+      screen: 'Chatbot',
+    });
+  };
+
   return (
     <TouchableOpacity
       style={[styles.chatBot, style]}
-      onPress={onPress}
+      onPress={navigateToChatbot}
       activeOpacity={0.8}>
       <FastImage
         source={Images.chat_bot}
