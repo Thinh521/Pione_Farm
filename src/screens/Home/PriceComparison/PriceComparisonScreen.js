@@ -1,15 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  PermissionsAndroid,
-  Platform,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
-import RNFS from 'react-native-fs';
-import XLSX from 'xlsx';
+import {ActivityIndicator, Alert, ScrollView, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {DownIcon} from '~/assets/icons/Icons';
@@ -22,89 +12,38 @@ import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterB
 import CustomTable from '~/components/CustomTable/CustomTable';
 import ChatBot from '~/components/ChatBot/ChatBot';
 import Button from '~/components/ui/Button/ButtonComponent';
-import {getAnalysisAi} from '../../../api/trendApi';
-
-const FILTER_OPTIONS = [
-  {label: 'Ngày BĐ', options: []},
-  {label: 'Ngày KT', options: []},
-  {
-    label: 'Tỉnh',
-    options: ['Tất cả', 'Long An', 'Tiền Giang', 'HCM', 'Hà Nội', 'An Giang'],
-  },
-];
-
-const FRUIT_OPTIONS = ['Tất cả', 'Xoài', 'Táo', 'Mít', 'Chuối'];
+import {getAnalysisAi} from '~/api/trendApi';
+import {useHarvestFilter} from '~/hook/useHarvestFilter';
 
 const columns = [
-  {title: 'ĐVT', key: 'unit', flex: 1},
+  {title: 'Khu vực', key: 'provinceName', flex: 1},
   {title: 'Giá tại chợ', key: 'marketPrice', flex: 1},
   {title: 'Giá tại Vườn', key: 'farmPrice', flex: 1},
 ];
 
-const initialData = [
-  {
-    id: 1,
-    unit: '10K/KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '10/7/2025',
-    fruit: 'Xoài',
-    province: 'Long An',
-  },
-  {
-    id: 2,
-    unit: '10K/KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '11/7/2025',
-    fruit: 'Táo',
-    province: 'HCM',
-  },
-  {
-    id: 3,
-    unit: '10K/KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '12/7/2025',
-    fruit: 'Mít',
-    province: 'Hà Nội',
-  },
-  {
-    id: 4,
-    unit: '10K/KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '13/7/2025',
-    fruit: 'Chuối',
-    province: 'Tiền Giang',
-  },
-  {
-    id: 5,
-    unit: '10K/KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '14/7/2025',
-    fruit: 'Xoài',
-    province: 'An Giang',
-  },
-  {
-    id: 6,
-    unit: '10K/KG',
-    marketPrice: '15K/KG',
-    farmPrice: '10K/KG',
-    date: '15/7/2025',
-    fruit: 'Táo',
-    province: 'Long An',
-  },
-];
-
 const PriceComparisonScreen = () => {
-  const [searchText, setSearchText] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    fruitCategory,
+    provinceOptions,
+    searchText,
+    setSearchText,
+    selectedFilters,
+    handleFilterSelect,
+    collectionAndYieldData,
+    isLoading,
+    exportDataToExcel,
+  } = useHarvestFilter();
+
   const [isExporting, setIsExporting] = useState(false);
   const [analysisData, setAnalysisData] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const getFilterOptions = () => [
+    {label: 'Ngày BĐ', options: []},
+    {label: 'Ngày KT', options: []},
+    {label: 'Tỉnh', options: provinceOptions},
+    {label: 'Mặt hàng', options: fruitCategory},
+  ];
 
   useEffect(() => {
     const fetchAnalysisAi = async () => {
@@ -113,106 +52,16 @@ const PriceComparisonScreen = () => {
         setAnalysisData(result.data || []);
       } catch (error) {
         setErrorMsg(error.message);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchAnalysisAi();
   }, []);
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      
-    }
-  }, [])
-
-  const parseDate = date => {
+  const parseDate = (date: string) => {
     if (!date) return null;
     const [day, month, year] = date.split('/');
-    return new Date(year, month - 1, day);
-  };
-
-  const filteredData = initialData.filter(item => {
-    const searchMatch = item.fruit
-      .toLowerCase()
-      .includes(searchText.toLowerCase());
-
-    const startDate = parseDate(selectedFilters['Ngày BĐ']);
-    const endDate = parseDate(selectedFilters['Ngày KT']);
-    const itemDate = parseDate(item.date);
-    const inDateRange =
-      (!startDate || itemDate >= startDate) &&
-      (!endDate || itemDate <= endDate);
-
-    const provinceMatch =
-      !selectedFilters['Tỉnh'] ||
-      selectedFilters['Tỉnh'] === 'Tất cả' ||
-      item.province === selectedFilters['Tỉnh'];
-
-    const fruitMatch =
-      !selectedFilters['Mặt hàng'] ||
-      selectedFilters['Mặt hàng'] === 'Tất cả' ||
-      item.fruit === selectedFilters['Mặt hàng'];
-
-    return searchMatch && inDateRange && provinceMatch && fruitMatch;
-  });
-
-  const handleFilterSelect = (type, value) => {
-    setIsLoading(true);
-    setSelectedFilters(prev => ({...prev, [type]: value}));
-    setTimeout(() => setIsLoading(false), 500);
-  };
-
-  const exportDataToExcel = async data => {
-    if (!data || data.length === 0) {
-      Alert.alert('Không có dữ liệu để xuất!');
-      return;
-    }
-
-    try {
-      setIsExporting(true);
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
-      const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
-
-      const toBinary = str =>
-        str
-          .split('')
-          .map(c => String.fromCharCode(c.charCodeAt(0)))
-          .join('');
-
-      const fileName = `ket_qua_gia_${Date.now()}.xlsx`;
-      const path =
-        Platform.OS === 'android'
-          ? `${RNFS.DownloadDirectoryPath}/${fileName}`
-          : `${RNFS.DocumentDirectoryPath}/${fileName}`;
-
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: 'Cấp quyền lưu file',
-            message: 'Ứng dụng cần quyền để lưu file Excel.',
-            buttonPositive: 'Đồng ý',
-          },
-        );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Bạn chưa cấp quyền lưu file!');
-          return;
-        }
-      }
-
-      await RNFS.writeFile(path, toBinary(wbout), 'ascii');
-      Alert.alert('Xuất file thành công!', `File lưu tại:\n${path}`);
-    } catch (error) {
-      console.error('Lỗi xuất Excel:', error);
-      Alert.alert('Đã xảy ra lỗi khi xuất file Excel!');
-    } finally {
-      setIsExporting(false);
-    }
+    return new Date(+year, +month - 1, +day);
   };
 
   if (isLoading) return <ActivityIndicator size="large" color="#000" />;
@@ -222,20 +71,22 @@ const PriceComparisonScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <SearchAndFilterBar
+          showProductButton
           searchText={searchText}
           setSearchText={setSearchText}
-          filterOptions={FILTER_OPTIONS}
-          itemOptions={FRUIT_OPTIONS}
-          showProductButton
-          placeholder="Tìm kiếm trái cây"
+          selectedFilters={selectedFilters}
           onFilterSelect={handleFilterSelect}
+          filterOptions={getFilterOptions()}
+          placeholder="Tìm kiếm trái cây"
         />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.bodyWrapper}>
           <View style={styles.contentContainer}>
-            <Text style={styles.title}>Kết quả: {filteredData.length}</Text>
+            <Text style={styles.title}>
+              Kết quả: {collectionAndYieldData.length}
+            </Text>
 
             <View style={styles.buttonContainer}>
               <Button.Select
@@ -253,9 +104,9 @@ const PriceComparisonScreen = () => {
               />
             </View>
 
-            {filteredData.length > 0 ? (
+            {collectionAndYieldData.length > 0 ? (
               <CustomTable
-                data={filteredData}
+                data={collectionAndYieldData}
                 columns={columns}
                 scrollable
                 bodyHeight={scale(200)}
@@ -273,7 +124,11 @@ const PriceComparisonScreen = () => {
           <Button.Main
             title={isExporting ? 'Đang xuất...' : 'Xuất Excel'}
             disabled={isExporting}
-            onPress={() => exportDataToExcel(filteredData)}
+            onPress={async () => {
+              setIsExporting(true);
+              await exportDataToExcel(collectionAndYieldData);
+              setIsExporting(false);
+            }}
             style={styles.buttonExcel}
           />
 

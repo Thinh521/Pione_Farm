@@ -2,8 +2,6 @@ import {
   ScrollView,
   Text,
   View,
-  Alert,
-  PermissionsAndroid,
   Platform,
   TouchableOpacity,
   Animated,
@@ -270,9 +268,7 @@ const AdvancedSearchScreen = () => {
                     ? 'Đang xuất...'
                     : 'Xuất bảng giá'
                 }
-                disabled={
-                  exportingTable !== null || collectionAndYieldData.length === 0
-                }
+                disabled={collectionAndYieldData.length === 0}
                 onPress={() =>
                   exportDataToExcel(collectionAndYieldData, 'bang_gia')
                 }
@@ -304,9 +300,7 @@ const AdvancedSearchScreen = () => {
                     ? 'Đang xuất...'
                     : 'Xuất bảng sản lượng'
                 }
-                disabled={
-                  exportingTable !== null || todayHarvestData?.length === 0
-                }
+                disabled={todayHarvestData?.length === 0}
                 onPress={() =>
                   exportDataToExcel(todayHarvestData, 'bang_san_luong')
                 }
