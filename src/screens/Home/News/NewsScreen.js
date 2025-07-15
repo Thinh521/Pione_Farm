@@ -1,11 +1,11 @@
-import React, {useState, useMemo} from 'react';
+import React, {useState, useMemo, useEffect} from 'react';
 import {FlatList, Text, View} from 'react-native';
-import Images from '../../../assets/images/Images';
 import styles from './News.styles';
 import SearchAndFilterBar from '../../../components/SearchAndFilterBar/SearchAndFilterBar';
 import ChatBot from '../../../components/ChatBot/ChatBot';
 import {scale} from '../../../utils/scaling';
 import NewsList from '../../../components/NewsCard/NewsList';
+import useNewsStore from '../../../store/useNewsStore';
 
 const FILTER_OPTIONS = [
   {
@@ -31,58 +31,18 @@ const FILTER_OPTIONS = [
   },
 ];
 
-const DROPDOWN_OPTIONS = [
-  {label: 'Tra cứu tổng hợp', route: 'PriceComparison'},
-  {label: 'Tra cứu nâng cao', route: 'AdvancedSearch'},
-  {label: 'Giới thiệu chung', route: 'Intro'},
-  {label: 'Thị trường trong nước và ngoài nước', route: 'Market'},
-  {label: 'Tin tức', route: 'News'},
-];
-
-const myNewsData = [
-  {
-    id: '1',
-    title: 'Giới thiệu Trung tâm Khuyến nông Vĩnh Long',
-    description:
-      'Trung tâm Khuyến nông Vĩnh Long là tổ chức sự nghiệp công lập...',
-    image: Images.post_1,
-    category: 'Giới thiệu',
-    date: '26/06/2025',
-    readTime: '5 phút đọc',
-    price: 0,
-    province: 'Vĩnh Long',
-    quantity: 0,
-  },
-  {
-    id: '2',
-    title: 'Kỹ thuật trồng lúa bền vững',
-    description: 'Hướng dẫn các kỹ thuật trồng lúa tiên tiến...',
-    image: Images.post_1,
-    category: 'Kỹ thuật',
-    date: '25/06/2025',
-    readTime: '7 phút đọc',
-    price: 300000,
-    province: 'An Giang',
-    quantity: 50,
-  },
-  {
-    id: '3',
-    title: 'Chăn nuôi heo sạch theo tiêu chuẩn VietGAP',
-    description: 'Quy trình chăn nuôi heo sạch đạt tiêu chuẩn VietGAP...',
-    image: Images.post_1,
-    category: 'Chăn nuôi',
-    date: '24/06/2025',
-    readTime: '6 phút đọc',
-    price: 2000000,
-    province: 'Đồng Nai',
-    quantity: 20,
-  },
-];
-
 const NewsScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  const {newsData, loading, fetchNewsData, hasFetched, error} = useNewsStore();
+
+  useEffect(() => {
+    if (!hasFetched) {
+      fetchNewsData();
+    }
+  }, []);
 
   const handleFilterSelect = (type, value) => {
     setIsLoading(true);
@@ -91,16 +51,14 @@ const NewsScreen = () => {
   };
 
   const filterData = useMemo(() => {
-    let data = [...myNewsData];
+    let data = [...newsData];
 
-    // Search
     if (searchText) {
       data = data.filter(item =>
         item.title.toLowerCase().includes(searchText.toLowerCase()),
       );
     }
 
-    // Filter: Giá
     const priceFilter = selectedFilters['Giá'];
     if (priceFilter === 'Tăng dần') {
       data.sort((a, b) => a.price - b.price);
@@ -108,13 +66,11 @@ const NewsScreen = () => {
       data.sort((a, b) => b.price - a.price);
     }
 
-    // Filter: Tỉnh
     const provinceFilter = selectedFilters['Tỉnh'];
     if (provinceFilter && provinceFilter !== 'Tất cả') {
       data = data.filter(item => item.province === provinceFilter);
     }
 
-    // Filter: Số lượng
     const quantityFilter = selectedFilters['Số lượng'];
     if (quantityFilter === 'Dưới 100') {
       data = data.filter(item => item.quantity < 100);
@@ -125,7 +81,7 @@ const NewsScreen = () => {
     }
 
     return data;
-  }, [searchText, selectedFilters]);
+  }, [searchText, selectedFilters, newsData]);
 
   return (
     <View style={styles.container}>
@@ -134,7 +90,6 @@ const NewsScreen = () => {
           searchText={searchText}
           setSearchText={setSearchText}
           filterOptions={FILTER_OPTIONS}
-          dropdownOptions={DROPDOWN_OPTIONS}
           placeholder="Tìm kiếm thông tin"
           onFilterSelect={handleFilterSelect}
         />
@@ -142,46 +97,38 @@ const NewsScreen = () => {
 
       <View style={styles.main}>
         <FlatList
-          data={[{}]} // dummy to render sections
+          data={[{}]}
           keyExtractor={(_, index) => index.toString()}
           showsVerticalScrollIndicator={false}
-          renderItem={() => (
-            <View>
-              <Text style={styles.sectionTitle}>Tin mới</Text>
-              <NewsList data={filterData} />
+          contentContainerStyle={{
+            marginTop: scale(20),
+          }}
+          renderItem={() => {
+            const sortedData = [...filterData]
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+              .slice(0, 5);
 
-              <Text style={styles.sectionTitle}>Tin trong nước</Text>
-              <NewsList
-                data={filterData.filter(item =>
-                  [
-                    'Vĩnh Long',
-                    'An Giang',
-                    'Đồng Nai',
-                    'HCM',
-                    'Hà Nội',
-                    'Tiền Giang',
-                    'Long An',
-                  ].includes(item.province),
-                )}
-              />
+            const domesticNews = sortedData
+              .filter(item => item.type === 'trongnuoc')
+              .slice(0, 5);
 
-              <Text style={styles.sectionTitle}>Tin ngoài nước</Text>
-              <NewsList
-                data={filterData.filter(
-                  item =>
-                    ![
-                      'Vĩnh Long',
-                      'An Giang',
-                      'Đồng Nai',
-                      'HCM',
-                      'Hà Nội',
-                      'Tiền Giang',
-                      'Long An',
-                    ].includes(item.province),
-                )}
-              />
-            </View>
-          )}
+            const internationalNews = sortedData
+              .filter(item => item.type === 'ngoainuoc')
+              .slice(0, 5);
+
+            return (
+              <View>
+                <Text style={styles.sectionTitle}>Tin mới</Text>
+                <NewsList data={sortedData} />
+
+                <Text style={styles.sectionTitle}>Tin trong nước</Text>
+                <NewsList data={domesticNews} />
+
+                <Text style={styles.sectionTitle}>Tin ngoài nước</Text>
+                <NewsList data={internationalNews} />
+              </View>
+            );
+          }}
         />
       </View>
 

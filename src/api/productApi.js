@@ -37,6 +37,7 @@ export const getFarmMarketPrices = async ({
   categoryId,
   provinceId,
   date,
+  typeId,
 } = {}) => {
   try {
     const payload = {};
@@ -44,6 +45,7 @@ export const getFarmMarketPrices = async ({
     if (categoryId) payload.categoryId = categoryId;
     if (provinceId) payload.provinceId = provinceId;
     if (date?.start && date?.end) payload.date = date;
+    if (typeId) payload.typeId = typeId;
 
     const res = await api.post('/api/statistical/farm-market-price', payload);
 

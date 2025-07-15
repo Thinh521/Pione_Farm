@@ -10,7 +10,7 @@ export default StyleSheet.create({
   header: {
     marginTop: scale(20),
     borderBottomWidth: 1,
-    borderColor: '#b0ffce',
+    borderColor: Colors.border_2,
   },
   main: {
     marginTop: scale(20),
@@ -18,13 +18,13 @@ export default StyleSheet.create({
   title: {
     fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
-    marginBottom: scale(10),
+    marginBottom: scale(4),
   },
   row: {
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    paddingVertical: 10,
+    paddingVertical: scale(10),
     borderBottomColor: '#f3f4f6',
     borderBottomWidth: 1,
   },
@@ -40,26 +40,26 @@ export default StyleSheet.create({
     alignItems: 'flex-end',
   },
   itemName: {
-    fontSize: 14,
-    color: '#1f2937',
-    fontWeight: '500',
+    color: Colors.title,
+    fontSize: FontSizes.small,
+    fontWeight: FontWeights.semiBold,
   },
   unit: {
-    fontSize: 12,
+    fontSize: FontSizes.xsmall,
     backgroundColor: '#dbeafe',
     color: '#1e3a8a',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingHorizontal: scale(8),
+    paddingVertical: scale(4),
+    borderRadius: scale(999),
     overflow: 'hidden',
   },
   price: {
-    fontSize: 16,
-    fontWeight: 'bold',
     color: '#059669',
+    fontSize: FontSizes.medium,
+    fontWeight: FontWeights.semiBold,
   },
   currency: {
-    fontSize: 10,
     color: '#6b7280',
+    fontSize: FontSizes.xsmall,
   },
 });

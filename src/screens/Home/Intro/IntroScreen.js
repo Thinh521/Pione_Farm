@@ -1,53 +1,17 @@
-import React, {useRef, useState, useEffect} from 'react';
-import {Animated, FlatList, Text, View, ActivityIndicator} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {View, Text, FlatList, Animated, ActivityIndicator} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import SearchAndFilterBar from '../../../components/SearchAndFilterBar/SearchAndFilterBar';
-import ChatBot from '../../../components/ChatBot/ChatBot';
-import Images from '../../../assets/images/Images';
+import {API_BASE_URL} from '@env';
+import {useInfiniteQuery} from '@tanstack/react-query';
+
+import {getNewsPaginated} from '../../../api/newsApi';
+import {getAccessToken} from '../../../utils/storage/tokenStorage';
 import styles from './Intro.styles';
 import {scale} from '../../../utils/scaling';
 
-const NEWS_DATA = [
-  {
-    id: '1',
-    title: 'Giới thiệu Trung tâm Khuyến nông Vĩnh Long',
-    description:
-      'Trung tâm Khuyến nông Vĩnh Long là tổ chức sự nghiệp công lập trực thuộc Sở Nông nghiệp và Môi trường.',
-    image: Images.post_1,
-    category: 'Giới thiệu',
-    date: '26/06/2025',
-    readTime: 5,
-  },
-  {
-    id: '2',
-    title: 'Kỹ thuật trồng lúa bền vững',
-    description:
-      'Hướng dẫn các kỹ thuật trồng lúa tiên tiến, thân thiện với môi trường.',
-    image: Images.post_1,
-    category: 'Kỹ thuật',
-    date: '25/06/2025',
-    readTime: 7,
-  },
-  {
-    id: '3',
-    title: 'Chăn nuôi heo sạch theo tiêu chuẩn VietGAP',
-    description: 'Quy trình chăn nuôi heo sạch đạt tiêu chuẩn VietGAP.',
-    image: Images.post_1,
-    category: 'Chăn nuôi',
-    date: '24/06/2025',
-    readTime: 6,
-  },
-  {
-    id: '4',
-    title: 'Phát triển nuôi trồng thủy sản bền vững',
-    description:
-      'Mô hình nuôi trồng thủy sản thông minh, ứng dụng công nghệ cao.',
-    image: Images.post_1,
-    category: 'Thủy sản',
-    date: '23/06/2025',
-    readTime: 8,
-  },
-];
+import SearchAndFilterBar from '../../../components/SearchAndFilterBar/SearchAndFilterBar';
+import ChatBot from '../../../components/ChatBot/ChatBot';
+import {removeVietnameseTones} from '../../../utils/normalize';
 
 const FILTER_OPTIONS = [
   {label: 'Ngày BĐ', options: []},
@@ -58,21 +22,46 @@ const FILTER_OPTIONS = [
   },
 ];
 
-const DROPDOWN_OPTIONS = [
-  {label: 'Tra cứu tổng hợp', route: 'PriceComparison'},
-  {label: 'Tra cứu tổng nâng cao', route: 'AdvancedSearch'},
-  {label: 'Giới thiệu chung', route: 'Intro'},
-  {label: 'Thị trường trong nước và ngoài nước', route: 'Market'},
-  {label: 'Tin tức', route: 'News'},
-];
-
 const IntroScreen = () => {
+  const [searchText, setSearchText] = useState('');
+  const [selectedFilters, setSelectedFilters] = useState({});
+  const [filtering, setFiltering] = useState(false);
+
   const animatedValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
 
-  const [searchText, setSearchText] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const accessToken = getAccessToken();
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ['news', selectedFilters['type'], accessToken],
+    queryFn: ({pageParam = 1}) =>
+      getNewsPaginated({
+        pageParam,
+        queryKey: ['news', selectedFilters['type'], accessToken],
+      }),
+    getNextPageParam: lastPage => {
+      if (lastPage.currentPage < lastPage.totalPages) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
+    },
+    enabled: !!accessToken,
+  });
+
+  const newsData = data?.pages.flatMap(page => page.data) || [];
+
+  console.log('newsData', newsData);
+
+  useEffect(() => {
+    refetch();
+  }, [searchText, selectedFilters]);
 
   useEffect(() => {
     Animated.timing(animatedValue, {
@@ -99,31 +88,45 @@ const IntroScreen = () => {
   };
 
   const handleFilterSelect = (type, value) => {
-    setIsLoading(true);
+    setFiltering(true);
     setSelectedFilters(prev => ({...prev, [type]: value}));
-    setTimeout(() => setIsLoading(false), 300);
+    setTimeout(() => setFiltering(false), 300);
   };
 
-  const filteredData = NEWS_DATA.filter(item => {
-    const searchMatch =
-      item.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchText.toLowerCase());
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
 
-    const itemDate = parseDate(item.date);
-    const startDate = parseDate(selectedFilters['Ngày BĐ']);
-    const endDate = parseDate(selectedFilters['Ngày KT']);
+  const flattenedItems = newsData.flatMap(item => item.items || []);
 
-    const dateMatch =
-      (!startDate || itemDate >= startDate) &&
-      (!endDate || itemDate <= endDate);
+  const filteredData = flattenedItems
+    ?.filter(item => {
+      const searchMatch =
+        removeVietnameseTones(item.title).includes(
+          removeVietnameseTones(searchText),
+        ) ||
+        removeVietnameseTones(item.summary).includes(
+          removeVietnameseTones(searchText),
+        );
 
-    return searchMatch && dateMatch;
-  }).sort((a, b) => {
-    const sortType = selectedFilters['Giá'];
-    if (sortType === 'Tăng dần') return a.readTime - b.readTime;
-    if (sortType === 'Giảm dần') return b.readTime - a.readTime;
-    return 0;
-  });
+      const itemDate = parseDate(item.createdAt);
+      const startDate = parseDate(selectedFilters['Ngày BĐ']);
+      const endDate = parseDate(selectedFilters['Ngày KT']);
+
+      const dateMatch =
+        (!startDate || itemDate >= startDate) &&
+        (!endDate || itemDate <= endDate);
+
+      return searchMatch && dateMatch;
+    })
+    .sort((a, b) => {
+      const sortType = selectedFilters['Giá'];
+      if (sortType === 'Tăng dần') return a.readTime - b.readTime;
+      if (sortType === 'Giảm dần') return b.readTime - a.readTime;
+      return 0;
+    });
 
   const renderItem = ({item}) => (
     <Animated.View
@@ -134,23 +137,27 @@ const IntroScreen = () => {
           transform: [{translateY}, {scale: scaleValue}],
         },
       ]}>
-      <FastImage source={item.image} style={styles.image} />
+      <FastImage
+        source={{uri: `${API_BASE_URL}/api/upload/${item.images?.[0]}`}}
+        style={styles.image}
+        resizeMode={FastImage.resizeMode.cover}
+      />
       <View style={styles.textContainer}>
         <Text style={styles.title} numberOfLines={1}>
           {item.title}
         </Text>
-        <Text style={styles.description} numberOfLines={3}>
-          {item.description}
+        <Text style={styles.description} numberOfLines={2}>
+          {item.summary}
         </Text>
 
         <View style={styles.metaContainer}>
           <View style={styles.metaItem}>
-            <Text style={styles.metaIconText}>📅</Text>
+            <Text style={styles.metaIconText}>📅 </Text>
             <Text style={styles.metaText}>{item.date}</Text>
           </View>
 
           <View style={styles.metaItem}>
-            <Text style={styles.metaIconText}>⏱️</Text>
+            <Text style={styles.metaIconText}>⏱️ </Text>
             <Text style={styles.metaText}>{item.readTime} phút đọc</Text>
           </View>
         </View>
@@ -165,13 +172,12 @@ const IntroScreen = () => {
           searchText={searchText}
           setSearchText={setSearchText}
           filterOptions={FILTER_OPTIONS}
-          dropdownOptions={DROPDOWN_OPTIONS}
           placeholder="Tìm kiếm bài viết"
           onFilterSelect={handleFilterSelect}
         />
       </View>
 
-      {isLoading ? (
+      {isLoading || filtering ? (
         <ActivityIndicator
           size="large"
           color="#00AA00"
@@ -186,10 +192,12 @@ const IntroScreen = () => {
       ) : (
         <FlatList
           data={filteredData}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.id?.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
           renderItem={renderItem}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.4}
           ListHeaderComponent={() => (
             <View style={styles.headerContent}>
               <Text style={styles.headerTitle}>Tin tức & Thông tin</Text>
@@ -198,6 +206,13 @@ const IntroScreen = () => {
               </Text>
             </View>
           )}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator size="small" color="#00AA00" />
+            ) : (
+              <View style={{height: scale(100)}} />
+            )
+          }
         />
       )}
 

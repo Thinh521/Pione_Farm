@@ -1,57 +1,147 @@
-import React, {useState} from 'react';
-import {FlatList, ImageBackground, SectionList, Text, View} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  FlatList,
+  SectionList,
+  Text,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 import styles from './Notification.styles';
-import Images from '../../assets/images/Images';
-import HeaderBar from '../../components/HeaderBar/HeaderBar';
-import SearchAndFilterBar from '../../components/SearchAndFilterBar/SearchAndFilterBar';
-import {scale} from '../../utils/scaling';
-
-const DROPDOWN_OPTIONS = [
-  {label: 'Tra cứu tổng hợp', route: 'PriceComparison'},
-  {label: 'Tra cứu tổng nâng cao', route: 'AdvancedSearch'},
-  {label: 'Giới thiệu chung', route: 'Intro'},
-  {
-    label: 'Thị trường trong nước và ngoài nước',
-    route: 'Market',
-  },
-  {label: 'Tin tức', route: 'News'},
-];
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
+import {scale} from '~/utils/scaling';
+import {getNotification, getFilterNotification} from '~/api/notificationApi';
+import {getAccessToken} from '~/utils/storage/tokenStorage';
 
 const FILTER_OPTIONS = [
   {
-    label: 'Hôm nay',
-    options: ['Tất cả', 'Tăng dần', 'Giảm dần'],
-  },
-  {
-    label: '12/12',
-    options: ['Tất cả', 'Long An', 'Tiền Giang', 'HCM', 'Hà Nội', 'An Giang'],
+    label: 'Ngày BĐ',
+    options: [],
   },
   {
     label: 'Giờ',
-    options: ['Tất cả', 'Dưới 100', '100 - 500', 'Trên 500'],
-  },
-];
-
-const data = [
-  {
-    title: 'Mới',
-    data: [
-      {id: 1, label: 'Giá', badge: 'Mới', desc: '..........'},
-      {id: 2, label: 'Giá', badge: 'Mới', desc: '..........'},
-    ],
-  },
-  {
-    title: 'Hôm qua',
-    data: [
-      {id: 3, label: 'Giá', badge: 'Mới', desc: '..........'},
-      {id: 4, label: 'Giá', badge: 'Mới', desc: '..........'},
+    options: [
+      'Tất cả',
+      '8:00 AM',
+      '9:00 AM',
+      '10:00 AM',
+      '1:00 PM',
+      '2:00 PM',
+      '3:07 PM',
     ],
   },
 ];
 
 const NotificationScreen = () => {
   const [searchText, setSearchText] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState('');
+  const [selectedFilters, setSelectedFilters] = useState({});
+  const [notificationData, setNotificationData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  console.log('notificationData', notificationData);
+
+  const accessToken = getAccessToken();
+
+  const fetchDefaultNotification = async () => {
+    setLoading(true);
+    try {
+      const res = await getNotification(accessToken);
+      const rawData = res.data;
+
+      const mapped = [];
+
+      if (rawData.today?.length > 0) {
+        mapped.push({
+          title: 'Hôm nay',
+          data: rawData.today.map(item => ({
+            id: item._id,
+            label: item.title,
+            desc: item.description,
+            badge: item.hour,
+            type: item.type,
+            date: item.date,
+          })),
+        });
+      }
+
+      if (rawData.yesterday?.length > 0) {
+        mapped.push({
+          title: 'Hôm qua',
+          data: rawData.yesterday.map(item => ({
+            id: item._id,
+            label: item.title,
+            desc: item.description,
+            badge: item.hour,
+            type: item.type,
+            date: item.date,
+          })),
+        });
+      }
+
+      setNotificationData(mapped);
+    } catch (err) {
+      console.log('Lỗi khi lấy thông báo:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterSelect = async (type, value) => {
+    const newFilters = {...selectedFilters, [type]: value};
+    setSelectedFilters(newFilters);
+
+    const filterPayload = {};
+
+    // Gán ngày theo định dạng chuẩn
+    if (newFilters['Ngày BĐ'] && newFilters['Ngày BĐ'] !== 'Tất cả') {
+      // Giả sử bạn nhận ngày dạng "15/07/2025" thì phải format lại:
+      const [day, month, year] = newFilters['Ngày BĐ'].split('/');
+      filterPayload.date = `${year}-${month}-${day}`; // -> "2025-07-15"
+    }
+
+    if (newFilters['Giờ'] && newFilters['Giờ'] !== 'Tất cả') {
+      filterPayload.hour = newFilters['Giờ']; // VD: "3:07 PM"
+    }
+
+    console.log('filterPayload gửi BE:', filterPayload);
+
+    if (Object.keys(filterPayload).length === 0) {
+      fetchDefaultNotification();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await getFilterNotification({
+        accessToken,
+        filter: filterPayload,
+      });
+
+      const rawData = res.data || [];
+      const mapped = [
+        {
+          title: 'Kết quả lọc',
+          data: rawData.map(item => ({
+            id: item._id,
+            label: item.title,
+            desc: item.description,
+            badge: item.hour,
+            type: item.type,
+            date: item.date,
+          })),
+        },
+      ];
+
+      setNotificationData(mapped);
+    } catch (error) {
+      console.log('Lỗi khi lọc:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDefaultNotification();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -60,60 +150,56 @@ const NotificationScreen = () => {
           searchText={searchText}
           setSearchText={setSearchText}
           filterOptions={FILTER_OPTIONS}
-          dropdownOptions={DROPDOWN_OPTIONS}
-          showProductButton={false}
-          placeholder="Tìm kiếm thông tin"
-          onFilterSelect={(type, value) =>
-            setSelectedFilters(prev => ({...prev, [type]: value}))
-          }
+          selectedFilters={selectedFilters}
+          placeholder="Tìm kiếm thông báo"
+          onFilterSelect={handleFilterSelect}
         />
       </View>
 
-      <FlatList
-        data={[{}]}
-        style={styles.scrollContainer}
-        contentContainerStyle={{
-          paddingBottom: scale(90),
-        }}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={() => (
-          <>
-            <View>
-              <SectionList
-                sections={data}
-                style={styles.main}
-                keyExtractor={(item, index) => item.id.toString() + index}
-                renderSectionHeader={({section: {title}}) => (
-                  <View style={styles.headerContainer}>
-                    <Text
-                      style={[
-                        styles.sectionTitle,
-                        title === 'Mới' && {color: '#ef4444'},
-                      ]}>
-                      {title}
-                    </Text>
+      {loading ? (
+        <ActivityIndicator
+          style={{marginTop: scale(30)}}
+          size="large"
+          color="#4CAF50"
+        />
+      ) : (
+        <FlatList
+          data={[{}]}
+          style={styles.scrollContainer}
+          contentContainerStyle={{paddingBottom: scale(90)}}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={() => (
+            <SectionList
+              sections={notificationData}
+              style={styles.main}
+              keyExtractor={(item, index) => item.id + index}
+              renderSectionHeader={({section: {title}}) => (
+                <View style={styles.headerContainer}>
+                  <Text
+                    style={[
+                      styles.sectionTitle,
+                      title === 'Hôm nay' && {color: '#ef4444'},
+                    ]}>
+                    {title}
+                  </Text>
+                </View>
+              )}
+              renderItem={({item}) => (
+                <View style={styles.itemContainer}>
+                  <View style={styles.row}>
+                    <Text style={styles.dot}>🌱</Text>
+                    <Text style={styles.label}>{item.label}</Text>
+                    <Text style={styles.badge}>{item.badge}</Text>
                   </View>
-                )}
-                renderItem={({item}) => (
-                  <View style={styles.itemContainer}>
-                    <View style={styles.row}>
-                      <Text style={styles.dot}>🌱</Text>
-                      <Text style={styles.label}>{item.label}</Text>
-                      <Text style={styles.badge}>{item.badge}</Text>
-                    </View>
-                    <Text style={styles.admin}>Admin</Text>
-                    <Text style={styles.desc}>
-                      Cập nhật hệ thống: {item.desc}
-                    </Text>
-                  </View>
-                )}
-                contentContainerStyle={styles.listContainer}
-              />
-            </View>
-          </>
-        )}
-      />
+                  <Text style={styles.admin}>Admin</Text>
+                  <Text style={styles.desc}>{item.desc}</Text>
+                </View>
+              )}
+              contentContainerStyle={styles.listContainer}
+            />
+          )}
+        />
+      )}
     </View>
   );
 };

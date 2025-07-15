@@ -10,13 +10,14 @@ const WalletItem = ({
   images,
   productName,
   provinceName,
-  marketPrice = '0.00',
+  marketPrice = 0,
   priceChange = 0,
   priceTrend = [],
-  chartColor = '#10b981',
-  gradientId = '#10b981',
 }) => {
-  const isUp = priceChange > 0;
+  const isIncrease = priceChange > 0;
+  const isDecrease = priceChange < 0;
+
+  const color = isIncrease ? '#34C759' : isDecrease ? '#FF9B9B' : '#6b7280';
 
   return (
     <View style={styles.itemContainer}>
@@ -27,13 +28,10 @@ const WalletItem = ({
           style={styles.image}
         />
         <View style={styles.assetInfo}>
-          <Text style={styles.assetName} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={styles.assetName} numberOfLines={1}>
             {provinceName}
           </Text>
-          <Text
-            style={styles.assetSymbol}
-            numberOfLines={1}
-            ellipsizeMode="tail">
+          <Text style={styles.assetSymbol} numberOfLines={1}>
             {productName}
           </Text>
         </View>
@@ -46,8 +44,8 @@ const WalletItem = ({
           mode="animated"
           height={50}
           width={80}
-          lineColor={chartColor}
-          gradientColor={gradientId}
+          lineColor={color}
+          gradientColor={color}
           strokeWidth={2}
           showGradient
         />
@@ -56,8 +54,8 @@ const WalletItem = ({
       {/* Right Column - Price */}
       <View style={styles.columnRight}>
         <Text style={styles.price}>{formatCurrencyVND(marketPrice)}</Text>
-        <Text style={[styles.change, {color: isUp ? '#10b981' : '#ef4444'}]}>
-          {isUp ? '+' : ''}
+        <Text style={[styles.change, {color}]}>
+          {isIncrease ? '+' : ''}
           {formatCurrencyVND(priceChange)}
         </Text>
       </View>

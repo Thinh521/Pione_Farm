@@ -3,6 +3,7 @@ import {Animated, FlatList, StyleSheet, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {scale} from '../../utils/scaling';
 import {Colors} from '../../theme/theme';
+import {API_BASE_URL} from '@env';
 
 const NewsList = ({data = []}) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
@@ -35,28 +36,28 @@ const NewsList = ({data = []}) => {
           transform: [{translateY}, {scale: scaleValue}],
         },
       ]}>
-      <FastImage source={item.image} style={styles.image} />
+      <FastImage
+        source={{uri: `${API_BASE_URL}/api/upload/${item.images?.[0]}`}}
+        style={styles.image}
+        resizeMode={FastImage.resizeMode.cover}
+      />
       <View style={styles.textContainer}>
         <Text style={styles.title} numberOfLines={1}>
           {item.title}
         </Text>
-        <Text style={styles.description} numberOfLines={3}>
-          {item.description}
+        <Text style={styles.description} numberOfLines={2}>
+          {item.summary}
         </Text>
 
         <View style={styles.metaContainer}>
           <View style={styles.metaItem}>
-            <View style={styles.metaIcon}>
-              <Text style={styles.metaIconText}>📅</Text>
-            </View>
+            <Text style={styles.metaIconText}>📅 </Text>
             <Text style={styles.metaText}>{item.date}</Text>
           </View>
 
           <View style={styles.metaItem}>
-            <View style={styles.metaIcon}>
-              <Text style={styles.metaIconText}>⏱️</Text>
-            </View>
-            <Text style={styles.metaText}>{item.readTime}</Text>
+            <Text style={styles.metaIconText}>⏱️ </Text>
+            <Text style={styles.metaText}>{item.readTime} phút đọc</Text>
           </View>
         </View>
       </View>
@@ -73,7 +74,6 @@ const NewsList = ({data = []}) => {
         renderItem={renderItem}
         ListHeaderComponent={() => (
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Tin tức & Thông tin</Text>
             <Text style={styles.headerSubtitle}>
               Cập nhật thông tin mới nhất về nông nghiệp
             </Text>

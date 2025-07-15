@@ -23,7 +23,6 @@ const DROPDOWN_OPTIONS = [
   {label: 'Tin tức', route: 'News'},
 ];
 
-// In hoa chữ cái đầu
 const capitalizeFirstLetter = str => str.charAt(0).toUpperCase() + str.slice(1);
 
 const SearchAndFilterBar = ({

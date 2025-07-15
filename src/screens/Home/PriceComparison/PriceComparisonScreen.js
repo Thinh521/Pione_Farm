@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,16 +12,17 @@ import RNFS from 'react-native-fs';
 import XLSX from 'xlsx';
 import FastImage from 'react-native-fast-image';
 
-import {DownIcon} from '../../../assets/icons/Icons';
-import {Colors} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
-import Images from '../../../assets/images/Images';
+import {DownIcon} from '~/assets/icons/Icons';
+import {Colors} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
+import Images from '~/assets/images/Images';
 import styles from './PriceComparison.styles';
 
-import SearchAndFilterBar from '../../../components/SearchAndFilterBar/SearchAndFilterBar';
-import CustomTable from '../../../components/CustomTable/CustomTable';
-import ChatBot from '../../../components/ChatBot/ChatBot';
-import Button from '../../../components/ui/Button/ButtonComponent';
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
+import CustomTable from '~/components/CustomTable/CustomTable';
+import ChatBot from '~/components/ChatBot/ChatBot';
+import Button from '~/components/ui/Button/ButtonComponent';
+import {getAnalysisAi} from '../../../api/trendApi';
 
 const FILTER_OPTIONS = [
   {label: 'Ngày BĐ', options: []},
@@ -100,8 +101,27 @@ const initialData = [
 const PriceComparisonScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [analysisData, setAnalysisData] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  console.log('analysisData', analysisData);
+
+  useEffect(() => {
+    const fetchAnalysisAi = async () => {
+      try {
+        const result = await getAnalysisAi();
+        setAnalysisData(result.data || []);
+      } catch (error) {
+        setErrorMsg(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnalysisAi();
+  }, []);
 
   const parseDate = date => {
     if (!date) return null;
@@ -191,6 +211,9 @@ const PriceComparisonScreen = () => {
     }
   };
 
+  if (isLoading) return <ActivityIndicator size="large" color="#000" />;
+  if (errorMsg) return <Text style={{color: 'red'}}>{errorMsg}</Text>;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -226,13 +249,7 @@ const PriceComparisonScreen = () => {
               />
             </View>
 
-            {isLoading ? (
-              <ActivityIndicator
-                style={{height: scale(200)}}
-                size="large"
-                color="#4CAF50"
-              />
-            ) : filteredData.length > 0 ? (
+            {filteredData.length > 0 ? (
               <CustomTable
                 data={filteredData}
                 columns={columns}
@@ -256,6 +273,7 @@ const PriceComparisonScreen = () => {
             style={styles.buttonExcel}
           />
 
+          {/* Footer phân tích AI */}
           <View style={styles.footer}>
             <FastImage
               source={Images.PriceComparison_1}
@@ -272,6 +290,7 @@ const PriceComparisonScreen = () => {
               style={styles.backgroundPriceComparison_4}
               resizeMode={FastImage.resizeMode.contain}
             />
+
             <View style={styles.trendWrapper}>
               <FastImage
                 source={Images.PriceComparison_2}
@@ -280,21 +299,17 @@ const PriceComparisonScreen = () => {
                 <View style={styles.footerContent}>
                   <Text style={styles.footerContentTitle}>Xu hướng</Text>
                   <Text style={styles.footerContentTitle_2}>
-                    Xu hướng thị trường trái cây tại Việt Nam
+                    {analysisData?.inputSummary}
                   </Text>
                   <Text
                     style={styles.footerContentDescription}
-                    numberOfLines={6}>
-                    Xu hướng Diễn giả Tăng xuất khẩu trái cây chế biến Nhu cầu
-                    thế giới tăng cao với sản phẩm sấy khô, đông lạnh, đóng hộp
-                    (xoài, mít, sầu riêng...) Truy xuất nguồn gốc & nông nghiệp
-                    số. Đòi hỏi mã vùng trồng, QR code truy xuất để đạt chuẩn
-                    xuất khẩu. Bán lẻ trực tuyến tăng mạnh. Mở rộng thị trường
-                    mới. Ứng dụng bảo quản sau thu hoạch.
+                    numberOfLines={7}>
+                    {analysisData?.responses}
                   </Text>
                 </View>
               </FastImage>
             </View>
+
             <FastImage
               source={Images.PriceComparison_5}
               style={styles.backgroundPriceComparison_5}

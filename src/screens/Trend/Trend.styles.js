@@ -1,5 +1,6 @@
 import {StyleSheet} from 'react-native';
 import {scale} from '../../utils/scaling';
+import {FontSizes, FontWeights} from '../../theme/theme';
 
 export default StyleSheet.create({
   container: {
@@ -11,10 +12,24 @@ export default StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#b0ffce',
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
-    marginVertical: scale(16),
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1f2937',
+    marginVertical: scale(20),
+    fontSize: FontSizes.xlarge,
+    fontWeight: FontWeights.semiBold,
+  },
+  loadingOverlay: {
+    flex: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
 });

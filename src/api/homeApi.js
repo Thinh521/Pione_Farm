@@ -17,6 +17,7 @@ export const getProvinceProducts = async (payload = {}) => {
   } catch (error) {
     const message =
       error?.response?.data?.message || 'Không thể tải sản phẩm theo tỉnh';
+    console.log('Lỗi khi lấy sản phẩm theo tỉnh:', error);
     throw new Error(message);
   }
 };
@@ -35,6 +36,7 @@ export const getProductPriceStats = async (
     const message =
       error?.response?.data?.message ||
       'Không thể tải dữ liệu biểu đồ sản phẩm';
+    console.log('Lỗi khi lấy sản phẩm theo tỉnh:', error);
     throw new Error(message);
   }
 };

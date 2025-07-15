@@ -84,14 +84,6 @@ const FILTER_OPTIONS = [
   },
 ];
 
-const DROPDOWN_OPTIONS = [
-  {label: 'Tra cứu tổng hợp', route: 'PriceComparison'},
-  {label: 'Tra cứu tổng nâng cao', route: 'AdvancedSearch'},
-  {label: 'Giới thiệu chung', route: 'Intro'},
-  {label: 'Thị trường trong nước và ngoài nước', route: 'Market'},
-  {label: 'Tin tức', route: 'News'},
-];
-
 const MarketScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
@@ -134,7 +126,6 @@ const MarketScreen = () => {
           searchText={searchText}
           setSearchText={setSearchText}
           filterOptions={FILTER_OPTIONS}
-          dropdownOptions={DROPDOWN_OPTIONS}
           placeholder="Tìm kiếm thị trường"
           onFilterSelect={handleFilterSelect}
         />
@@ -149,7 +140,7 @@ const MarketScreen = () => {
             <Text style={styles.title}>Bảng giá Xoài</Text>
 
             <FlatList
-              data={filteredData}
+              data={filteredData.slice(0, 5)}
               keyExtractor={(_, index) => index.toString()}
               renderItem={({item}) => (
                 <View style={styles.row}>

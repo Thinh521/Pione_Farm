@@ -1,8 +1,9 @@
 import api from './baseApi';
 
-export const getAllCategories = async () => {
+export const getAnalysisAi = async () => {
   try {
-    const res = await api.get('/api/category');
+    const res = await api.get('/api/ai-analysis/get-responses');
+
     return res.data;
   } catch (error) {
     const message =

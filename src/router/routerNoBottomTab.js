@@ -13,7 +13,6 @@ import AdvancedSearchScreen from '../screens/Home/AdvancedSearch/AdvancedSearchS
 import IntroScreen from '../screens/Home/Intro/IntroScreen';
 import MarketScreen from '../screens/Home/Market/MarketScreen';
 import NewsScreen from '../screens/Home/News/NewsScreen';
-import LinearGradient from 'react-native-linear-gradient';
 import LanguageScreen from '../screens/Settings/Language/LanguageScreen';
 import TestScreen from '../screens/Test/TestScreen';
 import FruitListScreen from '../screens/FruitList/FruitList';

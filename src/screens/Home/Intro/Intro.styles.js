@@ -1,5 +1,5 @@
 import {StyleSheet} from 'react-native';
-import {Colors, FontSizes} from '../../../theme/theme';
+import {Colors, FontSizes, FontWeights, Shadows} from '../../../theme/theme';
 import {scale} from '../../../utils/scaling';
 
 export default StyleSheet.create({
@@ -10,26 +10,25 @@ export default StyleSheet.create({
   header: {
     marginTop: scale(20),
     borderBottomWidth: 1,
-    borderColor: '#b0ffce',
+    borderColor: Colors.border_2,
   },
   headerContent: {
     alignItems: 'flex-start',
     marginBottom: scale(20),
   },
   headerTitle: {
-    fontSize: FontSizes.semiLarge,
-    fontWeight: 'bold',
-    textAlign: 'left',
+    fontSize: FontSizes.regular,
+    fontWeight: FontWeights.semiBold,
     marginBottom: scale(4),
   },
   headerSubtitle: {
-    fontSize: FontSizes.medium,
-    textAlign: 'left',
+    fontSize: FontSizes.small,
   },
   listContainer: {
     marginTop: scale(20),
   },
   card: {
+    gap: scale(10),
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: scale(16),
@@ -38,50 +37,42 @@ export default StyleSheet.create({
     padding: scale(10),
     borderColor: Colors.border,
     borderWidth: 1,
+    ...Shadows.medium,
   },
   image: {
     width: scale(80),
     height: scale(80),
     borderRadius: scale(10),
-    marginRight: scale(12),
   },
   textContainer: {
     flex: 1,
     justifyContent: 'center',
   },
   title: {
-    fontWeight: 'bold',
-    fontSize: scale(14),
     marginBottom: scale(4),
-    color: '#000',
+    fontSize: FontSizes.small,
+    fontWeight: FontWeights.semiBold,
   },
   description: {
-    fontSize: scale(12),
-    color: '#555',
+    marginBottom: scale(6),
+    color: Colors.grayText,
+    fontSize: FontSizes.small,
   },
   metaContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  metaIcon: {
-    width: scale(20),
-    height: scale(20),
-    borderRadius: scale(10),
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: scale(6),
-  },
   metaIconText: {
-    fontSize: scale(10),
+    fontSize: FontSizes.xsmall,
   },
   metaText: {
-    fontSize: scale(11),
-    color: '#6c757d',
-    fontWeight: '500',
+    color: Colors.grayText,
+    fontSize: FontSizes.xsmall,
+    fontWeight: FontWeights.semiBold,
   },
 });

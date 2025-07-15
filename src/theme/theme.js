@@ -12,6 +12,7 @@ export const Colors = {
   red: '#FF0000',
   overlay: 'rgba(0,0,0,0.4)',
   border: '#D6D6D6',
+  border_2: '#b0ffce',
   greenText: '#2E7D32',
   title: '#212121',
   grayText: '#333333',

@@ -10,14 +10,18 @@ import Input from '../../../components/ui/Input/InputComponents';
 import {SearchIcon} from '../../../assets/icons/Icons';
 import {scale} from '../../../utils/scaling';
 import {Colors, FontSizes, FontWeights} from '../../../theme/theme';
+import {removeVietnameseTones} from '../../../utils/normalize';
+import FruitPriceListSkeleton from '../../../components/Skeleton/FruitPriceListSkeleton';
 
-const FruitPriceList = ({products = []}) => {
+const FruitPriceList = ({products = [], loading}) => {
   const [searchText, setSearchText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
   const filteredFruits = useMemo(() => {
+    const keyword = removeVietnameseTones(searchText);
+
     return products.filter(item =>
-      item.productName?.toLowerCase().includes(searchText.toLowerCase()),
+      removeVietnameseTones(item.productName || '').includes(keyword),
     );
   }, [searchText, products]);
 
@@ -31,7 +35,9 @@ const FruitPriceList = ({products = []}) => {
   const renderItem = ({item}) => (
     <View style={styles.row}>
       <View style={styles.nameCol}>
-        <Text style={styles.itemName}>{item.productName}</Text>
+        <Text style={styles.itemName} numberOfLines={1}>
+          {item.productName}
+        </Text>
       </View>
       <View style={styles.unitCol}>
         <Text style={styles.unit}>đ/Kg</Text>
@@ -87,8 +93,9 @@ const FruitPriceList = ({products = []}) => {
         </Text>
       </View>
 
-      {/* Danh sách */}
-      {isSearching ? (
+      {loading ? (
+        <FruitPriceListSkeleton itemCount={10} />
+      ) : isSearching ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color={Colors.green} />
         </View>

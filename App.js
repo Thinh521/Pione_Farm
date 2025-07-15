@@ -7,7 +7,11 @@ import {storage} from './src/utils/storage/onboardingStorage';
 import SplashScreen from './src/screens/Splash/SplashScreen';
 import FlashMessage from 'react-native-flash-message';
 import {AuthProvider} from './src/context/AuthContext';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+
+import {AppKit} from '@reown/appkit-ethers-react-native';
+
+import './src/config/AppKitSetup';
 
 const queryClient = new QueryClient();
 
@@ -21,7 +25,6 @@ export default function App() {
           storage.getBoolean('hasCompletedOnboarding'),
           new Promise(resolve => setTimeout(resolve, 1500)),
         ]);
-
         setInitialRoute(completed ? 'BottomTab' : 'OnboardingScreen');
       } catch (error) {
         console.error('Lỗi khi kiểm tra trạng thái onboarding:', error);
@@ -32,21 +35,20 @@ export default function App() {
     checkOnboarding();
   }, []);
 
-  if (!initialRoute) {
-    return <SplashScreen />;
-  }
+  if (!initialRoute) return <SplashScreen />;
 
   return (
     <QueryClientProvider client={queryClient}>
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <NavigationContainer>
-            <AppNavigator initialRouteName={initialRoute} />
-            <FlashMessage position={'top'} />
-          </NavigationContainer>
-        </AuthProvider>
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <NavigationContainer>
+              <AppKit />
+              <AppNavigator initialRouteName={initialRoute} />
+              <FlashMessage position="top" />
+            </NavigationContainer>
+          </AuthProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

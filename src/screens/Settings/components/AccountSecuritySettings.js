@@ -4,6 +4,7 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {RightIcon} from '../../../assets/icons/Icons';
 import {scale} from '../../../utils/scaling';
 import {Colors, Shadows} from '../../../theme/theme';
+import {AppKitButton} from '@reown/appkit-ethers-react-native';
 
 const AccountSecuritySettings = ({user}) => {
   const navigation = useNavigation();
@@ -42,12 +43,14 @@ const AccountSecuritySettings = ({user}) => {
         <RightIcon style={styles.rightIcon} />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.item}>
+      <TouchableOpacity style={[styles.item, {marginBottom: scale(10)}]}>
         <View style={styles.itemLeft}>
           <Text style={styles.itemText}>Xuất dữ liệu cá nhân (Excel, CSV)</Text>
         </View>
         <RightIcon style={styles.rightIcon} />
       </TouchableOpacity>
+
+      <AppKitButton />
     </View>
   );
 };

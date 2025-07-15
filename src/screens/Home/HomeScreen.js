@@ -12,6 +12,7 @@ import useWalletStore from '~/store/useWalletStore';
 import WalletListSkeleton from '../../components/Skeleton/WalletListSkeleton';
 import ChatBot from '../../components/ChatBot/ChatBot';
 import {scale} from '../../utils/scaling';
+import {removeVietnameseTones} from '../../utils/normalize';
 
 const FILTER_OPTIONS = [
   {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
@@ -47,11 +48,11 @@ const HomeScreen = () => {
     let data = [...walletData];
 
     if (searchText.trim()) {
-      const keyword = searchText.toLowerCase();
+      const keyword = removeVietnameseTones(searchText);
       data = data.filter(item => {
-        const productName = item.productName?.toLowerCase() || '';
-        const provinceName = item.provinceName?.toLowerCase() || '';
-        const typeName = item.typeName?.toLowerCase() || '';
+        const productName = removeVietnameseTones(item.productName) || '';
+        const provinceName = removeVietnameseTones(item.provinceName) || '';
+        const typeName = removeVietnameseTones(item.typeName) || '';
 
         return (
           productName.includes(keyword) ||
@@ -95,6 +96,10 @@ const HomeScreen = () => {
   const navigateToWalletAll = () => {
     navigation.navigate('NoBottomTab', {
       screen: 'WalletAll',
+      params: {
+        title: 'Danh sách',
+        data: filteredWalletData,
+      },
     });
   };
 
@@ -109,6 +114,7 @@ const HomeScreen = () => {
             setSearchText={setSearchText}
             filterOptions={FILTER_OPTIONS}
             showProductButton={false}
+            selectedFilters={selectedFilters}
             placeholder="Tìm kiếm trái cây"
             onFilterSelect={(type, value) =>
               setSelectedFilters(prev => ({...prev, [type]: value}))
@@ -137,7 +143,7 @@ const HomeScreen = () => {
               ) : (
                 <WalletList data={filteredWalletData.slice(0, 5)} />
               )}
-              <FruitPriceList products={productList} />
+              <FruitPriceList products={productList} loading={loading} />
             </>
           )}
         />
