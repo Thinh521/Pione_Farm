@@ -9,25 +9,17 @@ import {
   Animated,
   StatusBar,
 } from 'react-native';
-import React, {useEffect, useState, useRef} from 'react';
-import RNFS from 'react-native-fs';
-import XLSX from 'xlsx';
-
+import React, {useRef} from 'react';
 import styles from './AdvancedSearch.styles';
-import SearchAndFilterBar from '../../../components/SearchAndFilterBar/SearchAndFilterBar';
-import CustomTable from '../../../components/CustomTable/CustomTable';
-import {scale} from '../../../utils/scaling';
-import Button from '../../../components/ui/Button/ButtonComponent';
-import ChatBot from '../../../components/ChatBot/ChatBot';
-import {getAllCategories} from '../../../api/categogyApi';
-import {getAllProvinceApii} from '../../../api/provinceApi';
-import {
-  getFarmMarketPrices,
-  getProductTypesByProvince,
-  getTodayHarvestSummary,
-} from '../../../api/productApi';
-import {DownIcon} from '../../../assets/icons/Icons';
-import {Colors} from '../../../theme/theme';
+
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
+import CustomTable from '~/components/CustomTable/CustomTable';
+import {scale} from '~/utils/scaling';
+import Button from '~/components/ui/Button/ButtonComponent';
+import ChatBot from '~/components/ChatBot/ChatBot';
+import {DownIcon} from '~/assets/icons/Icons';
+import {Colors} from '~/theme/theme';
+import {useHarvestFilter} from '~/hook/useHarvestFilter';
 
 const columns = [
   {title: 'Khu vực', key: 'provinceName', flex: 1},
@@ -42,196 +34,28 @@ const columns_2 = [
 ];
 
 const AdvancedSearchScreen = () => {
-  const [searchText, setSearchText] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [exportingTable, setExportingTable] = useState(null);
+  const {
+    isLoading,
+    fruitCategory,
+    provinceOptions,
+    selectedFilters,
+    handleFilterSelect,
+    collectionAndYieldData,
+    todayHarvestData,
+    productTypeOptions,
+    selectedTypeFilter,
+    setSelectedTypeFilter,
+    exportDataToExcel,
+    isAllFiltersSelected,
+    exportingTable,
+  } = useHarvestFilter(false);
 
-  const [fruitCategory, setFruitCategory] = useState(['Tất cả']);
-  const [provinceOptions, setProvinceOptions] = useState(['Tất cả']);
-  const [productTypeOptions, setProductTypeOptions] = useState(['Tất cả']);
-  const [allProvinces, setAllProvinces] = useState([]);
-  const [allCategories, setAllCategories] = useState([]);
-  const [productTypeOptionsData, setProductTypeOptionsData] = useState([]);
-
-  const [collectionAndYieldData, setCollectionAndYieldData] = useState([]);
-  const [todayHarvestData, setTodayHarvestData] = useState([]);
-
-  const [selectedTypeFilter, setSelectedTypeFilter] = useState('Tất cả');
-  const [activeFilter, setActiveFilter] = useState({
+  const [searchText, setSearchText] = React.useState('');
+  const [activeFilter, setActiveFilter] = React.useState({
     index: null,
     anim: new Animated.Value(0),
   });
   const filterRotate = useRef(new Animated.Value(0)).current;
-
-  // Fetch initial data
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setIsLoading(true);
-
-        // Fetch categories
-        const categoriesRes = await getAllCategories();
-        const categoryNames = categoriesRes.data.map(c => c.name);
-        setFruitCategory(['Tất cả', ...categoryNames]);
-        setAllCategories(categoriesRes.data);
-
-        // Fetch provinces
-        const provincesRes = await getAllProvinceApii();
-        const provinceNames = provincesRes.data.map(p => p.name);
-        setProvinceOptions(['Tất cả', ...provinceNames]);
-        setAllProvinces(provincesRes.data);
-
-        // Fetch today harvest summary
-        const todayHarvestRes = await getTodayHarvestSummary();
-        setTodayHarvestData(todayHarvestRes.data);
-      } catch (error) {
-        console.error('Lỗi khi tải dữ liệu ban đầu:', error.message);
-        Alert.alert('Lỗi', 'Không thể tải dữ liệu ban đầu');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, []);
-
-  // Fetch product types when province and date range change
-  useEffect(() => {
-    const fetchProductTypes = async () => {
-      const provinceName = selectedFilters['Tỉnh'];
-      const startDate = selectedFilters['Ngày BĐ'];
-      const endDate = selectedFilters['Ngày KT'];
-
-      // Reset product types and selected type when province or date changes
-      setProductTypeOptions(['Tất cả']);
-      setProductTypeOptionsData([]);
-      setSelectedTypeFilter('Tất cả');
-
-      if (
-        !provinceName ||
-        provinceName === 'Tất cả' ||
-        !startDate ||
-        !endDate
-      ) {
-        return;
-      }
-
-      try {
-        const selectedProvince = allProvinces.find(
-          p => p.name === provinceName,
-        );
-        if (!selectedProvince) return;
-
-        const typesRes = await getProductTypesByProvince(selectedProvince._id, {
-          start: formatDate(startDate),
-          end: formatDate(endDate),
-        });
-
-        if (typesRes && typesRes.data && typesRes.data.length > 0) {
-          const typeNames = typesRes.data.map(t => t.name);
-          setProductTypeOptions(['Tất cả', ...typeNames]);
-          setProductTypeOptionsData(typesRes.data);
-        }
-      } catch (error) {
-        console.error('Lỗi khi lấy loại sản phẩm:', error.message);
-      }
-    };
-
-    fetchProductTypes();
-  }, [
-    selectedFilters['Tỉnh'],
-    selectedFilters['Ngày BĐ'],
-    selectedFilters['Ngày KT'],
-    allProvinces,
-  ]);
-
-  // Fetch filtered data when all required filters are selected
-  useEffect(() => {
-    const fetchFilteredData = async () => {
-      const provinceName = selectedFilters['Tỉnh'];
-      const categoryName = selectedFilters['Mặt hàng'];
-      const startDate = selectedFilters['Ngày BĐ'];
-      const endDate = selectedFilters['Ngày KT'];
-
-      // Check if all 4 required filters are selected
-      if (
-        !provinceName ||
-        !categoryName ||
-        !startDate ||
-        !endDate ||
-        provinceName === 'Tất cả' ||
-        categoryName === 'Tất cả'
-      ) {
-        setCollectionAndYieldData([]);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-
-        const selectedProvince = allProvinces.find(
-          p => p.name === provinceName,
-        );
-        const selectedCategory = allCategories.find(
-          c => c.name === categoryName,
-        );
-
-        if (!selectedProvince || !selectedCategory) {
-          setCollectionAndYieldData([]);
-          return;
-        }
-
-        // Find selected type if any
-        const selectedType =
-          selectedTypeFilter !== 'Tất cả'
-            ? productTypeOptionsData.find(t => t.name === selectedTypeFilter)
-            : null;
-
-        const payload = {
-          provinceId: selectedProvince._id,
-          categoryId: selectedCategory._id,
-          date: {
-            start: formatDate(startDate),
-            end: formatDate(endDate),
-          },
-        };
-
-        // Add typeId if a specific type is selected
-        if (selectedType) {
-          payload.typeId = selectedType._id;
-        }
-
-        console.log('Gửi API với payload:', payload);
-
-        const res = await getFarmMarketPrices(payload);
-        setCollectionAndYieldData(res.data || []);
-      } catch (error) {
-        console.error('Lỗi khi lấy dữ liệu giá:', error.message);
-        setCollectionAndYieldData([]);
-        Alert.alert('Lỗi', 'Không thể tải dữ liệu giá cả');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFilteredData();
-  }, [
-    selectedFilters['Tỉnh'],
-    selectedFilters['Mặt hàng'],
-    selectedFilters['Ngày BĐ'],
-    selectedFilters['Ngày KT'],
-    selectedTypeFilter,
-    allProvinces,
-    allCategories,
-    productTypeOptionsData,
-  ]);
-
-  const formatDate = dateString => {
-    if (!dateString) return '';
-    const [day, month, year] = dateString.split('/');
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  };
 
   const getFilterOptions = () => [
     {label: 'Ngày BĐ', options: []},
@@ -239,22 +63,6 @@ const AdvancedSearchScreen = () => {
     {label: 'Tỉnh', options: provinceOptions},
     {label: 'Mặt hàng', options: fruitCategory},
   ];
-
-  const handleFilterSelect = (type, value) => {
-    setIsLoading(true);
-
-    // Reset type filter when any other filter changes
-    if (type !== 'Mặt hàng') {
-      setSelectedTypeFilter('Tất cả');
-    }
-
-    setSelectedFilters(prev => ({
-      ...prev,
-      [type]: value,
-    }));
-
-    setTimeout(() => setIsLoading(false), 300);
-  };
 
   const toggleFilter = index => {
     if (activeFilter.index === index) {
@@ -292,7 +100,7 @@ const AdvancedSearchScreen = () => {
 
   const handleTypeSelection = selectedType => {
     setSelectedTypeFilter(selectedType);
-    toggleFilter(-1); // Close dropdown
+    toggleFilter(-1);
   };
 
   const getDateRangeText = () => {
@@ -304,74 +112,8 @@ const AdvancedSearchScreen = () => {
     return `${start} - ${end}`;
   };
 
-  const capitalizeFirstLetter = str => {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
-  const exportDataToExcel = async (data, tableKey) => {
-    if (!data || data.length === 0) {
-      Alert.alert('Thông báo', 'Không có dữ liệu để xuất!');
-      return;
-    }
-
-    try {
-      setExportingTable(tableKey);
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
-      const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
-
-      const toBinary = str =>
-        str
-          .split('')
-          .map(c => String.fromCharCode(c.charCodeAt(0)))
-          .join('');
-
-      const fileName = `ket_qua_${tableKey}_${Date.now()}.xlsx`;
-      const path =
-        Platform.OS === 'android'
-          ? `${RNFS.DownloadDirectoryPath}/${fileName}`
-          : `${RNFS.DocumentDirectoryPath}/${fileName}`;
-
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: 'Cấp quyền lưu file',
-            message: 'Ứng dụng cần quyền để lưu file Excel.',
-            buttonPositive: 'Đồng ý',
-            buttonNegative: 'Hủy',
-          },
-        );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Thông báo', 'Bạn chưa cấp quyền lưu file!');
-          return;
-        }
-      }
-
-      await RNFS.writeFile(path, toBinary(wbout), 'ascii');
-      Alert.alert('Thành công', `File đã được lưu tại:\n${path}`);
-    } catch (error) {
-      console.error('Lỗi xuất Excel:', error);
-      Alert.alert('Lỗi', 'Đã xảy ra lỗi khi xuất file Excel!');
-    } finally {
-      setExportingTable(null);
-    }
-  };
-
-  // Check if all required filters are selected
-  const isAllFiltersSelected = () => {
-    return (
-      selectedFilters['Tỉnh'] &&
-      selectedFilters['Tỉnh'] !== 'Tất cả' &&
-      selectedFilters['Mặt hàng'] &&
-      selectedFilters['Mặt hàng'] !== 'Tất cả' &&
-      selectedFilters['Ngày BĐ'] &&
-      selectedFilters['Ngày KT']
-    );
-  };
+  const capitalizeFirstLetter = str =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 
   return (
     <>
@@ -398,7 +140,6 @@ const AdvancedSearchScreen = () => {
               Kết quả: {collectionAndYieldData.length}
             </Text>
 
-            {/* Show filter summary and type selector only when all filters are selected */}
             {isAllFiltersSelected() && (
               <View style={styles.buttonContainer}>
                 <View
@@ -440,7 +181,6 @@ const AdvancedSearchScreen = () => {
                     onPress={() => toggleFilter(-1)}
                   />
 
-                  {/* Dropdown menu */}
                   {activeFilter.index === -1 && (
                     <Animated.View
                       style={{
@@ -506,11 +246,11 @@ const AdvancedSearchScreen = () => {
               </View>
             )}
 
-            {/* Price table */}
+            {/* Bảng giá */}
             <View style={styles.tableContainer}>
               <Text style={styles.tableTitle}>Bảng giá</Text>
               <CustomTable
-                data={collectionAndYieldData}
+                data={collectionAndYieldData || []}
                 columns={columns}
                 scrollable
                 bodyHeight={scale(200)}
@@ -526,7 +266,9 @@ const AdvancedSearchScreen = () => {
 
               <Button.Main
                 title={
-                  exportingTable === 'table1' ? 'Đang xuất...' : 'Xuất bảng giá'
+                  exportingTable === 'bang_gia'
+                    ? 'Đang xuất...'
+                    : 'Xuất bảng giá'
                 }
                 disabled={
                   exportingTable !== null || collectionAndYieldData.length === 0
@@ -538,11 +280,11 @@ const AdvancedSearchScreen = () => {
               />
             </View>
 
-            {/* Quantity table */}
+            {/* Bảng sản lượng hôm nay */}
             <View style={styles.tableContainer}>
               <Text style={styles.tableTitle}>Bảng sản lượng</Text>
               <CustomTable
-                data={todayHarvestData}
+                data={todayHarvestData || []}
                 columns={columns_2}
                 scrollable
                 bodyHeight={scale(200)}
@@ -550,7 +292,7 @@ const AdvancedSearchScreen = () => {
                 rowStyle={{width: '100%'}}
                 containerStyle={{marginBottom: scale(20)}}
                 emptyText={
-                  todayHarvestData.length === 0
+                  todayHarvestData?.length === 0
                     ? 'Không có dữ liệu sản lượng hôm nay'
                     : undefined
                 }
@@ -558,12 +300,12 @@ const AdvancedSearchScreen = () => {
 
               <Button.Main
                 title={
-                  exportingTable === 'table2'
+                  exportingTable === 'bang_san_luong'
                     ? 'Đang xuất...'
                     : 'Xuất bảng sản lượng'
                 }
                 disabled={
-                  exportingTable !== null || todayHarvestData.length === 0
+                  exportingTable !== null || todayHarvestData?.length === 0
                 }
                 onPress={() =>
                   exportDataToExcel(todayHarvestData, 'bang_san_luong')

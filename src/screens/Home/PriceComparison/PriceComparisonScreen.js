@@ -106,8 +106,6 @@ const PriceComparisonScreen = () => {
   const [analysisData, setAnalysisData] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
 
-  console.log('analysisData', analysisData);
-
   useEffect(() => {
     const fetchAnalysisAi = async () => {
       try {
@@ -122,6 +120,12 @@ const PriceComparisonScreen = () => {
 
     fetchAnalysisAi();
   }, []);
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      
+    }
+  }, [])
 
   const parseDate = date => {
     if (!date) return null;
