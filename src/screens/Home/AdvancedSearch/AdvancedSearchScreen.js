@@ -1,15 +1,15 @@
+import React, {useRef, useState} from 'react';
 import {
-  ScrollView,
-  Text,
   View,
+  Text,
+  ScrollView,
   Platform,
   TouchableOpacity,
   Animated,
   StatusBar,
 } from 'react-native';
-import React, {useRef} from 'react';
-import styles from './AdvancedSearch.styles';
 
+import styles from './AdvancedSearch.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import CustomTable from '~/components/CustomTable/CustomTable';
 import {scale} from '~/utils/scaling';
@@ -48,8 +48,10 @@ const AdvancedSearchScreen = () => {
     exportingTable,
   } = useHarvestFilter(false);
 
-  const [searchText, setSearchText] = React.useState('');
-  const [activeFilter, setActiveFilter] = React.useState({
+  console.log('fruitCategory', fruitCategory);
+
+  const [searchText, setSearchText] = useState('');
+  const [activeFilter, setActiveFilter] = useState({
     index: null,
     anim: new Animated.Value(0),
   });
@@ -59,7 +61,6 @@ const AdvancedSearchScreen = () => {
     {label: 'Ngày BĐ', options: []},
     {label: 'Ngày KT', options: []},
     {label: 'Tỉnh', options: provinceOptions},
-    {label: 'Mặt hàng', options: fruitCategory},
   ];
 
   const toggleFilter = index => {
@@ -96,8 +97,8 @@ const AdvancedSearchScreen = () => {
     }
   };
 
-  const handleTypeSelection = selectedType => {
-    setSelectedTypeFilter(selectedType);
+  const handleTypeSelection = type => {
+    setSelectedTypeFilter(type);
     toggleFilter(-1);
   };
 
@@ -110,22 +111,23 @@ const AdvancedSearchScreen = () => {
     return `${start} - ${end}`;
   };
 
-  const capitalizeFirstLetter = str =>
+  const capitalize = str =>
     str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 
   return (
     <>
       <StatusBar backgroundColor={Colors.headerBack} barStyle="light-content" />
-
       <View style={styles.container}>
         <View style={styles.header}>
           <SearchAndFilterBar
-            selectedFilters={selectedFilters}
+            placeholder="Tìm kiếm trái cây"
             searchText={searchText}
             setSearchText={setSearchText}
-            filterOptions={getFilterOptions()}
-            placeholder="Tìm kiếm trái cây"
+            selectedFilters={selectedFilters}
             onFilterSelect={handleFilterSelect}
+            filterOptions={getFilterOptions()}
+            itemOptions={fruitCategory}
+            showProductButton
             isLoading={isLoading}
           />
         </View>
@@ -138,111 +140,96 @@ const AdvancedSearchScreen = () => {
               Kết quả: {collectionAndYieldData.length}
             </Text>
 
-            {isAllFiltersSelected() && (
-              <View style={styles.buttonContainer}>
-                <View
-                  style={{
-                    flex: 2,
-                    paddingHorizontal: scale(12),
-                    paddingVertical: scale(8),
-                    borderColor: '#b0ffce',
-                    borderWidth: 1,
-                    borderRadius: scale(24),
-                  }}>
-                  <Text style={{fontSize: scale(13)}}>
-                    {getDateRangeText()}
-                  </Text>
-                </View>
+            <View style={styles.buttonContainer}>
+              <Button.Select title={getDateRangeText()} style={{flex: 2}} />
 
-                {/* Type selector dropdown */}
-                <View style={{flex: 1}}>
-                  <Button.Select
-                    title={capitalizeFirstLetter(selectedTypeFilter)}
-                    style={{flex: 1}}
-                    iconRight={
-                      <Animated.View
-                        style={{
-                          transform: [
-                            {
-                              rotate: filterRotate.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: ['0deg', '180deg'],
-                              }),
-                            },
-                          ],
-                        }}>
-                        <DownIcon
-                          style={{color: Colors.black, width: scale(20)}}
-                        />
-                      </Animated.View>
-                    }
-                    onPress={() => toggleFilter(-1)}
-                  />
-
-                  {activeFilter.index === -1 && (
+              <View style={{flex: 1}}>
+                <Button.Select
+                  title={capitalize(selectedTypeFilter)}
+                  style={{flex: 1}}
+                  iconRight={
                     <Animated.View
                       style={{
-                        position: 'absolute',
-                        top: scale(45),
-                        zIndex: 1000,
-                        width: '100%',
-                        backgroundColor: Colors.white,
-                        borderRadius: scale(6),
-                        paddingVertical: scale(6),
-                        paddingHorizontal: scale(12),
-                        elevation: Platform.OS === 'android' ? 5 : undefined,
-                        shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
-                        shadowOffset:
-                          Platform.OS === 'ios'
-                            ? {width: 0, height: 2}
-                            : undefined,
-                        shadowOpacity: Platform.OS === 'ios' ? 0.15 : undefined,
-                        shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
-                        opacity: activeFilter.anim,
                         transform: [
                           {
-                            translateY: activeFilter.anim.interpolate({
+                            rotate: filterRotate.interpolate({
                               inputRange: [0, 1],
-                              outputRange: [-10, 0],
+                              outputRange: ['0deg', '180deg'],
                             }),
                           },
                         ],
                       }}>
-                      <ScrollView
-                        style={{maxHeight: scale(200)}}
-                        showsVerticalScrollIndicator={false}>
-                        {productTypeOptions.map((option, i) => (
-                          <TouchableOpacity
-                            key={i}
-                            style={{
-                              paddingVertical: scale(8),
-                              borderBottomWidth:
-                                i < productTypeOptions.length - 1 ? 0.5 : 0,
-                              borderBottomColor: '#eee',
-                            }}
-                            onPress={() => handleTypeSelection(option)}>
-                            <Text
-                              style={{
-                                fontSize: scale(13),
-                                color:
-                                  selectedTypeFilter === option
-                                    ? Colors.greenText
-                                    : '#333',
-                                fontWeight:
-                                  selectedTypeFilter === option
-                                    ? 'bold'
-                                    : 'normal',
-                              }}>
-                              {capitalizeFirstLetter(option)}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
+                      <DownIcon
+                        style={{color: Colors.black, width: scale(20)}}
+                      />
                     </Animated.View>
-                  )}
-                </View>
+                  }
+                  onPress={() => toggleFilter(-1)}
+                />
+
+                {activeFilter.index === -1 && (
+                  <Animated.View
+                    style={{
+                      position: 'absolute',
+                      top: scale(45),
+                      zIndex: 1000,
+                      width: '100%',
+                      backgroundColor: Colors.white,
+                      borderRadius: scale(6),
+                      paddingVertical: scale(6),
+                      paddingHorizontal: scale(12),
+                      elevation: Platform.OS === 'android' ? 5 : undefined,
+                      shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
+                      shadowOffset:
+                        Platform.OS === 'ios'
+                          ? {width: 0, height: 2}
+                          : undefined,
+                      shadowOpacity: Platform.OS === 'ios' ? 0.15 : undefined,
+                      shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
+                      opacity: activeFilter.anim,
+                      transform: [
+                        {
+                          translateY: activeFilter.anim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [-10, 0],
+                          }),
+                        },
+                      ],
+                    }}>
+                    <ScrollView
+                      style={{maxHeight: scale(200)}}
+                      showsVerticalScrollIndicator={false}>
+                      {productTypeOptions.map((option, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={{
+                            paddingVertical: scale(8),
+                            borderBottomWidth:
+                              index < productTypeOptions.length - 1 ? 0.5 : 0,
+                            borderBottomColor: '#eee',
+                          }}
+                          onPress={() => handleTypeSelection(option)}>
+                          <Text
+                            style={{
+                              fontSize: scale(13),
+                              color:
+                                selectedTypeFilter === option
+                                  ? Colors.greenText
+                                  : '#333',
+                              fontWeight:
+                                selectedTypeFilter === option
+                                  ? 'bold'
+                                  : 'normal',
+                            }}>
+                            {capitalize(option)}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </Animated.View>
+                )}
               </View>
-            )}
+            </View>
 
             {/* Bảng giá */}
             <View style={styles.tableContainer}>
@@ -261,7 +248,6 @@ const AdvancedSearchScreen = () => {
                     : 'Không có dữ liệu phù hợp'
                 }
               />
-
               <Button.Main
                 title={
                   exportingTable === 'bang_gia'
@@ -276,7 +262,7 @@ const AdvancedSearchScreen = () => {
               />
             </View>
 
-            {/* Bảng sản lượng hôm nay */}
+            {/* Bảng sản lượng */}
             <View style={styles.tableContainer}>
               <Text style={styles.tableTitle}>Bảng sản lượng</Text>
               <CustomTable
@@ -293,7 +279,6 @@ const AdvancedSearchScreen = () => {
                     : undefined
                 }
               />
-
               <Button.Main
                 title={
                   exportingTable === 'bang_san_luong'

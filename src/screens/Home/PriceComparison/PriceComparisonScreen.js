@@ -1,5 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, ScrollView, Text, View} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {DownIcon} from '~/assets/icons/Icons';
@@ -27,23 +34,24 @@ const PriceComparisonScreen = () => {
     provinceOptions,
     searchText,
     setSearchText,
+    selectedTypeFilter,
     selectedFilters,
     handleFilterSelect,
     collectionAndYieldData,
+    setSelectedTypeFilter,
     isLoading,
+    productTypeOptions,
     exportDataToExcel,
   } = useHarvestFilter();
 
   const [isExporting, setIsExporting] = useState(false);
   const [analysisData, setAnalysisData] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
-
-  const getFilterOptions = () => [
-    {label: 'Ngày BĐ', options: []},
-    {label: 'Ngày KT', options: []},
-    {label: 'Tỉnh', options: provinceOptions},
-    {label: 'Mặt hàng', options: fruitCategory},
-  ];
+  const [activeFilter, setActiveFilter] = useState({
+    index: null,
+    anim: new Animated.Value(0),
+  });
+  const filterRotate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const fetchAnalysisAi = async () => {
@@ -58,81 +66,222 @@ const PriceComparisonScreen = () => {
     fetchAnalysisAi();
   }, []);
 
-  const parseDate = (date: string) => {
-    if (!date) return null;
-    const [day, month, year] = date.split('/');
-    return new Date(+year, +month - 1, +day);
+  const getFilterOptions = () => [
+    {label: 'Ngày BĐ', options: []},
+    {label: 'Ngày KT', options: []},
+    {label: 'Tỉnh', options: provinceOptions},
+  ];
+
+  const toggleFilter = index => {
+    if (activeFilter.index === index) {
+      Animated.parallel([
+        Animated.timing(activeFilter.anim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+        Animated.timing(filterRotate, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setActiveFilter({index: null, anim: new Animated.Value(0)});
+      });
+    } else {
+      const newAnim = new Animated.Value(0);
+      setActiveFilter({index, anim: newAnim});
+      Animated.parallel([
+        Animated.timing(newAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+        Animated.timing(filterRotate, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
   };
 
-  if (isLoading) return <ActivityIndicator size="large" color="#000" />;
-  if (errorMsg) return <Text style={{color: 'red'}}>{errorMsg}</Text>;
+  const handleTypeSelection = type => {
+    setSelectedTypeFilter(type);
+    toggleFilter(-1);
+  };
+
+  const getDateRangeText = () => {
+    const start = selectedFilters['Ngày BĐ'];
+    const end = selectedFilters['Ngày KT'];
+    if (!start && !end) return 'Chọn khoảng thời gian';
+    if (!start) return `-- đến ${end}`;
+    if (!end) return `${start} đến --`;
+    return `${start} - ${end}`;
+  };
+
+  const capitalize = str =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
+  if (errorMsg) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={{color: 'red'}}>{errorMsg}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <SearchAndFilterBar
-          showProductButton
+          placeholder="Tìm kiếm trái cây"
           searchText={searchText}
           setSearchText={setSearchText}
           selectedFilters={selectedFilters}
           onFilterSelect={handleFilterSelect}
+          itemOptions={fruitCategory}
           filterOptions={getFilterOptions()}
-          placeholder="Tìm kiếm trái cây"
+          showProductButton
         />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.bodyWrapper}>
-          <View style={styles.contentContainer}>
-            <Text style={styles.title}>
-              Kết quả: {collectionAndYieldData.length}
-            </Text>
+          <View>
+            <View style={styles.contentContainer}>
+              <Text style={styles.title}>
+                Kết quả: {collectionAndYieldData.length}
+              </Text>
 
-            <View style={styles.buttonContainer}>
-              <Button.Select
-                title={`${selectedFilters['Ngày BĐ'] || '--'} - ${
-                  selectedFilters['Ngày KT'] || '--'
-                }`}
-                style={{flex: 2}}
-              />
-              <Button.Select
-                title={selectedFilters['Mặt hàng'] || 'Tất cả'}
-                style={{flex: 1}}
-                iconRight={
-                  <DownIcon style={{color: Colors.white, width: scale(20)}} />
-                }
-              />
+              <View style={styles.buttonContainer}>
+                <Button.Select title={getDateRangeText()} style={{flex: 2}} />
+
+                <View style={{flex: 1}}>
+                  <Button.Select
+                    title={capitalize(selectedTypeFilter)}
+                    style={{flex: 1}}
+                    iconRight={
+                      <Animated.View
+                        style={{
+                          transform: [
+                            {
+                              rotate: filterRotate.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0deg', '180deg'],
+                              }),
+                            },
+                          ],
+                        }}>
+                        <DownIcon
+                          style={{color: Colors.black, width: scale(20)}}
+                        />
+                      </Animated.View>
+                    }
+                    onPress={() => toggleFilter(-1)}
+                  />
+
+                  {activeFilter.index === -1 && (
+                    <Animated.View
+                      style={{
+                        position: 'absolute',
+                        top: scale(45),
+                        zIndex: 1000,
+                        width: '100%',
+                        backgroundColor: Colors.white,
+                        borderRadius: scale(6),
+                        paddingVertical: scale(6),
+                        paddingHorizontal: scale(12),
+                        elevation: Platform.OS === 'android' ? 5 : undefined,
+                        shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
+                        shadowOffset:
+                          Platform.OS === 'ios'
+                            ? {width: 0, height: 2}
+                            : undefined,
+                        shadowOpacity: Platform.OS === 'ios' ? 0.15 : undefined,
+                        shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
+                        opacity: activeFilter.anim,
+                        transform: [
+                          {
+                            translateY: activeFilter.anim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-10, 0],
+                            }),
+                          },
+                        ],
+                      }}>
+                      <ScrollView
+                        style={{maxHeight: scale(200)}}
+                        showsVerticalScrollIndicator={false}>
+                        {productTypeOptions.map((option, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={{
+                              paddingVertical: scale(8),
+                              borderBottomWidth:
+                                index < productTypeOptions.length - 1 ? 0.5 : 0,
+                              borderBottomColor: '#eee',
+                            }}
+                            onPress={() => handleTypeSelection(option)}>
+                            <Text
+                              style={{
+                                fontSize: scale(13),
+                                color:
+                                  selectedTypeFilter === option
+                                    ? Colors.greenText
+                                    : '#333',
+                                fontWeight:
+                                  selectedTypeFilter === option
+                                    ? 'bold'
+                                    : 'normal',
+                              }}>
+                              {capitalize(option)}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </Animated.View>
+                  )}
+                </View>
+              </View>
+
+              {collectionAndYieldData.length > 0 ? (
+                <CustomTable
+                  data={collectionAndYieldData}
+                  columns={columns}
+                  scrollable
+                  bodyHeight={scale(200)}
+                  headerRowStyle={{width: '100%'}}
+                  rowStyle={{width: '100%'}}
+                  containerStyle={{marginBottom: scale(20)}}
+                />
+              ) : (
+                <Text style={styles.noResultText}>
+                  Không tìm thấy kết quả phù hợp.
+                </Text>
+              )}
             </View>
 
-            {collectionAndYieldData.length > 0 ? (
-              <CustomTable
-                data={collectionAndYieldData}
-                columns={columns}
-                scrollable
-                bodyHeight={scale(200)}
-                headerRowStyle={{width: '100%'}}
-                rowStyle={{width: '100%'}}
-                containerStyle={{marginBottom: scale(20)}}
-              />
-            ) : (
-              <Text style={styles.noResultText}>
-                Không tìm thấy kết quả phù hợp.
-              </Text>
-            )}
+            <Button.Main
+              title={isExporting ? 'Đang xuất...' : 'Xuất Excel'}
+              disabled={isExporting}
+              onPress={async () => {
+                setIsExporting(true);
+                await exportDataToExcel(collectionAndYieldData);
+                setIsExporting(false);
+              }}
+              style={styles.buttonExcel}
+            />
           </View>
 
-          <Button.Main
-            title={isExporting ? 'Đang xuất...' : 'Xuất Excel'}
-            disabled={isExporting}
-            onPress={async () => {
-              setIsExporting(true);
-              await exportDataToExcel(collectionAndYieldData);
-              setIsExporting(false);
-            }}
-            style={styles.buttonExcel}
-          />
-
-          {/* Footer phân tích AI */}
           <View style={styles.footer}>
             <FastImage
               source={Images.PriceComparison_1}

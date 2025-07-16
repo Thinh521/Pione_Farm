@@ -28,6 +28,13 @@ const chains = [
     explorerUrl: 'https://polygonscan.com',
     rpcUrl: 'https://polygon-rpc.com',
   },
+  {
+    chainId: 5080,
+    name: 'Pione Zero',
+    currency: 'Pione Zero',
+    rpcUrl: 'https://rpc.zeroscan.org',
+    explorerUrl: 'https://zeroscan.org',
+  },
 ];
 
 if (!global.__APPKIT_INITIALIZED__) {
