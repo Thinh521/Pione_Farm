@@ -98,7 +98,9 @@ const NewsScreen = () => {
       <View style={styles.main}>
         <FlatList
           data={[{}]}
-          keyExtractor={(_, index) => index.toString()}
+          keyExtractor={(item, index) =>
+            item.id ? item.id.toString() : `item-${index}`
+          }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             marginTop: scale(20),

@@ -1,26 +1,77 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
-  ActivityIndicator,
   Animated,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
-
 import {DownIcon} from '~/assets/icons/Icons';
 import {Colors} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
 import Images from '~/assets/images/Images';
 import styles from './PriceComparison.styles';
-
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import CustomTable from '~/components/CustomTable/CustomTable';
 import ChatBot from '~/components/ChatBot/ChatBot';
 import Button from '~/components/ui/Button/ButtonComponent';
 import {getAnalysisAi} from '~/api/trendApi';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
+
+// Component Dropdown riêng để tái sử dụng
+const FilterDropdown = ({options, selected, onSelect, anim}) => (
+  <Animated.View
+    style={{
+      position: 'absolute',
+      top: scale(45),
+      zIndex: 1000,
+      width: '100%',
+      backgroundColor: Colors.white,
+      borderRadius: scale(6),
+      paddingVertical: scale(6),
+      paddingHorizontal: scale(12),
+      elevation: Platform.OS === 'android' ? 5 : undefined,
+      shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
+      shadowOffset: Platform.OS === 'ios' ? {width: 0, height: 2} : undefined,
+      shadowOpacity: Platform.OS === 'ios' ? 0.15 : undefined,
+      shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
+      opacity: anim,
+      transform: [
+        {
+          translateY: anim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-10, 0],
+          }),
+        },
+      ],
+    }}>
+    <ScrollView
+      style={{maxHeight: scale(200)}}
+      showsVerticalScrollIndicator={false}>
+      {options.map((option, index) => (
+        <TouchableOpacity
+          key={index}
+          style={{
+            paddingVertical: scale(8),
+            borderBottomWidth: index < options.length - 1 ? 0.5 : 0,
+            borderBottomColor: '#eee',
+          }}
+          onPress={() => onSelect(option)}>
+          <Text
+            style={{
+              fontSize: scale(13),
+              color: selected === option ? Colors.greenText : '#333',
+              fontWeight: selected === option ? 'bold' : 'normal',
+            }}>
+            {option}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </Animated.View>
+);
 
 const columns = [
   {title: 'Khu vực', key: 'provinceName', flex: 1},
@@ -32,19 +83,17 @@ const PriceComparisonScreen = () => {
   const {
     fruitCategory,
     provinceOptions,
-    searchText,
-    setSearchText,
-    selectedTypeFilter,
     selectedFilters,
     handleFilterSelect,
     collectionAndYieldData,
-    setSelectedTypeFilter,
     isLoading,
     productTypeOptions,
+    selectedTypeFilter,
+    setSelectedTypeFilter,
     exportDataToExcel,
+    exportingTable,
   } = useHarvestFilter();
 
-  const [isExporting, setIsExporting] = useState(false);
   const [analysisData, setAnalysisData] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
   const [activeFilter, setActiveFilter] = useState({
@@ -54,23 +103,30 @@ const PriceComparisonScreen = () => {
   const filterRotate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    let isMounted = true;
     const fetchAnalysisAi = async () => {
       try {
         const result = await getAnalysisAi();
-        setAnalysisData(result.data || []);
+        if (isMounted) setAnalysisData(result.data || []);
       } catch (error) {
-        setErrorMsg(error.message);
+        if (isMounted) setErrorMsg(error.message);
       }
     };
 
     fetchAnalysisAi();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const getFilterOptions = () => [
-    {label: 'Ngày BĐ', options: []},
-    {label: 'Ngày KT', options: []},
-    {label: 'Tỉnh', options: provinceOptions},
-  ];
+  const filterOptions = useMemo(
+    () => [
+      {label: 'Ngày BĐ', options: []},
+      {label: 'Ngày KT', options: []},
+      {label: 'Tỉnh', options: provinceOptions},
+    ],
+    [provinceOptions],
+  );
 
   const toggleFilter = index => {
     if (activeFilter.index === index) {
@@ -78,7 +134,7 @@ const PriceComparisonScreen = () => {
         Animated.timing(activeFilter.anim, {
           toValue: 0,
           duration: 200,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
         Animated.timing(filterRotate, {
           toValue: 0,
@@ -95,7 +151,7 @@ const PriceComparisonScreen = () => {
         Animated.timing(newAnim, {
           toValue: 1,
           duration: 200,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
         Animated.timing(filterRotate, {
           toValue: 1,
@@ -108,28 +164,17 @@ const PriceComparisonScreen = () => {
 
   const handleTypeSelection = type => {
     setSelectedTypeFilter(type);
-    toggleFilter(-1);
+    toggleFilter(null);
   };
 
-  const getDateRangeText = () => {
+  const getDateRangeText = useMemo(() => {
     const start = selectedFilters['Ngày BĐ'];
     const end = selectedFilters['Ngày KT'];
     if (!start && !end) return 'Chọn khoảng thời gian';
     if (!start) return `-- đến ${end}`;
     if (!end) return `${start} đến --`;
     return `${start} - ${end}`;
-  };
-
-  const capitalize = str =>
-    str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
-
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#000" />
-      </View>
-    );
-  }
+  }, [selectedFilters]);
 
   if (errorMsg) {
     return (
@@ -144,12 +189,10 @@ const PriceComparisonScreen = () => {
       <View style={styles.header}>
         <SearchAndFilterBar
           placeholder="Tìm kiếm trái cây"
-          searchText={searchText}
-          setSearchText={setSearchText}
           selectedFilters={selectedFilters}
           onFilterSelect={handleFilterSelect}
           itemOptions={fruitCategory}
-          filterOptions={getFilterOptions()}
+          filterOptions={filterOptions}
           showProductButton
         />
       </View>
@@ -163,11 +206,11 @@ const PriceComparisonScreen = () => {
               </Text>
 
               <View style={styles.buttonContainer}>
-                <Button.Select title={getDateRangeText()} style={{flex: 2}} />
+                <Button.Select title={getDateRangeText} style={{flex: 2}} />
 
                 <View style={{flex: 1}}>
                   <Button.Select
-                    title={capitalize(selectedTypeFilter)}
+                    title={selectedTypeFilter}
                     style={{flex: 1}}
                     iconRight={
                       <Animated.View
@@ -188,96 +231,35 @@ const PriceComparisonScreen = () => {
                     }
                     onPress={() => toggleFilter(-1)}
                   />
-
                   {activeFilter.index === -1 && (
-                    <Animated.View
-                      style={{
-                        position: 'absolute',
-                        top: scale(45),
-                        zIndex: 1000,
-                        width: '100%',
-                        backgroundColor: Colors.white,
-                        borderRadius: scale(6),
-                        paddingVertical: scale(6),
-                        paddingHorizontal: scale(12),
-                        elevation: Platform.OS === 'android' ? 5 : undefined,
-                        shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
-                        shadowOffset:
-                          Platform.OS === 'ios'
-                            ? {width: 0, height: 2}
-                            : undefined,
-                        shadowOpacity: Platform.OS === 'ios' ? 0.15 : undefined,
-                        shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
-                        opacity: activeFilter.anim,
-                        transform: [
-                          {
-                            translateY: activeFilter.anim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [-10, 0],
-                            }),
-                          },
-                        ],
-                      }}>
-                      <ScrollView
-                        style={{maxHeight: scale(200)}}
-                        showsVerticalScrollIndicator={false}>
-                        {productTypeOptions.map((option, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={{
-                              paddingVertical: scale(8),
-                              borderBottomWidth:
-                                index < productTypeOptions.length - 1 ? 0.5 : 0,
-                              borderBottomColor: '#eee',
-                            }}
-                            onPress={() => handleTypeSelection(option)}>
-                            <Text
-                              style={{
-                                fontSize: scale(13),
-                                color:
-                                  selectedTypeFilter === option
-                                    ? Colors.greenText
-                                    : '#333',
-                                fontWeight:
-                                  selectedTypeFilter === option
-                                    ? 'bold'
-                                    : 'normal',
-                              }}>
-                              {capitalize(option)}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </Animated.View>
+                    <FilterDropdown
+                      options={productTypeOptions}
+                      selected={selectedTypeFilter}
+                      onSelect={handleTypeSelection}
+                      anim={activeFilter.anim}
+                    />
                   )}
                 </View>
               </View>
 
-              {collectionAndYieldData.length > 0 ? (
-                <CustomTable
-                  data={collectionAndYieldData}
-                  columns={columns}
-                  scrollable
-                  bodyHeight={scale(200)}
-                  headerRowStyle={{width: '100%'}}
-                  rowStyle={{width: '100%'}}
-                  containerStyle={{marginBottom: scale(20)}}
-                />
-              ) : (
-                <Text style={styles.noResultText}>
-                  Không tìm thấy kết quả phù hợp.
-                </Text>
-              )}
+              <CustomTable
+                data={collectionAndYieldData}
+                columns={columns}
+                scrollable
+                isLoading={isLoading}
+                bodyHeight={scale(200)}
+                headerRowStyle={{width: '100%'}}
+                rowStyle={{width: '100%'}}
+                containerStyle={{marginBottom: scale(20)}}
+              />
             </View>
 
             <Button.Main
-              title={isExporting ? 'Đang xuất...' : 'Xuất Excel'}
-              disabled={isExporting}
-              onPress={async () => {
-                setIsExporting(true);
-                await exportDataToExcel(collectionAndYieldData);
-                setIsExporting(false);
-              }}
+              title={exportingTable ? 'Đang xuất...' : 'Xuất Excel'}
+              disabled={!!exportingTable}
+              onPress={() =>
+                exportDataToExcel(collectionAndYieldData, 'price_comparison')
+              }
               style={styles.buttonExcel}
             />
           </View>
@@ -325,9 +307,9 @@ const PriceComparisonScreen = () => {
             />
           </View>
         </View>
-      </ScrollView>
 
-      <ChatBot />
+        <ChatBot />
+      </ScrollView>
     </View>
   );
 };

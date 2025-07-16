@@ -21,17 +21,15 @@ export const getNewsList = async (page = 1, type = null, accessToken) => {
   }
 };
 
-export const getNewsPaginated = async ({pageParam = 1, queryKey}) => {
+export const getNewsPaginated = async ({pageParam = 1, type, token}) => {
   try {
-    const [_key, type, accessToken] = queryKey;
-
     const res = await api.get('/api/news/get-all', {
       params: {
         page: pageParam,
         ...(type && {type}),
       },
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 

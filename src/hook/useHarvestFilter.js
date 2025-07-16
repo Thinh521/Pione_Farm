@@ -1,7 +1,8 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useCallback, useMemo} from 'react';
 import {Alert, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import XLSX from 'xlsx';
+
 import {getAllCategories} from '../api/categogyApi';
 import {getAllProvinceApii} from '../api/provinceApi';
 import {
@@ -9,6 +10,15 @@ import {
   getProductTypesByProvince,
   getTodayHarvestSummary,
 } from '../api/productApi';
+
+// Hàm debounce đơn giản
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
 
 export const useHarvestFilter = (excludeTodayHarvest = false) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,170 +34,143 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
   const [todayHarvestData, setTodayHarvestData] = useState(null);
   const [exportingTable, setExportingTable] = useState(null);
 
-  const formatDate = dateString => {
+  const formatDate = useCallback(dateString => {
     if (!dateString) return '';
     const [day, month, year] = dateString.split('/');
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  };
-
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setIsLoading(true);
-
-        const categoriesRes = await getAllCategories();
-        const categoryNames = categoriesRes.data.map(c => c.name);
-
-        setFruitCategory(['Tất cả', ...categoryNames]);
-        setAllCategories(categoriesRes.data);
-
-        const provincesRes = await getAllProvinceApii();
-        const provinceNames = provincesRes.data.map(p => p.name);
-        setProvinceOptions(['Tất cả', ...provinceNames]);
-        setAllProvinces(provincesRes.data);
-
-        if (!excludeTodayHarvest) {
-          const todayRes = await getTodayHarvestSummary();
-          setTodayHarvestData(todayRes.data);
-        }
-      } catch (err) {
-        console.error('Lỗi tải dữ liệu ban đầu:', err.message);
-        Alert.alert('Lỗi', 'Không thể tải dữ liệu');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    const fetchProductTypes = async () => {
-      const provinceName = selectedFilters['Tỉnh'];
-      const startDate = selectedFilters['Ngày BĐ'];
-      const endDate = selectedFilters['Ngày KT'];
+  const fetchInitialData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const [categoriesRes, provincesRes] = await Promise.all([
+        getAllCategories(),
+        getAllProvinceApii(),
+      ]);
 
+      setFruitCategory(['Tất cả', ...categoriesRes.data.map(c => c.name)]);
+      setProvinceOptions(['Tất cả', ...provincesRes.data.map(p => p.name)]);
+      setAllCategories(categoriesRes.data);
+      setAllProvinces(provincesRes.data);
+
+      if (!excludeTodayHarvest) {
+        const todayRes = await getTodayHarvestSummary();
+        setTodayHarvestData(todayRes.data);
+      }
+    } catch (err) {
+      console.error('Lỗi tải dữ liệu ban đầu:', err.message);
+      Alert.alert('Lỗi', 'Không thể tải dữ liệu ban đầu');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [excludeTodayHarvest]);
+
+  const fetchProductTypes = useCallback(async () => {
+    const {
+      Tỉnh: provinceName,
+      'Ngày BĐ': startDate,
+      'Ngày KT': endDate,
+    } = selectedFilters;
+
+    if (!provinceName || provinceName === 'Tất cả' || !startDate || !endDate) {
       setProductTypeOptions(['Tất cả']);
       setProductTypeOptionsData([]);
       setSelectedTypeFilter('Tất cả');
+      return;
+    }
 
-      if (!provinceName || provinceName === 'Tất cả' || !startDate || !endDate)
-        return;
+    try {
+      const selectedProvince = allProvinces.find(p => p.name === provinceName);
+      if (!selectedProvince) return;
 
-      try {
+      const typesRes = await getProductTypesByProvince(selectedProvince._id, {
+        start: formatDate(startDate),
+        end: formatDate(endDate),
+      });
+
+      const typeNames = typesRes?.data?.map(t => t.name) || [];
+      setProductTypeOptions(['Tất cả', ...typeNames]);
+      setProductTypeOptionsData(typesRes?.data || []);
+    } catch (err) {
+      console.error('Lỗi lấy loại sản phẩm:', err.message);
+      Alert.alert('Lỗi', 'Không thể lấy loại sản phẩm');
+    }
+  }, [selectedFilters, allProvinces, formatDate]);
+
+  const fetchFilteredData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const {
+        Tỉnh: provinceName,
+        'Mặt hàng': categoryName,
+        'Ngày BĐ': startDate,
+        'Ngày KT': endDate,
+      } = selectedFilters;
+
+      const payload = {};
+
+      if (provinceName && provinceName !== 'Tất cả') {
         const selectedProvince = allProvinces.find(
           p => p.name === provinceName,
         );
-        if (!selectedProvince) return;
-
-        const typesRes = await getProductTypesByProvince(selectedProvince._id, {
-          start: formatDate(startDate),
-          end: formatDate(endDate),
-        });
-
-        if (typesRes?.data?.length > 0) {
-          const typeNames = typesRes.data.map(t => t.name);
-          setProductTypeOptions(['Tất cả', ...typeNames]);
-          setProductTypeOptionsData(typesRes.data);
-        }
-      } catch (err) {
-        console.error('Lỗi lấy loại sản phẩm:', err.message);
-      }
-    };
-
-    fetchProductTypes();
-  }, [
-    selectedFilters['Tỉnh'],
-    selectedFilters['Ngày BĐ'],
-    selectedFilters['Ngày KT'],
-    allProvinces,
-  ]);
-
-  useEffect(() => {
-    const fetchFilteredData = async () => {
-      const provinceName = selectedFilters['Tỉnh'];
-      const categoryName = selectedFilters['Mặt hàng'];
-      const startDate = selectedFilters['Ngày BĐ'];
-      const endDate = selectedFilters['Ngày KT'];
-
-      if (
-        !provinceName ||
-        !categoryName ||
-        !startDate ||
-        !endDate ||
-        provinceName === 'Tất cả' ||
-        categoryName === 'Tất cả'
-      ) {
-        setCollectionAndYieldData([]);
-        return;
+        if (selectedProvince) payload.provinceId = selectedProvince._id;
       }
 
-      try {
-        setIsLoading(true);
-
-        const selectedProvince = allProvinces.find(
-          p => p.name === provinceName,
-        );
+      if (categoryName && categoryName !== 'Tất cả') {
         const selectedCategory = allCategories.find(
           c => c.name === categoryName,
         );
-        if (!selectedProvince || !selectedCategory) return;
-
-        const selectedType =
-          selectedTypeFilter !== 'Tất cả'
-            ? productTypeOptionsData.find(t => t.name === selectedTypeFilter)
-            : null;
-
-        const payload = {
-          provinceId: selectedProvince._id,
-          categoryId: selectedCategory._id,
-          date: {
-            start: formatDate(startDate),
-            end: formatDate(endDate),
-          },
-        };
-
-        if (selectedType) {
-          payload.typeId = selectedType._id;
-        }
-
-        const res = await getFarmMarketPrices(payload);
-        setCollectionAndYieldData(res.data || []);
-      } catch (err) {
-        console.error('Lỗi lấy dữ liệu giá:', err.message);
-        setCollectionAndYieldData([]);
-        Alert.alert('Lỗi', 'Không thể lấy dữ liệu giá');
-      } finally {
-        setIsLoading(false);
+        if (selectedCategory) payload.categoryId = selectedCategory._id;
       }
-    };
 
-    fetchFilteredData();
+      if (startDate && endDate) {
+        payload.date = {
+          start: formatDate(startDate),
+          end: formatDate(endDate),
+        };
+      }
+
+      if (selectedTypeFilter && selectedTypeFilter !== 'Tất cả') {
+        const selectedType = productTypeOptionsData.find(
+          t => t.name === selectedTypeFilter,
+        );
+        if (selectedType) payload.typeId = selectedType._id;
+      }
+
+      const res = await getFarmMarketPrices(payload);
+      setCollectionAndYieldData(res.data || []);
+    } catch (err) {
+      console.error('Lỗi lấy dữ liệu giá:', err.message);
+      setCollectionAndYieldData([]);
+      Alert.alert('Lỗi', 'Không thể lấy dữ liệu giá');
+    } finally {
+      setIsLoading(false);
+    }
   }, [
-    selectedFilters['Tỉnh'],
-    selectedFilters['Mặt hàng'],
-    selectedFilters['Ngày BĐ'],
-    selectedFilters['Ngày KT'],
+    selectedFilters,
     selectedTypeFilter,
     allProvinces,
     allCategories,
     productTypeOptionsData,
+    formatDate,
   ]);
 
-  const handleFilterSelect = (type, value) => {
-    setIsLoading(true);
-    if (type !== 'Mặt hàng') {
-      setSelectedTypeFilter('Tất cả');
-    }
-    setSelectedFilters(prev => ({
-      ...prev,
-      [type]: value,
-    }));
-    setTimeout(() => setIsLoading(false), 300);
-  };
+  const handleFilterSelect = useCallback(
+    debounce((type, value) => {
+      setSelectedFilters(prev => ({
+        ...prev,
+        [type]: value,
+      }));
 
-  const exportDataToExcel = async (data, tableKey) => {
-    if (!data || data.length === 0) {
+      if (type === 'Mặt hàng') {
+        setSelectedTypeFilter('Tất cả');
+      }
+    }, 300),
+    [],
+  );
+
+  const exportDataToExcel = useCallback(async (data, tableKey) => {
+    if (!data?.length) {
       Alert.alert('Thông báo', 'Không có dữ liệu để xuất!');
       return;
     }
@@ -199,12 +182,6 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
       const ws = XLSX.utils.json_to_sheet(data);
       XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
       const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
-
-      const toBinary = str =>
-        str
-          .split('')
-          .map(c => String.fromCharCode(c.charCodeAt(0)))
-          .join('');
 
       const fileName = `ket_qua_${tableKey}_${Date.now()}.xlsx`;
       const path =
@@ -228,7 +205,7 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
         }
       }
 
-      await RNFS.writeFile(path, toBinary(wbout), 'ascii');
+      await RNFS.writeFile(path, wbout, 'ascii');
       Alert.alert('Thành công', `File đã lưu tại:\n${path}`);
     } catch (err) {
       console.error('Lỗi xuất file Excel:', err);
@@ -236,18 +213,38 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
     } finally {
       setExportingTable(null);
     }
-  };
+  }, []);
 
-  const isAllFiltersSelected = () => {
+  const isAllFiltersSelected = useMemo(() => {
+    const {
+      Tỉnh: province,
+      'Mặt hàng': category,
+      'Ngày BĐ': start,
+      'Ngày KT': end,
+    } = selectedFilters;
+
     return (
-      selectedFilters['Tỉnh'] &&
-      selectedFilters['Tỉnh'] !== 'Tất cả' &&
-      selectedFilters['Mặt hàng'] &&
-      selectedFilters['Mặt hàng'] !== 'Tất cả' &&
-      selectedFilters['Ngày BĐ'] &&
-      selectedFilters['Ngày KT']
+      province &&
+      province !== 'Tất cả' &&
+      category &&
+      category !== 'Tất cả' &&
+      start &&
+      end
     );
-  };
+  }, [selectedFilters]);
+
+  // Các effect gọi API
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  useEffect(() => {
+    fetchProductTypes();
+  }, [fetchProductTypes]);
+
+  useEffect(() => {
+    fetchFilteredData();
+  }, [fetchFilteredData]);
 
   return {
     isLoading,
@@ -262,5 +259,6 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
     setSelectedTypeFilter,
     exportDataToExcel,
     isAllFiltersSelected,
+    exportingTable,
   };
 };

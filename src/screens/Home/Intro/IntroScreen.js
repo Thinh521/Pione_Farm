@@ -4,14 +4,14 @@ import FastImage from 'react-native-fast-image';
 import {API_BASE_URL} from '@env';
 import {useInfiniteQuery} from '@tanstack/react-query';
 
-import {getNewsPaginated} from '../../../api/newsApi';
-import {getAccessToken} from '../../../utils/storage/tokenStorage';
+import {getNewsPaginated} from '~/api/newsApi';
+import {getAccessToken} from '~/utils/storage/tokenStorage';
 import styles from './Intro.styles';
-import {scale} from '../../../utils/scaling';
+import {scale} from '~/utils/scaling';
 
-import SearchAndFilterBar from '../../../components/SearchAndFilterBar/SearchAndFilterBar';
-import ChatBot from '../../../components/ChatBot/ChatBot';
-import {removeVietnameseTones} from '../../../utils/normalize';
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
+import ChatBot from '~/components/ChatBot/ChatBot';
+import {removeVietnameseTones} from '~/utils/normalize';
 
 const FILTER_OPTIONS = [
   {label: 'Ngày BĐ', options: []},
@@ -41,11 +41,10 @@ const IntroScreen = () => {
     refetch,
   } = useInfiniteQuery({
     queryKey: ['news', selectedFilters['type'], accessToken],
-    queryFn: ({pageParam = 1}) =>
-      getNewsPaginated({
-        pageParam,
-        queryKey: ['news', selectedFilters['type'], accessToken],
-      }),
+    queryFn: ({pageParam = 1, queryKey}) => {
+      const [_key, type, token] = queryKey;
+      return getNewsPaginated({pageParam, type, token});
+    },
     getNextPageParam: lastPage => {
       if (lastPage.currentPage < lastPage.totalPages) {
         return lastPage.currentPage + 1;
@@ -192,7 +191,9 @@ const IntroScreen = () => {
       ) : (
         <FlatList
           data={filteredData}
-          keyExtractor={item => item.id?.toString()}
+          keyExtractor={(item, index) =>
+            item.id ? item.id.toString() : `item-${index}`
+          }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
           renderItem={renderItem}
