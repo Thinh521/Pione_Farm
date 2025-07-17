@@ -1,34 +1,12 @@
 import React, {useMemo} from 'react';
-import {View, StyleSheet, Platform, ScrollView} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {scale} from '~/utils/scaling';
 
-const CustomTableSkeleton = ({
-  columns = [],
-  rowCount = 6,
-  bodyHeight = scale(200),
-  scrollable = false,
-}) => {
+const CustomTableSkeleton = ({columns = [], rowCount = 5}) => {
   const columnFlex = useMemo(
     () => columns.map(col => col.flex || 1),
     [columns],
-  );
-
-  const renderHeaderSkeleton = useMemo(
-    () => (
-      <SkeletonPlaceholder.Item flexDirection="row" paddingVertical={scale(10)}>
-        {columnFlex.map((flex, index) => (
-          <SkeletonPlaceholder.Item
-            key={`header-${index}`}
-            flex={flex}
-            height={scale(16)}
-            borderRadius={4}
-            marginHorizontal={scale(12)}
-          />
-        ))}
-      </SkeletonPlaceholder.Item>
-    ),
-    [columnFlex],
   );
 
   const renderBodySkeleton = useMemo(
@@ -45,7 +23,7 @@ const CustomTableSkeleton = ({
               <SkeletonPlaceholder.Item
                 key={`cell-${rowIndex}-${colIndex}`}
                 flex={flex}
-                height={scale(16)}
+                height={scale(20)}
                 borderRadius={4}
                 marginHorizontal={scale(12)}
               />
@@ -58,35 +36,12 @@ const CustomTableSkeleton = ({
   );
 
   return (
-    <View
-      style={[
-        styles.table,
-        Platform.select({
-          ios: {
-            shadowColor: '#000',
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            shadowOffset: {width: 0, height: 1},
-          },
-          android: {elevation: 1},
-        }),
-      ]}>
+    <View style={styles.table}>
       <SkeletonPlaceholder
         backgroundColor="#dcdcdc"
         highlightColor="#eaeaea"
         speed={1000}>
-        {renderHeaderSkeleton}
-        {scrollable ? (
-          <ScrollView
-            nestedScrollEnabled
-            style={{height: bodyHeight}}
-            contentContainerStyle={{paddingBottom: scale(10)}}
-            showsVerticalScrollIndicator={false}>
-            {renderBodySkeleton}
-          </ScrollView>
-        ) : (
-          renderBodySkeleton
-        )}
+        {renderBodySkeleton}
       </SkeletonPlaceholder>
     </View>
   );
@@ -94,11 +49,8 @@ const CustomTableSkeleton = ({
 
 const styles = StyleSheet.create({
   table: {
-    borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 6,
     overflow: 'hidden',
-    backgroundColor: '#fff',
   },
 });
 

@@ -68,7 +68,7 @@ const NewsList = ({data = []}) => {
     <View style={styles.container}>
       <FlatList
         data={data}
-        keyExtractor={item => item.id}
+        keyExtractor={(item, index) => item._id?.toString() || `item-${index}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
         renderItem={renderItem}

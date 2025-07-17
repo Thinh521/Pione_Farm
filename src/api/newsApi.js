@@ -58,3 +58,16 @@ export const getNewsById = async (id, accessToken) => {
     throw new Error(message);
   }
 };
+
+export const getIntroNews = async () => {
+  try {
+    const res = await api.get('/api/news/intro');
+
+    return res.data.data;
+  } catch (error) {
+    const message =
+      error?.response?.data?.message || 'Không thể tải tin tức giới thiệu';
+    console.log('Lỗi getIntroNews:', message);
+    throw new Error(message);
+  }
+};

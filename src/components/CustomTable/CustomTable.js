@@ -60,7 +60,7 @@ const CustomTable = ({
           contentContainerStyle={{paddingBottom: scale(10)}}
           showsVerticalScrollIndicator>
           {isLoading ? (
-            <CustomTableSkeleton columns={columns} rowCount={6} />
+            <CustomTableSkeleton columns={columns} rowCount={5} />
           ) : (
             data.map(renderRow)
           )}
@@ -68,7 +68,7 @@ const CustomTable = ({
       );
     }
     return isLoading ? (
-      <CustomTableSkeleton columns={columns} rowCount={6} />
+      <CustomTableSkeleton columns={columns} rowCount={5} />
     ) : (
       data.map(renderRow)
     );

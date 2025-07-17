@@ -2,13 +2,11 @@ import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, FlatList, Animated, ActivityIndicator} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {API_BASE_URL} from '@env';
-import {useInfiniteQuery} from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 
-import {getNewsPaginated} from '~/api/newsApi';
-import {getAccessToken} from '~/utils/storage/tokenStorage';
+import {getIntroNews} from '~/api/newsApi';
 import styles from './Intro.styles';
 import {scale} from '~/utils/scaling';
-
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import ChatBot from '~/components/ChatBot/ChatBot';
 import {removeVietnameseTones} from '~/utils/normalize';
@@ -30,37 +28,17 @@ const IntroScreen = () => {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
 
-  const accessToken = getAccessToken();
-
   const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    data: newsData = [],
     isLoading,
     refetch,
-  } = useInfiniteQuery({
-    queryKey: ['news', selectedFilters['type'], accessToken],
-    queryFn: ({pageParam = 1, queryKey}) => {
-      const [_key, type, token] = queryKey;
-      return getNewsPaginated({pageParam, type, token});
-    },
-    getNextPageParam: lastPage => {
-      if (lastPage.currentPage < lastPage.totalPages) {
-        return lastPage.currentPage + 1;
-      }
-      return undefined;
-    },
-    enabled: !!accessToken,
+    isFetching,
+  } = useQuery({
+    queryKey: ['intro-news'],
+    queryFn: getIntroNews,
   });
 
-  const newsData = data?.pages.flatMap(page => page.data) || [];
-
   console.log('newsData', newsData);
-
-  useEffect(() => {
-    refetch();
-  }, [searchText, selectedFilters]);
 
   useEffect(() => {
     Animated.timing(animatedValue, {
@@ -69,6 +47,10 @@ const IntroScreen = () => {
       useNativeDriver: true,
     }).start();
   }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [searchText, selectedFilters]);
 
   const translateY = animatedValue.interpolate({
     inputRange: [0, 1],
@@ -82,8 +64,9 @@ const IntroScreen = () => {
 
   const parseDate = dateString => {
     if (!dateString) return null;
-    const [day, month, year] = dateString.split('/');
-    return new Date(`${year}-${month}-${day}`);
+    const date = new Date(dateString);
+    if (isNaN(date)) return null;
+    return date;
   };
 
   const handleFilterSelect = (type, value) => {
@@ -92,15 +75,7 @@ const IntroScreen = () => {
     setTimeout(() => setFiltering(false), 300);
   };
 
-  const handleLoadMore = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
-
-  const flattenedItems = newsData.flatMap(item => item.items || []);
-
-  const filteredData = flattenedItems
+  const filteredData = newsData
     ?.filter(item => {
       const searchMatch =
         removeVietnameseTones(item.title).includes(
@@ -152,13 +127,16 @@ const IntroScreen = () => {
         <View style={styles.metaContainer}>
           <View style={styles.metaItem}>
             <Text style={styles.metaIconText}>📅 </Text>
-            <Text style={styles.metaText}>{item.date}</Text>
+            <Text style={styles.metaText}>
+              {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+            </Text>
           </View>
 
-          <View style={styles.metaItem}>
-            <Text style={styles.metaIconText}>⏱️ </Text>
-            <Text style={styles.metaText}>{item.readTime} phút đọc</Text>
-          </View>
+          {item.type && (
+            <View style={styles.metaItem}>
+              <Text style={styles.metaText}>Tin tức: {item.type}</Text>
+            </View>
+          )}
         </View>
       </View>
     </Animated.View>
@@ -192,13 +170,11 @@ const IntroScreen = () => {
         <FlatList
           data={filteredData}
           keyExtractor={(item, index) =>
-            item.id ? item.id.toString() : `item-${index}`
+            item._id?.toString() || `item-${index}`
           }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
           renderItem={renderItem}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.4}
           ListHeaderComponent={() => (
             <View style={styles.headerContent}>
               <Text style={styles.headerTitle}>Tin tức & Thông tin</Text>
@@ -207,13 +183,7 @@ const IntroScreen = () => {
               </Text>
             </View>
           )}
-          ListFooterComponent={
-            isFetchingNextPage ? (
-              <ActivityIndicator size="small" color="#00AA00" />
-            ) : (
-              <View style={{height: scale(100)}} />
-            )
-          }
+          ListFooterComponent={<View style={{height: scale(100)}} />}
         />
       )}
 

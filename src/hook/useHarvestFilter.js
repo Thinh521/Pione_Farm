@@ -215,7 +215,7 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
     }
   }, []);
 
-  const isAllFiltersSelected = useMemo(() => {
+  const isAllFiltersSelected = useCallback(() => {
     const {
       Tỉnh: province,
       'Mặt hàng': category,

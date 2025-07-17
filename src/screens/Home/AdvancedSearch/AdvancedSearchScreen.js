@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   Animated,
   StatusBar,
 } from 'react-native';
-
 import styles from './AdvancedSearch.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import CustomTable from '~/components/CustomTable/CustomTable';
@@ -19,19 +18,25 @@ import {DownIcon} from '~/assets/icons/Icons';
 import {Colors} from '~/theme/theme';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
 
-const columns = [
-  {title: 'Khu vực', key: 'provinceName', flex: 1},
-  {title: 'Giá tại chợ', key: 'marketPrice', flex: 1},
-  {title: 'Giá tại Vườn', key: 'farmPrice', flex: 1},
-];
-
-const columns_2 = [
-  {title: 'Ngày tháng', key: 'date', flex: 1},
-  {title: 'Nơi thu thập', key: 'provinceName', flex: 1},
-  {title: 'Số lượng', key: 'quantitySum', flex: 1},
-];
-
 const AdvancedSearchScreen = () => {
+  const columns = useMemo(
+    () => [
+      {title: 'Khu vực', key: 'provinceName', flex: 1},
+      {title: 'Giá tại chợ', key: 'marketPrice', flex: 1},
+      {title: 'Giá tại Vườn', key: 'farmPrice', flex: 1},
+    ],
+    [],
+  );
+
+  const columns_2 = useMemo(
+    () => [
+      {title: 'Ngày tháng', key: 'date', flex: 1},
+      {title: 'Nơi thu thập', key: 'provinceName', flex: 1},
+      {title: 'Số lượng', key: 'quantitySum', flex: 1},
+    ],
+    [],
+  );
+
   const {
     isLoading,
     fruitCategory,
@@ -48,8 +53,6 @@ const AdvancedSearchScreen = () => {
     exportingTable,
   } = useHarvestFilter(false);
 
-  console.log('fruitCategory', fruitCategory);
-
   const [searchText, setSearchText] = useState('');
   const [activeFilter, setActiveFilter] = useState({
     index: null,
@@ -57,62 +60,82 @@ const AdvancedSearchScreen = () => {
   });
   const filterRotate = useRef(new Animated.Value(0)).current;
 
-  const getFilterOptions = () => [
-    {label: 'Ngày BĐ', options: []},
-    {label: 'Ngày KT', options: []},
-    {label: 'Tỉnh', options: provinceOptions},
-  ];
+  const filterOptions = useMemo(
+    () => [
+      {label: 'Ngày BĐ', options: []},
+      {label: 'Ngày KT', options: []},
+      {label: 'Tỉnh', options: provinceOptions},
+    ],
+    [provinceOptions],
+  );
 
-  const toggleFilter = index => {
-    if (activeFilter.index === index) {
-      Animated.parallel([
-        Animated.timing(activeFilter.anim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }),
-        Animated.timing(filterRotate, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setActiveFilter({index: null, anim: new Animated.Value(0)});
-      });
-    } else {
-      const newAnim = new Animated.Value(0);
-      setActiveFilter({index, anim: newAnim});
-      Animated.parallel([
-        Animated.timing(newAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: false,
-        }),
-        Animated.timing(filterRotate, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  };
+  const toggleFilter = useCallback(
+    index => {
+      if (activeFilter.index === index) {
+        Animated.parallel([
+          Animated.timing(activeFilter.anim, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(filterRotate, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setActiveFilter({index: null, anim: new Animated.Value(0)});
+        });
+      } else {
+        const newAnim = new Animated.Value(0);
+        setActiveFilter({index, anim: newAnim});
+        Animated.parallel([
+          Animated.timing(newAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(filterRotate, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
+    },
+    [activeFilter.index, activeFilter.anim],
+  );
 
-  const handleTypeSelection = type => {
-    setSelectedTypeFilter(type);
-    toggleFilter(-1);
-  };
+  const handleTypeSelection = useCallback(
+    type => {
+      setSelectedTypeFilter(type);
+      toggleFilter(-1);
+    },
+    [setSelectedTypeFilter, toggleFilter],
+  );
 
-  const getDateRangeText = () => {
+  const getDateRangeText = useMemo(() => {
     const start = selectedFilters['Ngày BĐ'];
     const end = selectedFilters['Ngày KT'];
     if (!start && !end) return 'Chọn khoảng thời gian';
     if (!start) return `-- đến ${end}`;
     if (!end) return `${start} đến --`;
     return `${start} - ${end}`;
-  };
+  }, [selectedFilters]);
 
-  const capitalize = str =>
-    str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+  const capitalize = useMemo(
+    () => str => str ? str.charAt(0).toUpperCase() + str.slice(1) : '',
+    [],
+    [],
+  );
+
+  const handleExportPrice = useCallback(() => {
+    exportDataToExcel(collectionAndYieldData, 'bang_gia');
+  }, [exportDataToExcel, collectionAndYieldData]);
+
+  const handleExportHarvest = useCallback(() => {
+    exportDataToExcel(todayHarvestData, 'bang_san_luong');
+  }, [exportDataToExcel, todayHarvestData]);
 
   return (
     <>
@@ -125,7 +148,7 @@ const AdvancedSearchScreen = () => {
             setSearchText={setSearchText}
             selectedFilters={selectedFilters}
             onFilterSelect={handleFilterSelect}
-            filterOptions={getFilterOptions()}
+            filterOptions={filterOptions}
             itemOptions={fruitCategory}
             showProductButton
             isLoading={isLoading}
@@ -141,7 +164,7 @@ const AdvancedSearchScreen = () => {
             </Text>
 
             <View style={styles.buttonContainer}>
-              <Button.Select title={getDateRangeText()} style={{flex: 2}} />
+              <Button.Select title={getDateRangeText} style={{flex: 2}} />
 
               <View style={{flex: 1}}>
                 <Button.Select
@@ -255,9 +278,7 @@ const AdvancedSearchScreen = () => {
                     : 'Xuất bảng giá'
                 }
                 disabled={collectionAndYieldData.length === 0}
-                onPress={() =>
-                  exportDataToExcel(collectionAndYieldData, 'bang_gia')
-                }
+                onPress={handleExportPrice}
                 style={styles.buttonExcel}
               />
             </View>
@@ -286,9 +307,7 @@ const AdvancedSearchScreen = () => {
                     : 'Xuất bảng sản lượng'
                 }
                 disabled={todayHarvestData?.length === 0}
-                onPress={() =>
-                  exportDataToExcel(todayHarvestData, 'bang_san_luong')
-                }
+                onPress={handleExportHarvest}
                 style={styles.buttonExcel}
               />
             </View>
