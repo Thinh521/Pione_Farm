@@ -36,6 +36,17 @@ export default StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  selecteButton: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderColor: '#b0ffce',
+    borderWidth: 1,
+    borderRadius: scale(24),
+    paddingHorizontal: scale(16),
+    paddingVertical: scale(8),
+  },
   noResultText: {
     textAlign: 'center',
     marginTop: scale(10),

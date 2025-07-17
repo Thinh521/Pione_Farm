@@ -34,6 +34,17 @@ export default StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  selecteButton: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderColor: '#b0ffce',
+    borderWidth: 1,
+    borderRadius: scale(24),
+    paddingHorizontal: scale(16),
+    paddingVertical: scale(8),
+  },
   buttonExcel: {
     backgroundColor: Colors.green,
     marginBottom: scale(30),
@@ -43,6 +54,7 @@ export default StyleSheet.create({
     marginTop: scale(16),
   },
   footerContent: {
+    textAlign: 'center',
     position: 'absolute',
     top: -scale(10),
     padding: scale(45),
@@ -50,13 +62,13 @@ export default StyleSheet.create({
   footerContentTitle: {
     color: '#1500FF',
     textAlign: 'center',
-    fontSize: FontSizes.regular,
+    fontSize: FontSizes.medium,
     fontWeight: FontWeights.semiBold,
   },
   footerContentTitle_2: {
     color: '#1500FF',
     textAlign: 'center',
-    fontSize: FontSizes.medium,
+    fontSize: FontSizes.small,
     fontWeight: FontWeights.semiBold,
   },
   footerContentDescription: {

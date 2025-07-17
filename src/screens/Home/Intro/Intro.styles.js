@@ -14,7 +14,7 @@ export default StyleSheet.create({
   },
   headerContent: {
     alignItems: 'flex-start',
-    marginBottom: scale(20),
+    marginBlock: scale(20),
   },
   headerTitle: {
     fontSize: FontSizes.regular,

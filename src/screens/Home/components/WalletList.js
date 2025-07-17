@@ -5,6 +5,7 @@ import FastImage from 'react-native-fast-image';
 import LineChartWrapper from '../../../components/LineChart/LineChartWrapper';
 import {scale} from '../../../utils/scaling';
 import {formatCurrencyVND} from '../../../utils/format';
+import WalletListSkeleton from '../../../components/Skeleton/WalletListSkeleton';
 
 const WalletItem = ({
   images,
@@ -21,7 +22,6 @@ const WalletItem = ({
 
   return (
     <View style={styles.itemContainer}>
-      {/* Left Column */}
       <View style={styles.columnLeft}>
         <FastImage
           source={{uri: `${API_BASE_URL}/api/upload/${images}`}}
@@ -37,7 +37,6 @@ const WalletItem = ({
         </View>
       </View>
 
-      {/* Center Column - Chart */}
       <View style={styles.columnCenter}>
         <LineChartWrapper
           data={priceTrend}
@@ -51,7 +50,6 @@ const WalletItem = ({
         />
       </View>
 
-      {/* Right Column - Price */}
       <View style={styles.columnRight}>
         <Text style={styles.price}>{formatCurrencyVND(marketPrice)}</Text>
         <Text style={[styles.change, {color}]}>
@@ -63,7 +61,21 @@ const WalletItem = ({
   );
 };
 
-const WalletList = ({data}) => {
+const WalletList = ({data = [], loading}) => {
+  if (loading) {
+    return <WalletListSkeleton itemCount={5} />;
+  }
+
+  if (!loading && (!data || data.length === 0)) {
+    return (
+      <View style={styles.empty}>
+        <Text style={styles.emptyIcon}>🔍</Text>
+        <Text style={styles.emptyText}>Không tìm thấy trái cây nào</Text>
+        <Text style={styles.emptySub}>Thử từ khóa khác</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -71,13 +83,6 @@ const WalletList = ({data}) => {
         keyExtractor={item => `${item.productId || item._productId}`}
         renderItem={({item}) => <WalletItem {...item} />}
         scrollEnabled={false}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={styles.emptyText}>Không tìm thấy trái cây nào</Text>
-            <Text style={styles.emptySub}>Thử từ khóa khác</Text>
-          </View>
-        }
       />
     </View>
   );

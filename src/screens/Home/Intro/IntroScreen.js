@@ -3,58 +3,66 @@ import {View, Text, FlatList, Animated, ActivityIndicator} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {API_BASE_URL} from '@env';
 import {useQuery} from '@tanstack/react-query';
-
 import {getIntroNews} from '~/api/newsApi';
 import styles from './Intro.styles';
 import {scale} from '~/utils/scaling';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import ChatBot from '~/components/ChatBot/ChatBot';
 import {removeVietnameseTones} from '~/utils/normalize';
+import {getAccessToken} from '~/utils/storage/tokenStorage';
+import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
 
 const FILTER_OPTIONS = [
   {label: 'Ngày BĐ', options: []},
   {label: 'Ngày KT', options: []},
-  {
-    label: 'Giá',
-    options: ['Tất cả', 'Tăng dần', 'Giảm dần'],
-  },
+  {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
 ];
 
 const IntroScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
   const [filtering, setFiltering] = useState(false);
+  const [accessToken, setAccessToken] = useState(null);
 
   const animatedValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
 
+  useEffect(() => {
+    (async () => {
+      const token = await getAccessToken();
+      setAccessToken(token);
+    })();
+  }, []);
+
   const {
-    data: newsData = [],
+    data: newsResponse = [],
     isLoading,
     refetch,
     isFetching,
   } = useQuery({
     queryKey: ['intro-news'],
-    queryFn: getIntroNews,
+    queryFn: () => getIntroNews(accessToken),
+    enabled: !!accessToken,
+    staleTime: 1000 * 60 * 5,
   });
-
-  console.log('newsData', newsData);
 
   useEffect(() => {
     Animated.timing(animatedValue, {
       toValue: 1,
-      duration: 1000,
+      duration: 600,
       useNativeDriver: true,
     }).start();
   }, []);
 
   useEffect(() => {
-    refetch();
-  }, [searchText, selectedFilters]);
+    if (accessToken) {
+      refetch();
+    }
+  }, [searchText, selectedFilters, accessToken]);
 
   const translateY = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [50, 0],
+    outputRange: [40, 0],
   });
 
   const opacity = animatedValue.interpolate({
@@ -63,32 +71,29 @@ const IntroScreen = () => {
   });
 
   const parseDate = dateString => {
-    if (!dateString) return null;
     const date = new Date(dateString);
-    if (isNaN(date)) return null;
-    return date;
+    return isNaN(date) ? null : date;
   };
 
   const handleFilterSelect = (type, value) => {
     setFiltering(true);
     setSelectedFilters(prev => ({...prev, [type]: value}));
-    setTimeout(() => setFiltering(false), 300);
+    setTimeout(() => setFiltering(false), 200);
   };
 
-  const filteredData = newsData
-    ?.filter(item => {
+  const filteredData = newsResponse
+    .filter(item => {
       const searchMatch =
-        removeVietnameseTones(item.title).includes(
+        removeVietnameseTones(item.title || '').includes(
           removeVietnameseTones(searchText),
         ) ||
-        removeVietnameseTones(item.summary).includes(
+        removeVietnameseTones(item.summary || '').includes(
           removeVietnameseTones(searchText),
         );
 
       const itemDate = parseDate(item.createdAt);
       const startDate = parseDate(selectedFilters['Ngày BĐ']);
       const endDate = parseDate(selectedFilters['Ngày KT']);
-
       const dateMatch =
         (!startDate || itemDate >= startDate) &&
         (!endDate || itemDate <= endDate);
@@ -123,7 +128,6 @@ const IntroScreen = () => {
         <Text style={styles.description} numberOfLines={2}>
           {item.summary}
         </Text>
-
         <View style={styles.metaContainer}>
           <View style={styles.metaItem}>
             <Text style={styles.metaIconText}>📅 </Text>
@@ -131,7 +135,6 @@ const IntroScreen = () => {
               {new Date(item.createdAt).toLocaleDateString('vi-VN')}
             </Text>
           </View>
-
           {item.type && (
             <View style={styles.metaItem}>
               <Text style={styles.metaText}>Tin tức: {item.type}</Text>
@@ -154,38 +157,48 @@ const IntroScreen = () => {
         />
       </View>
 
-      {isLoading || filtering ? (
-        <ActivityIndicator
-          size="large"
-          color="#00AA00"
-          style={{marginTop: 20}}
-        />
-      ) : filteredData.length === 0 ? (
-        <View style={{alignItems: 'center', marginTop: 40}}>
-          <Text style={{fontSize: 16, color: 'gray'}}>
-            Không tìm thấy kết quả nào.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredData}
-          keyExtractor={(item, index) =>
-            item._id?.toString() || `item-${index}`
-          }
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-          renderItem={renderItem}
-          ListHeaderComponent={() => (
+      <FlatList
+        data={[{}]}
+        keyExtractor={(_, index) => index.toString()}
+        showsVerticalScrollIndicator={false}
+        renderItem={() => (
+          <View>
             <View style={styles.headerContent}>
               <Text style={styles.headerTitle}>Tin tức & Thông tin</Text>
               <Text style={styles.headerSubtitle}>
                 Cập nhật thông tin mới nhất về nông nghiệp
               </Text>
             </View>
-          )}
-          ListFooterComponent={<View style={{height: scale(100)}} />}
-        />
-      )}
+
+            {isLoading || filtering || !accessToken || isFetching ? (
+              <NewsSkeleton itemCount={6} />
+            ) : filteredData.length === 0 ? (
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: scale(40),
+                }}>
+                <Text style={{fontSize: 16, color: 'gray'}}>
+                  Không tìm thấy kết quả nào.
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={filteredData}
+                keyExtractor={(item, index) =>
+                  item._id?.toString() || `item-${index}`
+                }
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContainer}
+                renderItem={renderItem}
+                ListFooterComponent={<View style={{height: scale(30)}} />}
+              />
+            )}
+          </View>
+        )}
+      />
 
       <ChatBot style={{bottom: scale(40)}} />
     </View>

@@ -20,7 +20,6 @@ import Button from '~/components/ui/Button/ButtonComponent';
 import {getAnalysisAi} from '~/api/trendApi';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
 
-// Component Dropdown riêng để tái sử dụng
 const FilterDropdown = ({options, selected, onSelect, anim}) => (
   <Animated.View
     style={{
@@ -101,6 +100,9 @@ const PriceComparisonScreen = () => {
     anim: new Animated.Value(0),
   });
   const filterRotate = useRef(new Animated.Value(0)).current;
+
+  const fruitCategorySafe =
+    fruitCategory.length > 0 ? fruitCategory : ['Tất cả'];
 
   useEffect(() => {
     let isMounted = true;
@@ -191,7 +193,7 @@ const PriceComparisonScreen = () => {
           placeholder="Tìm kiếm trái cây"
           selectedFilters={selectedFilters}
           onFilterSelect={handleFilterSelect}
-          itemOptions={fruitCategory}
+          itemOptions={fruitCategorySafe}
           filterOptions={filterOptions}
           showProductButton
         />
@@ -206,7 +208,7 @@ const PriceComparisonScreen = () => {
               </Text>
 
               <View style={styles.buttonContainer}>
-                <Button.Select title={getDateRangeText} style={{flex: 2}} />
+                <Text style={styles.selecteButton}>{getDateRangeText}</Text>
 
                 <View style={{flex: 1}}>
                   <Button.Select
@@ -243,7 +245,7 @@ const PriceComparisonScreen = () => {
               </View>
 
               <CustomTable
-                data={collectionAndYieldData}
+                data={collectionAndYieldData || []}
                 columns={columns}
                 scrollable
                 isLoading={isLoading}
@@ -293,7 +295,7 @@ const PriceComparisonScreen = () => {
                   </Text>
                   <Text
                     style={styles.footerContentDescription}
-                    numberOfLines={7}>
+                    numberOfLines={8}>
                     {analysisData?.responses}
                   </Text>
                 </View>
@@ -307,9 +309,9 @@ const PriceComparisonScreen = () => {
             />
           </View>
         </View>
-
-        <ChatBot />
       </ScrollView>
+
+      <ChatBot />
     </View>
   );
 };

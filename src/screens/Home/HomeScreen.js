@@ -3,7 +3,7 @@ import {View, Text, StatusBar, FlatList, TouchableOpacity} from 'react-native';
 
 import WalletList from './components/WalletList';
 import FruitPriceList from './components/FruitPriceList';
-import SearchAndFilterBar from '../../components/SearchAndFilterBar/SearchAndFilterBar';
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 
 import styles from './Home.styles';
 import {Colors} from '../../theme/theme';
@@ -138,12 +138,13 @@ const HomeScreen = () => {
                   <Text>Xem tất cả</Text>
                 </TouchableOpacity>
               </View>
-              {loading ? (
-                <WalletListSkeleton itemCount={5} />
-              ) : (
-                <WalletList data={filteredWalletData.slice(0, 5)} />
-              )}
-              <FruitPriceList products={productList} loading={loading} />
+
+              <WalletList
+                loading={loading}
+                data={filteredWalletData.slice(0, 5)}
+              />
+
+              <FruitPriceList loading={loading} products={productList} />
             </>
           )}
         />

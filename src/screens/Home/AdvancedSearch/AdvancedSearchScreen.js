@@ -60,6 +60,9 @@ const AdvancedSearchScreen = () => {
   });
   const filterRotate = useRef(new Animated.Value(0)).current;
 
+  const fruitCategorySafe =
+    fruitCategory.length > 0 ? fruitCategory : ['Tất cả'];
+
   const filterOptions = useMemo(
     () => [
       {label: 'Ngày BĐ', options: []},
@@ -149,7 +152,7 @@ const AdvancedSearchScreen = () => {
             selectedFilters={selectedFilters}
             onFilterSelect={handleFilterSelect}
             filterOptions={filterOptions}
-            itemOptions={fruitCategory}
+            itemOptions={fruitCategorySafe}
             showProductButton
             isLoading={isLoading}
           />
@@ -164,7 +167,7 @@ const AdvancedSearchScreen = () => {
             </Text>
 
             <View style={styles.buttonContainer}>
-              <Button.Select title={getDateRangeText} style={{flex: 2}} />
+              <Text style={styles.selecteButton}>{getDateRangeText}</Text>
 
               <View style={{flex: 1}}>
                 <Button.Select
@@ -261,15 +264,11 @@ const AdvancedSearchScreen = () => {
                 data={collectionAndYieldData || []}
                 columns={columns}
                 scrollable
+                isLoading={isLoading}
                 bodyHeight={scale(200)}
                 headerRowStyle={{width: '100%'}}
                 rowStyle={{width: '100%'}}
                 containerStyle={{marginBottom: scale(20)}}
-                emptyText={
-                  !isAllFiltersSelected()
-                    ? 'Vui lòng chọn đầy đủ: Tỉnh, Mặt hàng, Ngày BĐ, Ngày KT'
-                    : 'Không có dữ liệu phù hợp'
-                }
               />
               <Button.Main
                 title={
@@ -290,15 +289,11 @@ const AdvancedSearchScreen = () => {
                 data={todayHarvestData || []}
                 columns={columns_2}
                 scrollable
+                isLoading={isLoading}
                 bodyHeight={scale(200)}
                 headerRowStyle={{width: '100%'}}
                 rowStyle={{width: '100%'}}
                 containerStyle={{marginBottom: scale(20)}}
-                emptyText={
-                  todayHarvestData?.length === 0
-                    ? 'Không có dữ liệu sản lượng hôm nay'
-                    : undefined
-                }
               />
               <Button.Main
                 title={

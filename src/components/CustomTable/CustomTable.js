@@ -57,7 +57,6 @@ const CustomTable = ({
         <ScrollView
           nestedScrollEnabled
           style={{height: bodyHeight}}
-          contentContainerStyle={{paddingBottom: scale(10)}}
           showsVerticalScrollIndicator>
           {isLoading ? (
             <CustomTableSkeleton columns={columns} rowCount={5} />

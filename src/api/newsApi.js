@@ -59,9 +59,15 @@ export const getNewsById = async (id, accessToken) => {
   }
 };
 
-export const getIntroNews = async () => {
+export const getIntroNews = async accessToken => {
   try {
-    const res = await api.get('/api/news/intro');
+    const res = await api.get('/api/news/intro', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    console.log('new', res.data.data);
 
     return res.data.data;
   } catch (error) {
