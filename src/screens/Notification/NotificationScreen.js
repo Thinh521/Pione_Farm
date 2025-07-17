@@ -1,11 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   FlatList,
   SectionList,
   Text,
   View,
   ActivityIndicator,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
+import PushNotification from 'react-native-push-notification';
+
 import styles from './Notification.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import {scale} from '~/utils/scaling';
@@ -37,8 +41,7 @@ const NotificationScreen = () => {
   const [notificationData, setNotificationData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  console.log('notificationData', notificationData);
-
+  const lastNotificationIdRef = useRef(null);
   const accessToken = getAccessToken();
 
   const fetchDefaultNotification = async () => {
@@ -50,6 +53,7 @@ const NotificationScreen = () => {
       const mapped = [];
 
       if (rawData.today?.length > 0) {
+        lastNotificationIdRef.current = rawData.today[0]._id;
         mapped.push({
           title: 'Hôm nay',
           data: rawData.today.map(item => ({
@@ -91,18 +95,14 @@ const NotificationScreen = () => {
 
     const filterPayload = {};
 
-    // Gán ngày theo định dạng chuẩn
     if (newFilters['Ngày BĐ'] && newFilters['Ngày BĐ'] !== 'Tất cả') {
-      // Giả sử bạn nhận ngày dạng "15/07/2025" thì phải format lại:
       const [day, month, year] = newFilters['Ngày BĐ'].split('/');
-      filterPayload.date = `${year}-${month}-${day}`; // -> "2025-07-15"
+      filterPayload.date = `${year}-${month}-${day}`;
     }
 
     if (newFilters['Giờ'] && newFilters['Giờ'] !== 'Tất cả') {
-      filterPayload.hour = newFilters['Giờ']; // VD: "3:07 PM"
+      filterPayload.hour = newFilters['Giờ'];
     }
-
-    console.log('filterPayload gửi BE:', filterPayload);
 
     if (Object.keys(filterPayload).length === 0) {
       fetchDefaultNotification();
@@ -139,8 +139,93 @@ const NotificationScreen = () => {
     }
   };
 
+  const requestNotificationPermission = async () => {
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
+        console.log(
+          granted === PermissionsAndroid.RESULTS.GRANTED
+            ? 'Notification permission granted'
+            : 'Notification permission denied',
+        );
+      } catch (err) {
+        console.warn('Permission error:', err);
+      }
+    }
+  };
+
+  const configurePush = () => {
+    PushNotification.configure({
+      onRegister: token => console.log('TOKEN:', token),
+      onNotification: notification => {
+        console.log('NOTIFICATION:', notification);
+        notification.finish(PushNotification.FetchResult.NoData);
+      },
+      requestPermissions: Platform.OS === 'ios',
+    });
+
+    PushNotification.createChannel({
+      channelId: 'default-channel-id',
+      channelName: 'Default Channel',
+    });
+  };
+
+  const checkNewNotification = async () => {
+    try {
+      const res = await getNotification(accessToken);
+      const latest = res.data?.today?.[0];
+
+      if (latest && latest._id !== lastNotificationIdRef.current) {
+        lastNotificationIdRef.current = latest._id;
+
+        PushNotification.localNotification({
+          channelId: 'default-channel-id',
+          title: 'Thông báo mới',
+          message: latest.title || 'Bạn có thông báo mới',
+        });
+
+        setNotificationData(prev => {
+          const yesterday = prev.find(
+            section => section.title === 'Hôm qua',
+          ) || {
+            title: 'Hôm qua',
+            data: [],
+          };
+
+          return [
+            {
+              title: 'Hôm nay',
+              data: [
+                {
+                  id: latest._id,
+                  label: latest.title,
+                  desc: latest.description,
+                  badge: latest.hour,
+                  type: latest.type,
+                  date: latest.date,
+                },
+                ...(prev.find(section => section.title === 'Hôm nay')?.data ||
+                  []),
+              ],
+            },
+            yesterday,
+          ];
+        });
+      }
+    } catch (err) {
+      console.log('Lỗi khi kiểm tra thông báo mới:', err.message);
+    }
+  };
+
   useEffect(() => {
+    requestNotificationPermission();
+    configurePush();
     fetchDefaultNotification();
+
+    const interval = setInterval(checkNewNotification, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -158,16 +243,15 @@ const NotificationScreen = () => {
 
       {loading ? (
         <ActivityIndicator
-          style={{marginTop: scale(30)}}
+          style={{marginTop: scale(250)}}
           size="large"
           color="#4CAF50"
         />
       ) : (
         <FlatList
           data={[{}]}
-          style={styles.scrollContainer}
-          contentContainerStyle={{paddingBottom: scale(90)}}
           keyExtractor={(_, index) => index.toString()}
+          contentContainerStyle={{paddingBottom: scale(90)}}
           renderItem={() => (
             <SectionList
               sections={notificationData}

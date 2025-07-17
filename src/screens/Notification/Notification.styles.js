@@ -1,8 +1,6 @@
-import {Dimensions, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {scale} from '../../utils/scaling';
-import {Colors, Shadows} from '../../theme/theme';
-
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
+import {Colors} from '../../theme/theme';
 
 export default StyleSheet.create({
   container: {
@@ -13,10 +11,6 @@ export default StyleSheet.create({
     marginTop: scale(20),
     borderBottomWidth: 1,
     borderColor: '#b0ffce',
-  },
-  listContainer: {
-    paddingHorizontal: scale(16),
-    paddingTop: scale(16),
   },
   headerContainer: {
     paddingVertical: scale(12),

@@ -12,7 +12,6 @@ import {useNavigation} from '@react-navigation/core';
 import {LightIcon} from '../../assets/icons/Icons';
 import styles from './Test.styles';
 import {logoutUser} from '../../api/authApi';
-import Background from '../../components/Background/Background';
 
 const TestScreen = () => {
   const navigation = useNavigation();
