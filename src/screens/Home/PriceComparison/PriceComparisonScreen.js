@@ -197,13 +197,14 @@ const PriceComparisonScreen = () => {
       <View style={styles.header}>
         <SearchAndFilterBar
           placeholder="Tìm kiếm trái cây"
-          selectedFilters={selectedFilters}
-          onFilterSelect={handleFilterSelect}
-          itemOptions={fruitCategorySafe}
-          filterOptions={filterOptions}
           searchText={searchKeyword}
           setSearchText={setSearchKeyword}
+          selectedFilters={selectedFilters}
+          onFilterSelect={handleFilterSelect}
+          filterOptions={filterOptions}
+          itemOptions={fruitCategorySafe}
           showProductButton
+          isLoading={isLoading}
         />
       </View>
 

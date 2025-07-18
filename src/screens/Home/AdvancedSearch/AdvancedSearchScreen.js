@@ -17,6 +17,7 @@ import ChatBot from '~/components/ChatBot/ChatBot';
 import {DownIcon} from '~/assets/icons/Icons';
 import {Colors} from '~/theme/theme';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
+import {useSearchAndFilter} from '../../../hook/useSearch';
 
 const AdvancedSearchScreen = () => {
   const columns = useMemo(
@@ -49,9 +50,13 @@ const AdvancedSearchScreen = () => {
     selectedTypeFilter,
     setSelectedTypeFilter,
     exportDataToExcel,
-    isAllFiltersSelected,
     exportingTable,
   } = useHarvestFilter(false);
+
+  const {filteredData, searchKeyword, setSearchKeyword} = useSearchAndFilter({
+    data: collectionAndYieldData,
+    searchableFields: ['provinceName'],
+  });
 
   const [searchText, setSearchText] = useState('');
   const [activeFilter, setActiveFilter] = useState({
@@ -147,8 +152,8 @@ const AdvancedSearchScreen = () => {
         <View style={styles.header}>
           <SearchAndFilterBar
             placeholder="Tìm kiếm trái cây"
-            searchText={searchText}
-            setSearchText={setSearchText}
+            searchText={searchKeyword}
+            setSearchText={setSearchKeyword}
             selectedFilters={selectedFilters}
             onFilterSelect={handleFilterSelect}
             filterOptions={filterOptions}
@@ -162,9 +167,7 @@ const AdvancedSearchScreen = () => {
           contentContainerStyle={{paddingBottom: scale(20)}}
           showsVerticalScrollIndicator={false}>
           <View style={styles.bodyWrapper}>
-            <Text style={styles.title}>
-              Kết quả: {collectionAndYieldData.length}
-            </Text>
+            <Text style={styles.title}>Kết quả: {filteredData.length}</Text>
 
             <View style={styles.buttonContainer}>
               <Text style={styles.selecteButton}>{getDateRangeText}</Text>
@@ -261,7 +264,7 @@ const AdvancedSearchScreen = () => {
             <View style={styles.tableContainer}>
               <Text style={styles.tableTitle}>Bảng giá</Text>
               <CustomTable
-                data={collectionAndYieldData || []}
+                data={filteredData || []}
                 columns={columns}
                 scrollable
                 isLoading={isLoading}
@@ -276,7 +279,7 @@ const AdvancedSearchScreen = () => {
                     ? 'Đang xuất...'
                     : 'Xuất bảng giá'
                 }
-                disabled={collectionAndYieldData.length === 0}
+                disabled={filteredData.length === 0}
                 onPress={handleExportPrice}
                 style={styles.buttonExcel}
               />
