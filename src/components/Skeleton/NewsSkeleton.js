@@ -1,7 +1,7 @@
 import {View} from 'react-native';
 import React from 'react';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
-import {scale} from '../../utils/scaling';
+import {scale} from '~/utils/scaling';
 
 const NewsSkeleton = ({itemCount = 3}) => {
   return (

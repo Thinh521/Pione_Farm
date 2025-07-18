@@ -15,7 +15,7 @@ import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
 const FILTER_OPTIONS = [
   {label: 'Ngày BĐ', options: []},
   {label: 'Ngày KT', options: []},
-  {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
+  {label: 'Tỉnh', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
 ];
 
 const IntroScreen = () => {
@@ -100,12 +100,6 @@ const IntroScreen = () => {
 
       return searchMatch && dateMatch;
     })
-    .sort((a, b) => {
-      const sortType = selectedFilters['Giá'];
-      if (sortType === 'Tăng dần') return a.readTime - b.readTime;
-      if (sortType === 'Giảm dần') return b.readTime - a.readTime;
-      return 0;
-    });
 
   const renderItem = ({item}) => (
     <Animated.View
@@ -150,6 +144,7 @@ const IntroScreen = () => {
       <View style={styles.header}>
         <SearchAndFilterBar
           searchText={searchText}
+          selectedFilters={selectedFilters}
           setSearchText={setSearchText}
           filterOptions={FILTER_OPTIONS}
           placeholder="Tìm kiếm bài viết"
@@ -170,7 +165,7 @@ const IntroScreen = () => {
               </Text>
             </View>
 
-            {isLoading || filtering || !accessToken || isFetching ? (
+            {isLoading || !accessToken ? (
               <NewsSkeleton itemCount={6} />
             ) : filteredData.length === 0 ? (
               <View

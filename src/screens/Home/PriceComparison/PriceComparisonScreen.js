@@ -19,6 +19,7 @@ import ChatBot from '~/components/ChatBot/ChatBot';
 import Button from '~/components/ui/Button/ButtonComponent';
 import {getAnalysisAi} from '~/api/trendApi';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
+import {useSearchAndFilter} from '../../../hook/useSearch';
 
 const FilterDropdown = ({options, selected, onSelect, anim}) => (
   <Animated.View
@@ -92,6 +93,11 @@ const PriceComparisonScreen = () => {
     exportDataToExcel,
     exportingTable,
   } = useHarvestFilter();
+
+  const {filteredData, searchKeyword, setSearchKeyword} = useSearchAndFilter({
+    data: collectionAndYieldData,
+    searchableFields: ['provinceName'],
+  });
 
   const [analysisData, setAnalysisData] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
@@ -195,6 +201,8 @@ const PriceComparisonScreen = () => {
           onFilterSelect={handleFilterSelect}
           itemOptions={fruitCategorySafe}
           filterOptions={filterOptions}
+          searchText={searchKeyword}
+          setSearchText={setSearchKeyword}
           showProductButton
         />
       </View>
@@ -203,9 +211,7 @@ const PriceComparisonScreen = () => {
         <View style={styles.bodyWrapper}>
           <View>
             <View style={styles.contentContainer}>
-              <Text style={styles.title}>
-                Kết quả: {collectionAndYieldData.length}
-              </Text>
+              <Text style={styles.title}>Kết quả: {filteredData.length}</Text>
 
               <View style={styles.buttonContainer}>
                 <Text style={styles.selecteButton}>{getDateRangeText}</Text>
@@ -245,7 +251,7 @@ const PriceComparisonScreen = () => {
               </View>
 
               <CustomTable
-                data={collectionAndYieldData || []}
+                data={filteredData || []}
                 columns={columns}
                 scrollable
                 isLoading={isLoading}
@@ -260,7 +266,7 @@ const PriceComparisonScreen = () => {
               title={exportingTable ? 'Đang xuất...' : 'Xuất Excel'}
               disabled={!!exportingTable}
               onPress={() =>
-                exportDataToExcel(collectionAndYieldData, 'price_comparison')
+                exportDataToExcel(filteredData, 'price_comparison')
               }
               style={styles.buttonExcel}
             />

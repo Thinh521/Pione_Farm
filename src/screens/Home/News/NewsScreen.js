@@ -1,40 +1,22 @@
 import React, {useState, useMemo, useEffect} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import styles from './News.styles';
-import SearchAndFilterBar from '../../../components/SearchAndFilterBar/SearchAndFilterBar';
-import ChatBot from '../../../components/ChatBot/ChatBot';
-import {scale} from '../../../utils/scaling';
-import NewsList from '../../../components/NewsCard/NewsList';
-import useNewsStore from '../../../store/useNewsStore';
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
+import ChatBot from '~/components/ChatBot/ChatBot';
+import {scale} from '~/utils/scaling';
+import NewsList from '~/components/NewsCard/NewsList';
+import useNewsStore from '~/store/useNewsStore';
+import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
 
 const FILTER_OPTIONS = [
-  {
-    label: 'Giá',
-    options: ['Tất cả', 'Tăng dần', 'Giảm dần'],
-  },
-  {
-    label: 'Tỉnh',
-    options: [
-      'Tất cả',
-      'Long An',
-      'Tiền Giang',
-      'HCM',
-      'Hà Nội',
-      'An Giang',
-      'Đồng Nai',
-      'Vĩnh Long',
-    ],
-  },
-  {
-    label: 'Số lượng',
-    options: ['Tất cả', 'Dưới 100', '100 - 500', 'Trên 500'],
-  },
+  {label: 'Ngày BĐ', options: []},
+  {label: 'Ngày KT', options: []},
+  {label: 'Tỉnh', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
 ];
 
 const NewsScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
 
   const {newsData, loading, fetchNewsData, hasFetched, error} = useNewsStore();
 
@@ -45,9 +27,7 @@ const NewsScreen = () => {
   }, []);
 
   const handleFilterSelect = (type, value) => {
-    setIsLoading(true);
     setSelectedFilters(prev => ({...prev, [type]: value}));
-    setTimeout(() => setIsLoading(false), 300);
   };
 
   const filterData = useMemo(() => {
@@ -104,6 +84,7 @@ const NewsScreen = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             marginTop: scale(20),
+            paddingBottom: scale(170),
           }}
           renderItem={() => {
             const sortedData = [...filterData]
@@ -121,13 +102,25 @@ const NewsScreen = () => {
             return (
               <View>
                 <Text style={styles.sectionTitle}>Tin mới</Text>
-                <NewsList data={sortedData} />
+                {loading && !hasFetched ? (
+                  <NewsSkeleton itemCount={sortedData} />
+                ) : (
+                  <NewsList data={sortedData} />
+                )}
 
                 <Text style={styles.sectionTitle}>Tin trong nước</Text>
-                <NewsList data={domesticNews} />
+                {loading && !hasFetched ? (
+                  <NewsSkeleton itemCount={domesticNews} />
+                ) : (
+                  <NewsList data={domesticNews} />
+                )}
 
                 <Text style={styles.sectionTitle}>Tin ngoài nước</Text>
-                <NewsList data={internationalNews} />
+                {loading && !hasFetched ? (
+                  <NewsSkeleton itemCount={internationalNews} />
+                ) : (
+                  <NewsList data={internationalNews} />
+                )}
               </View>
             );
           }}
