@@ -87,9 +87,9 @@ const NewsScreen = () => {
             paddingBottom: scale(170),
           }}
           renderItem={() => {
-            const sortedData = [...filterData]
-              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-              .slice(0, 5);
+            const sortedData = [...filterData].sort(
+              (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+            );
 
             const domesticNews = sortedData
               .filter(item => item.type === 'trongnuoc')
@@ -98,6 +98,10 @@ const NewsScreen = () => {
             const internationalNews = sortedData
               .filter(item => item.type === 'ngoainuoc')
               .slice(0, 5);
+
+            console.log('sortedData', sortedData);
+            console.log('domesticNews', domesticNews);
+            console.log('internationalNews', internationalNews);
 
             return (
               <View>

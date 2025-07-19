@@ -12,11 +12,26 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {AppKit} from '@reown/appkit-ethers-react-native';
 
 import './src/config/AppKitSetup';
+import {
+  getFcmToken,
+  requestUserPermission,
+  setupFCMListeners,
+} from './src/utils/firebaseMessageHandler';
 
 const queryClient = new QueryClient();
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState(null);
+
+  useEffect(() => {
+    const initNotification = async () => {
+      await requestUserPermission();
+      await getFcmToken();
+      setupFCMListeners();
+    };
+
+    initNotification();
+  }, []);
 
   useEffect(() => {
     const checkOnboarding = async () => {

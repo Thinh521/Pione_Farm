@@ -17,7 +17,7 @@ import ChatBot from '~/components/ChatBot/ChatBot';
 import {DownIcon} from '~/assets/icons/Icons';
 import {Colors} from '~/theme/theme';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
-import {useSearchAndFilter} from '../../../hook/useSearch';
+import {useSearchAndFilter} from '~/hook/useSearch';
 
 const AdvancedSearchScreen = () => {
   const columns = useMemo(

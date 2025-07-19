@@ -67,8 +67,6 @@ export const getIntroNews = async accessToken => {
       },
     });
 
-    console.log('new', res.data.data);
-
     return res.data.data;
   } catch (error) {
     const message =

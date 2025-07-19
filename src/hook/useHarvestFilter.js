@@ -10,6 +10,7 @@ import {
   getProductTypesByProvince,
   getTodayHarvestSummary,
 } from '../api/productApi';
+import {requestStoragePermission} from '../utils/permissionHelper';
 
 // Hàm debounce đơn giản
 const debounce = (func, wait) => {
@@ -184,25 +185,15 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
       const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
 
       const fileName = `ket_qua_${tableKey}_${Date.now()}.xlsx`;
-      const path =
-        Platform.OS === 'android'
-          ? `${RNFS.DownloadDirectoryPath}/${fileName}`
-          : `${RNFS.DocumentDirectoryPath}/${fileName}`;
+      let path;
+
+      const hasPermission = await requestStoragePermission();
+      if (!hasPermission) return;
 
       if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: 'Cấp quyền lưu file',
-            message: 'Ứng dụng cần quyền để lưu file Excel.',
-            buttonPositive: 'Đồng ý',
-            buttonNegative: 'Hủy',
-          },
-        );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Thông báo', 'Bạn chưa cấp quyền lưu file!');
-          return;
-        }
+        path = `${RNFS.DownloadDirectoryPath}/${fileName}`;
+      } else {
+        path = `${RNFS.DocumentDirectoryPath}/${fileName}`;
       }
 
       await RNFS.writeFile(path, wbout, 'ascii');

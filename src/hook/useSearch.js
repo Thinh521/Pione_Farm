@@ -1,24 +1,42 @@
 import {useMemo, useState} from 'react';
-import {removeVietnameseTones} from '../utils/normalize';
+import { removeVietnameseTones } from '../utils/normalize';
 
 export const useSearchAndFilter = ({
   data = [],
   searchableFields = ['name'],
+  startDate,
+  endDate,
 }) => {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   const filteredData = useMemo(() => {
-    if (!searchKeyword.trim()) return data;
+    let result = data;
 
-    const keyword = removeVietnameseTones(searchKeyword);
+    if (searchKeyword.trim()) {
+      const keyword = removeVietnameseTones(searchKeyword.toLowerCase());
 
-    return data.filter(item =>
-      searchableFields.some(field => {
-        const fieldValue = item[field]?.toString() || '';
-        return removeVietnameseTones(fieldValue).includes(keyword);
-      }),
-    );
-  }, [data, searchKeyword, searchableFields]);
+      result = result.filter(item =>
+        searchableFields.some(field => {
+          const fieldValue = item[field]?.toString() || '';
+          return removeVietnameseTones(fieldValue.toLowerCase()).includes(
+            keyword,
+          );
+        }),
+      );
+    }
+
+    if (startDate && endDate) {
+      const start = new Date(startDate).getTime();
+      const end = new Date(endDate).getTime();
+
+      result = result.filter(item => {
+        const createdAt = new Date(item.createdAt).getTime();
+        return createdAt >= start && createdAt <= end;
+      });
+    }
+
+    return result;
+  }, [data, searchKeyword, searchableFields, startDate, endDate]);
 
   return {
     filteredData,

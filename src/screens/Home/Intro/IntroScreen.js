@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, FlatList, Animated, ActivityIndicator} from 'react-native';
+import {View, Text, FlatList, Animated} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {API_BASE_URL} from '@env';
 import {useQuery} from '@tanstack/react-query';
@@ -8,9 +8,9 @@ import styles from './Intro.styles';
 import {scale} from '~/utils/scaling';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import ChatBot from '~/components/ChatBot/ChatBot';
-import {removeVietnameseTones} from '~/utils/normalize';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
 import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
+import {useSearchAndFilter} from '../../../hook/useSearch';
 
 const FILTER_OPTIONS = [
   {label: 'Ngày BĐ', options: []},
@@ -19,10 +19,13 @@ const FILTER_OPTIONS = [
 ];
 
 const IntroScreen = () => {
-  const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
-  const [filtering, setFiltering] = useState(false);
   const [accessToken, setAccessToken] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  console.log('startDate', startDate);
+  console.log('endDate', endDate);
 
   const animatedValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
@@ -38,13 +41,21 @@ const IntroScreen = () => {
     data: newsResponse = [],
     isLoading,
     refetch,
-    isFetching,
   } = useQuery({
     queryKey: ['intro-news'],
     queryFn: () => getIntroNews(accessToken),
     enabled: !!accessToken,
     staleTime: 1000 * 60 * 5,
   });
+
+  const {filteredData, searchKeyword, setSearchKeyword} = useSearchAndFilter({
+    data: newsResponse,
+    searchableFields: ['title', 'summary'],
+    startDate,
+    endDate,
+  });
+
+  console.log('filteredData', filteredData);
 
   useEffect(() => {
     Animated.timing(animatedValue, {
@@ -53,12 +64,6 @@ const IntroScreen = () => {
       useNativeDriver: true,
     }).start();
   }, []);
-
-  useEffect(() => {
-    if (accessToken) {
-      refetch();
-    }
-  }, [searchText, selectedFilters, accessToken]);
 
   const translateY = animatedValue.interpolate({
     inputRange: [0, 1],
@@ -70,36 +75,9 @@ const IntroScreen = () => {
     outputRange: [0, 1],
   });
 
-  const parseDate = dateString => {
-    const date = new Date(dateString);
-    return isNaN(date) ? null : date;
-  };
-
   const handleFilterSelect = (type, value) => {
-    setFiltering(true);
     setSelectedFilters(prev => ({...prev, [type]: value}));
-    setTimeout(() => setFiltering(false), 200);
   };
-
-  const filteredData = newsResponse
-    .filter(item => {
-      const searchMatch =
-        removeVietnameseTones(item.title || '').includes(
-          removeVietnameseTones(searchText),
-        ) ||
-        removeVietnameseTones(item.summary || '').includes(
-          removeVietnameseTones(searchText),
-        );
-
-      const itemDate = parseDate(item.createdAt);
-      const startDate = parseDate(selectedFilters['Ngày BĐ']);
-      const endDate = parseDate(selectedFilters['Ngày KT']);
-      const dateMatch =
-        (!startDate || itemDate >= startDate) &&
-        (!endDate || itemDate <= endDate);
-
-      return searchMatch && dateMatch;
-    })
 
   const renderItem = ({item}) => (
     <Animated.View
@@ -143,12 +121,16 @@ const IntroScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <SearchAndFilterBar
-          searchText={searchText}
+          searchText={searchKeyword}
+          setSearchText={setSearchKeyword}
           selectedFilters={selectedFilters}
-          setSearchText={setSearchText}
           filterOptions={FILTER_OPTIONS}
           placeholder="Tìm kiếm bài viết"
           onFilterSelect={handleFilterSelect}
+          onDateChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
         />
       </View>
 
