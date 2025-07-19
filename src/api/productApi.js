@@ -39,7 +39,6 @@ export const getFarmMarketPrices = async ({
 
     const res = await api.post('/api/statistical/farm-market-price', payload);
 
-    console.log('res.data', res.data);
     return res.data;
   } catch (error) {
     console.log('[Lỗi đầy đủ]', error?.response?.data);
@@ -52,8 +51,6 @@ export const getFarmMarketPrices = async ({
 export const getTodayHarvestSummary = async () => {
   try {
     const res = await api.get('/api/statistical/today-harvest-sum');
-
-    console.log('res.data', res.data);
 
     return res.data;
   } catch (error) {

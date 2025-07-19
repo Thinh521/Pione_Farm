@@ -19,7 +19,7 @@ import ChatBot from '~/components/ChatBot/ChatBot';
 import Button from '~/components/ui/Button/ButtonComponent';
 import {getAnalysisAi} from '~/api/trendApi';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
-import {useSearchAndFilter} from '../../../hook/useSearch';
+import {useSearchAndFilter} from '~/hook/useSearch';
 
 const FilterDropdown = ({options, selected, onSelect, anim}) => (
   <Animated.View

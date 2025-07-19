@@ -1,31 +1,24 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {View, Text, FlatList, Animated} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {API_BASE_URL} from '@env';
 import {useQuery} from '@tanstack/react-query';
 import {getIntroNews} from '~/api/newsApi';
+import {getAllProvinceApii} from '~/api/provinceApi';
 import styles from './Intro.styles';
 import {scale} from '~/utils/scaling';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import ChatBot from '~/components/ChatBot/ChatBot';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
 import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
-import {useSearchAndFilter} from '../../../hook/useSearch';
-
-const FILTER_OPTIONS = [
-  {label: 'Ngày BĐ', options: []},
-  {label: 'Ngày KT', options: []},
-  {label: 'Tỉnh', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
-];
+import {useSearchAndFilter} from '~/hook/useSearch';
 
 const IntroScreen = () => {
   const [selectedFilters, setSelectedFilters] = useState({});
   const [accessToken, setAccessToken] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-
-  console.log('startDate', startDate);
-  console.log('endDate', endDate);
+  const [provinceOptions, setProvinceOptions] = useState([]);
 
   const animatedValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
@@ -37,25 +30,65 @@ const IntroScreen = () => {
     })();
   }, []);
 
-  const {
-    data: newsResponse = [],
-    isLoading,
-    refetch,
-  } = useQuery({
+  const {data: newsResponse = [], isLoading} = useQuery({
     queryKey: ['intro-news'],
     queryFn: () => getIntroNews(accessToken),
     enabled: !!accessToken,
     staleTime: 1000 * 60 * 5,
   });
 
+  const {data: provinceResponse = {data: []}} = useQuery({
+    queryKey: ['provinces'],
+    queryFn: getAllProvinceApii,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const provinceList = provinceResponse.data || [];
+
+  useEffect(() => {
+    setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
+  }, [provinceList]);
+
+  const enrichedNews = useMemo(() => {
+    return newsResponse.map(item => {
+      const province = provinceList.find(p => p._id === item.provinceId);
+      return {
+        ...item,
+        provinceName: province?.name || '',
+        province: province?._id || '',
+      };
+    });
+  }, [newsResponse, provinceList]);
+
+  const filterOptions = useMemo(() => {
+    return [
+      {label: 'Ngày BĐ', options: []},
+      {label: 'Ngày KT', options: []},
+      {label: 'Tỉnh', options: provinceOptions},
+    ];
+  }, [provinceOptions]);
+
   const {filteredData, searchKeyword, setSearchKeyword} = useSearchAndFilter({
-    data: newsResponse,
+    data: enrichedNews,
     searchableFields: ['title', 'summary'],
     startDate,
     endDate,
+    filters: selectedFilters,
   });
 
-  console.log('filteredData', filteredData);
+  const handleFilterSelect = (type, value) => {
+    setSelectedFilters(prev => ({...prev, [type]: value}));
+
+    if (type === 'Ngày BĐ') {
+      const [day, month, year] = value.split('/');
+      setStartDate(new Date(`${year}-${month}-${day}`));
+    }
+
+    if (type === 'Ngày KT') {
+      const [day, month, year] = value.split('/');
+      setEndDate(new Date(`${year}-${month}-${day}`));
+    }
+  };
 
   useEffect(() => {
     Animated.timing(animatedValue, {
@@ -74,10 +107,6 @@ const IntroScreen = () => {
     inputRange: [0, 1],
     outputRange: [0, 1],
   });
-
-  const handleFilterSelect = (type, value) => {
-    setSelectedFilters(prev => ({...prev, [type]: value}));
-  };
 
   const renderItem = ({item}) => (
     <Animated.View
@@ -107,9 +136,9 @@ const IntroScreen = () => {
               {new Date(item.createdAt).toLocaleDateString('vi-VN')}
             </Text>
           </View>
-          {item.type && (
+          {item.provinceName && (
             <View style={styles.metaItem}>
-              <Text style={styles.metaText}>Tin tức: {item.type}</Text>
+              <Text style={styles.metaText}>Tỉnh: {item.provinceName}</Text>
             </View>
           )}
         </View>
@@ -124,7 +153,7 @@ const IntroScreen = () => {
           searchText={searchKeyword}
           setSearchText={setSearchKeyword}
           selectedFilters={selectedFilters}
-          filterOptions={FILTER_OPTIONS}
+          filterOptions={filterOptions}
           placeholder="Tìm kiếm bài viết"
           onFilterSelect={handleFilterSelect}
           onDateChange={(start, end) => {

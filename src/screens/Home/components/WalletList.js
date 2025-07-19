@@ -1,11 +1,11 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {API_BASE_URL} from '@env';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import LineChartWrapper from '../../../components/LineChart/LineChartWrapper';
-import {scale} from '../../../utils/scaling';
-import {formatCurrencyVND} from '../../../utils/format';
-import WalletListSkeleton from '../../../components/Skeleton/WalletListSkeleton';
+import LineChartWrapper from '~/components/LineChart/LineChartWrapper';
+import {scale} from '~/utils/scaling';
+import {formatCurrencyVND} from '~/utils/format';
+import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
 
 const WalletItem = ({
   images,
@@ -66,7 +66,7 @@ const WalletList = ({data = [], loading}) => {
     return <WalletListSkeleton itemCount={5} />;
   }
 
-  if (!loading && (!data || data.length === 0)) {
+  if (data.length === 0) {
     return (
       <View style={styles.empty}>
         <Text style={styles.emptyIcon}>🔍</Text>
