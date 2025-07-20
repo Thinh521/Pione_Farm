@@ -74,12 +74,11 @@ const routerNoBottomTab = [
   {
     name: 'OtpInput',
     component: OTPInputScreen,
-    hasLayout: true,
-    options: {
-      title: 'Mã OTP',
-      headerShown: true,
-      animation: 'slide_from_bottom',
-    },
+    options: ({navigation}) => ({
+      header: () => (
+        <CustomHeader title="Xác thực OTP" navigation={navigation} />
+      ),
+    }),
   },
   {
     name: 'LoginRequired',

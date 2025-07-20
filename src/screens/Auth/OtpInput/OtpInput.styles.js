@@ -1,60 +1,53 @@
 import {StyleSheet} from 'react-native';
-import {Colors} from '../../../theme/theme';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 20,
+    paddingTop: scale(60),
+    paddingHorizontal: scale(20),
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: scale(40),
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 8,
+    color: Colors.title,
+    fontSize: FontSizes.xxlarge,
+    fontWeight: FontWeights.semiBold,
+    marginBottom: scale(8),
   },
   subtitle: {
-    fontSize: 16,
-    color: '#7f8c8d',
+    color: Colors.grayText,
+    fontSize: FontSizes.small,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: scale(18),
   },
   phoneNumber: {
-    fontWeight: '600',
-    color: Colors.primary,
+    color: Colors.secondary,
+    fontWeight: FontWeights.semiBold,
   },
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 40,
-    paddingHorizontal: 10,
+    marginBottom: scale(40),
+    paddingHorizontal: scale(10),
   },
   otpInput: {
-    width: 50,
-    height: 60,
-    borderWidth: 2,
+    width: scale(50),
+    height: scale(60),
+    borderWidth: scale(2),
     borderColor: '#e1e8ed',
-    borderRadius: 12,
+    borderRadius: scale(12),
     textAlign: 'center',
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: FontSizes.xlarge,
+    fontWeight: FontWeights.semiBold,
     color: '#2c3e50',
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    backgroundColor: Colors.white,
   },
   otpInputFilled: {
-    borderColor: '#27ae60',
+    borderColor: Colors.greenText,
     backgroundColor: '#f8fff9',
   },
   otpInputFocused: {
@@ -62,16 +55,10 @@ export default StyleSheet.create({
     borderWidth: 2,
   },
   verifyButton: {
-    marginBottom: 20,
+    marginBottom: scale(20),
   },
   verifyButtonDisabled: {
     backgroundColor: '#bdc3c7',
-  },
-  verifyButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
   resendContainer: {
     flexDirection: 'row',
@@ -79,25 +66,13 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   resendText: {
-    fontSize: 16,
-    color: '#7f8c8d',
+    color: Colors.grayText,
+    fontSize: FontSizes.small,
   },
   resendButton: {
-    marginLeft: 5,
+    marginLeft: scale(5),
   },
   buttontext: {
-    fontSize: 16,
-  },
-  resendButtonText: {
-    fontSize: 16,
-    color: '#3498db',
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-  loadingText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontSize: FontSizes.small,
   },
 });

@@ -1,5 +1,5 @@
 import React, {useState, useRef, useEffect, useCallback} from 'react';
-import {View, Text, TextInput, TouchableOpacity} from 'react-native';
+import {View, Text, TextInput, TouchableOpacity, StatusBar} from 'react-native';
 import {
   useNavigation,
   useRoute,
@@ -9,6 +9,8 @@ import Button from '~/components/ui/Button/ButtonComponent';
 import styles from './OtpInput.styles';
 import {verifyOtp, resendOtp, topVerifyOtp} from '~/api/verifyOtpApi';
 import {showMessage} from 'react-native-flash-message';
+import {Colors} from '~/theme/theme';
+import Background_2 from '~/components/Background/Background_2';
 
 const OTPInputScreen = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -257,6 +259,10 @@ const OTPInputScreen = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor={Colors.headerBack} barStyle="light-content" />
+
+      <Background_2 />
+
       <View style={styles.header}>
         <Text style={styles.title}>Xác thực OTP</Text>
         <Text style={styles.subtitle}>
