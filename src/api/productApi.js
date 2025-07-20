@@ -18,7 +18,7 @@ export const getProductTypesByProvince = async (provinceId, dateRange = {}) => {
   } catch (error) {
     const message =
       error?.response?.data?.message || 'Không thể tải type sản phẩm';
-    console.error('Lỗi khi lấy type sản phẩm:', message);
+    console.log('Lỗi khi lấy type sản phẩm:', message);
     throw new Error(message);
   }
 };
@@ -28,6 +28,7 @@ export const getFarmMarketPrices = async ({
   provinceId,
   date,
   typeId,
+  scope,
 } = {}) => {
   try {
     const payload = {};
@@ -36,6 +37,7 @@ export const getFarmMarketPrices = async ({
     if (provinceId) payload.provinceId = provinceId;
     if (date?.start && date?.end) payload.date = date;
     if (typeId) payload.typeId = typeId;
+    if (scope) payload.scope = scope;
 
     const res = await api.post('/api/statistical/farm-market-price', payload);
 

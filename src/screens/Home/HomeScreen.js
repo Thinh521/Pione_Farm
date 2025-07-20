@@ -35,8 +35,6 @@ const HomeScreen = () => {
   const {walletData, productList, loading, fetchWalletData, hasFetched} =
     useWalletStore();
 
-  console.log('walletData', walletData);
-
   const {
     filteredData: filteredWalletData,
     searchKeyword,

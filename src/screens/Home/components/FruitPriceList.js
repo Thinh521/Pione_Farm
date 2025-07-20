@@ -40,7 +40,7 @@ const FruitPriceList = ({products = [], loading}) => {
         </Text>
       </View>
       <View style={styles.unitCol}>
-        <Text style={styles.unit}>đ/Kg</Text>
+        <Text style={styles.unit}>{item.marketUnit}</Text>
       </View>
       <View style={styles.priceCol}>
         <Text style={styles.price}>
@@ -103,7 +103,7 @@ const FruitPriceList = ({products = [], loading}) => {
         <FlatList
           data={filteredFruits}
           renderItem={renderItem}
-          keyExtractor={item => `${item.productId}`}
+          keyExtractor={(item, index) => `${item.productId}_${index}`}
           initialNumToRender={6}
           ListEmptyComponent={
             <View style={styles.empty}>

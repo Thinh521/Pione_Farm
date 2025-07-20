@@ -1,5 +1,5 @@
 import {useEffect, useState, useCallback, useMemo} from 'react';
-import {Alert, PermissionsAndroid, Platform} from 'react-native';
+import {Alert, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import XLSX from 'xlsx';
 
@@ -93,8 +93,7 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
       setProductTypeOptions(['Tất cả', ...typeNames]);
       setProductTypeOptionsData(typesRes?.data || []);
     } catch (err) {
-      console.error('Lỗi lấy loại sản phẩm:', err.message);
-      Alert.alert('Lỗi', 'Không thể lấy loại sản phẩm');
+      console.log('Lỗi lấy loại sản phẩm:', err.message);
     }
   }, [selectedFilters, allProvinces, formatDate]);
 
@@ -141,7 +140,7 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
       const res = await getFarmMarketPrices(payload);
       setCollectionAndYieldData(res.data || []);
     } catch (err) {
-      console.error('Lỗi lấy dữ liệu giá:', err.message);
+      console.log('Lỗi lấy dữ liệu giá:', err.message);
       setCollectionAndYieldData([]);
       Alert.alert('Lỗi', 'Không thể lấy dữ liệu giá');
     } finally {
