@@ -1,13 +1,79 @@
+import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/core';
-import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import {RightIcon} from '../../../assets/icons/Icons';
-import {scale} from '../../../utils/scaling';
-import {Colors, Shadows} from '../../../theme/theme';
-import {AppKitButton} from '@reown/appkit-ethers-react-native';
+import {View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
+import {RightIcon} from '~/assets/icons/Icons';
+import {scale} from '~/utils/scaling';
+import {Colors, Shadows} from '~/theme/theme';
+import {AppKitButton, useWalletInfo} from '@reown/appkit-ethers-react-native';
+import {ethers} from 'ethers';
 
 const AccountSecuritySettings = ({user}) => {
   const navigation = useNavigation();
+  const {address, isConnected, provider} = useWalletInfo();
+  const [ethBalance, setEthBalance] = useState(null);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        if (provider && address) {
+          const balance = await provider.getBalance(address);
+          setEthBalance(ethers.utils.formatEther(balance));
+        }
+      } catch (error) {
+        console.log('Lỗi khi lấy số dư ETH:', error);
+      }
+    };
+
+    if (isConnected) {
+      console.log('Địa chỉ ví:', address);
+      fetchBalance();
+    }
+  }, [isConnected, provider, address]);
+
+  const sendTransaction = async () => {
+    try {
+      if (!provider || !address) {
+        console.log('Ví chưa được kết nối hoặc không có provider.');
+        return;
+      }
+
+      const signer = provider.getSigner();
+
+      const tx = await signer.sendTransaction({
+        to: '0xRecipientAddressHere', // thay bằng địa chỉ thực tế mà mình muốn gửi ETH tới.
+        value: ethers.utils.parseEther('0.01'),
+      });
+
+      console.log('Giao dịch đã gửi, hash:', tx.hash);
+
+      const receipt = await tx.wait();
+      console.log('Giao dịch đã xác nhận:', receipt);
+
+      const updatedBalance = await provider.getBalance(address);
+      setEthBalance(ethers.utils.formatEther(updatedBalance));
+    } catch (error) {
+      console.error('Lỗi khi gửi giao dịch:', error);
+    }
+  };
+
+  const signMessage = async () => {
+    try {
+      if (!provider || !address) {
+        console.log('Ví chưa được kết nối hoặc không có provider.');
+        return;
+      }
+
+      const signer = provider.getSigner();
+      const message = 'Tôi đồng ý với điều khoản!';
+      const signature = await signer.signMessage(message);
+
+      console.log('Chữ ký:', signature);
+      Alert.alert('Chữ ký thành công', signature);
+    } catch (error) {
+      console.error('Lỗi khi ký thông điệp:', error);
+      Alert.alert('Lỗi', 'Không thể ký thông điệp.');
+    }
+  };
 
   const NavigationToEditForgotpProfile = () => {
     navigation.navigate('NoBottomTab', {
@@ -50,7 +116,36 @@ const AccountSecuritySettings = ({user}) => {
         <RightIcon style={styles.rightIcon} />
       </TouchableOpacity>
 
-      <AppKitButton />
+      <View>
+        <Text style={[styles.itemText, {marginBottom: scale(10)}]}>
+          Quản lí tài chính
+        </Text>
+
+        {/* Nút kết nối ví từ AppKit */}
+        <AppKitButton />
+
+        {isConnected ? (
+          <>
+            <Text style={{marginTop: 10}}>Ví đã kết nối: {address}</Text>
+            <Text style={{marginTop: 5}}>
+              Số dư ETH:{' '}
+              {ethBalance !== null ? `${ethBalance} ETH` : 'Đang tải...'}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={sendTransaction}>
+              <Text style={styles.sendButtonText}>Gửi 0.01 ETH</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.signButton} onPress={signMessage}>
+              <Text style={styles.sendButtonText}>Ký điều khoản sử dụng</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <Text style={{marginTop: 10}}>Ví chưa được kết nối</Text>
+        )}
+      </View>
     </View>
   );
 };
@@ -83,10 +178,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  emoji: {
-    fontSize: 16,
-    marginRight: 8,
-  },
   itemText: {
     fontSize: 15,
     color: '#111',
@@ -94,6 +185,25 @@ const styles = StyleSheet.create({
   rightIcon: {
     width: scale(12),
     height: scale(12),
+  },
+  sendButton: {
+    backgroundColor: Colors.primary,
+    marginTop: scale(10),
+    paddingVertical: scale(8),
+    borderRadius: scale(6),
+    alignItems: 'center',
+  },
+  sendButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  signButton: {
+    backgroundColor: Colors.green,
+    marginTop: scale(10),
+    paddingVertical: scale(8),
+    borderRadius: scale(6),
+    alignItems: 'center',
   },
 });
 

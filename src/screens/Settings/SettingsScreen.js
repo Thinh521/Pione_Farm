@@ -6,19 +6,19 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import {getCurrentUser} from '../../api/userApi';
+import {getCurrentUser} from '~/api/userApi';
 import styles from './Settings.styles';
 import {useNavigation} from '@react-navigation/core';
-import {scale} from '../../utils/scaling';
-import Button from '../../components/ui/Button/ButtonComponent';
-import {logoutUser} from '../../api/authApi';
+import {scale} from '~/utils/scaling';
+import Button from '~/components/ui/Button/ButtonComponent';
+import {logoutUser} from '~/api/authApi';
 import SettingsHeader from './components/SettingsHeader';
 import AccountSecuritySettings from './components/AccountSecuritySettings';
 import AccountPreferencesSettings from './components/AccountPreferencesSettings';
 import AccountLanguageSettings from './components/AccountLanguageSettings';
 import AccountSupportSettings from './components/AccountSupportSettings';
-import {Colors} from '../../theme/theme';
-import Background_2 from '../../components/Background/Background_2';
+import {Colors} from '~/theme/theme';
+import Background_2 from '~/components/Background/Background_2';
 
 const SettingsScreen = () => {
   const navigation = useNavigation();
