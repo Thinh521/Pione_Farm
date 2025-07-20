@@ -15,8 +15,9 @@ const NewsSkeleton = ({itemCount = 3}) => {
             alignItems: 'center',
             marginTop: scale(8),
             marginBottom: scale(10),
-            borderWidth: 1,
             padding: scale(10),
+            borderWidth: 1,
+            borderColor: '#E1E9EE',
           }}>
           <View
             style={{

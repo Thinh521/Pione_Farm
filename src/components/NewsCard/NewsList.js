@@ -89,9 +89,6 @@ const NewsList = ({data = []}) => {
 export default memo(NewsList);
 
 const styles = StyleSheet.create({
-  listContainer: {
-    padding: scale(16),
-  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
