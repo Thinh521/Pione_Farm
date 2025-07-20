@@ -37,13 +37,12 @@ const IntroScreen = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const {data: provinceResponse = {data: []}} = useQuery({
+  const {data: provinceList = []} = useQuery({
     queryKey: ['provinces'],
     queryFn: getAllProvinceApii,
+    select: res => res.data,
     staleTime: 1000 * 60 * 10,
   });
-
-  const provinceList = provinceResponse.data || [];
 
   useEffect(() => {
     setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);

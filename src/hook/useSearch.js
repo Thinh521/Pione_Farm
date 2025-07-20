@@ -27,14 +27,14 @@ export const useSearchAndFilter = ({
       );
     }
 
-    // Filter theo ngày
-    if (startDate && endDate) {
-      const start = new Date(startDate).getTime();
-      const end = new Date(endDate).getTime();
+    // Filter theo ngày (1 ngày hoặc khoảng ngày)
+    if (startDate || endDate) {
+      const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
+      const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : start; // nếu chỉ có startDate thì end = start
 
       result = result.filter(item => {
         const createdAt = new Date(item.createdAt).getTime();
-        return createdAt >= start && createdAt <= end;
+        return (!start || createdAt >= start) && (!end || createdAt <= end);
       });
     }
 
@@ -69,6 +69,18 @@ export const useSearchAndFilter = ({
         if (quantity === 'Dưới 100') return qty < 100;
         if (quantity === '100 - 500') return qty >= 100 && qty <= 500;
         return qty > 500;
+      });
+    }
+
+    // Filter theo tin tức
+    const news = filters['Tin tức'];
+    if (news && news !== 'Tất cả') {
+      result = result.filter(item => {
+        const type = item.type?.toLowerCase() || '';
+        return (
+          (news === 'Trong nước' && type === 'trongnuoc') ||
+          (news === 'Ngoài nước' && type === 'ngoainuoc')
+        );
       });
     }
 

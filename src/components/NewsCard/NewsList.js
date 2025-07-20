@@ -1,9 +1,9 @@
+import {API_BASE_URL} from '@env';
 import React, {useEffect, useRef} from 'react';
 import {Animated, FlatList, StyleSheet, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import {scale} from '../../utils/scaling';
-import {Colors} from '../../theme/theme';
-import {API_BASE_URL} from '@env';
+import {scale} from '~/utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 
 const NewsList = ({data = []}) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
@@ -52,12 +52,13 @@ const NewsList = ({data = []}) => {
         <View style={styles.metaContainer}>
           <View style={styles.metaItem}>
             <Text style={styles.metaIconText}>📅 </Text>
-            <Text style={styles.metaText}>{item.date}</Text>
+            <Text style={styles.metaText}>
+              {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+            </Text>
           </View>
 
           <View style={styles.metaItem}>
-            <Text style={styles.metaIconText}>⏱️ </Text>
-            <Text style={styles.metaText}>{item.readTime} phút đọc</Text>
+            <Text style={styles.metaText}>Tỉnh: {item.provinceName}</Text>
           </View>
         </View>
       </View>
@@ -68,7 +69,7 @@ const NewsList = ({data = []}) => {
     <View style={styles.container}>
       <FlatList
         data={data}
-        keyExtractor={(item, index) => item._id?.toString() || `item-${index}`}
+        keyExtractor={(item, index) => `${item._id}-${index}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
         renderItem={renderItem}
@@ -155,11 +156,11 @@ const styles = StyleSheet.create({
     marginRight: scale(6),
   },
   metaIconText: {
-    fontSize: scale(10),
+    fontSize: FontSizes.xsmall,
   },
   metaText: {
-    fontSize: scale(11),
-    color: '#6c757d',
-    fontWeight: '500',
+    color: Colors.grayText,
+    fontSize: FontSizes.xsmall,
+    fontWeight: FontWeights.semiBold,
   },
 });

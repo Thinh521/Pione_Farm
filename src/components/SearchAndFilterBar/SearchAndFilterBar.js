@@ -235,7 +235,11 @@ const SearchAndFilterBar = ({
       {/* Filter buttons */}
       <View style={styles.filterContainer}>
         {filterOptions.map((filter, index) => {
-          if (filter.label === 'Ngày BĐ' || filter.label === 'Ngày KT') {
+          if (
+            filter.label === 'Ngày BĐ' ||
+            filter.label === 'Ngày KT' ||
+            filter.label === 'Ngày'
+          ) {
             return (
               <View key={index} style={{flex: 1}}>
                 <Button.Select
