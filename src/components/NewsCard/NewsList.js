@@ -1,41 +1,38 @@
-import {API_BASE_URL} from '@env';
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useCallback, memo} from 'react';
 import {Animated, FlatList, StyleSheet, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import {API_BASE_URL} from '@env';
 import {scale} from '~/utils/scaling';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {DateIcon} from '~/assets/icons/Icons';
 
-const NewsList = ({data = []}) => {
+const AnimatedCard = memo(({item, index}) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
-  const scaleValue = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.timing(animatedValue, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
+    if (index < 5) {
+      Animated.timing(animatedValue, {
+        toValue: 1,
+        duration: 500 + index * 200,
+        useNativeDriver: true,
+      }).start();
+    }
   }, []);
 
-  const translateY = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [50, 0],
-  });
+  const animatedStyle = {
+    opacity: animatedValue,
+    transform: [
+      {
+        translateY: animatedValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: [30, 0],
+        }),
+      },
+    ],
+  };
 
-  const opacity = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-
-  const renderItem = ({item}) => (
-    <Animated.View
-      style={[
-        styles.card,
-        {
-          opacity,
-          transform: [{translateY}, {scale: scaleValue}],
-        },
-      ]}>
+  return (
+    <Animated.View style={[styles.card, animatedStyle]}>
       <FastImage
         source={{uri: `${API_BASE_URL}/api/upload/${item.images?.[0]}`}}
         style={styles.image}
@@ -51,7 +48,7 @@ const NewsList = ({data = []}) => {
 
         <View style={styles.metaContainer}>
           <View style={styles.metaItem}>
-            <Text style={styles.metaIconText}>📅 </Text>
+            <DateIcon style={styles.dateIcon} />
             <Text style={styles.metaText}>
               {new Date(item.createdAt).toLocaleDateString('vi-VN')}
             </Text>
@@ -64,48 +61,36 @@ const NewsList = ({data = []}) => {
       </View>
     </Animated.View>
   );
+});
+
+const NewsList = ({data = []}) => {
+  const renderItem = useCallback(
+    ({item, index}) => <AnimatedCard item={item} index={index} />,
+    [],
+  );
+
+  const keyExtractor = useCallback((item, index) => `${item._id}-${index}`, []);
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        keyExtractor={(item, index) => `${item._id}-${index}`}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
-        renderItem={renderItem}
-        ListHeaderComponent={() => (
-          <View style={styles.headerContent}>
-            <Text style={styles.headerSubtitle}>
-              Cập nhật thông tin mới nhất về nông nghiệp
-            </Text>
-          </View>
-        )}
-      />
-    </View>
+    <FlatList
+      data={data}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.listContainer}
+      initialNumToRender={5}
+      maxToRenderPerBatch={8}
+      windowSize={5}
+      removeClippedSubviews={true}
+    />
   );
 };
 
-export default NewsList;
+export default memo(NewsList);
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   listContainer: {
     padding: scale(16),
-  },
-  headerContent: {
-    marginBottom: scale(20),
-  },
-  headerTitle: {
-    fontSize: scale(18),
-    fontWeight: 'bold',
-    marginBottom: scale(4),
-    color: '#000',
-  },
-  headerSubtitle: {
-    fontSize: scale(14),
-    color: '#666',
   },
   card: {
     flexDirection: 'row',
@@ -116,6 +101,11 @@ const styles = StyleSheet.create({
     padding: scale(10),
     borderColor: Colors.border,
     borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   image: {
     width: scale(80),
@@ -128,13 +118,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontWeight: 'bold',
-    fontSize: scale(14),
+    color: Colors.title,
+    fontSize: FontSizes.small,
+    fontWeight: FontWeights.semiBold,
     marginBottom: scale(4),
-    color: '#000',
   },
   description: {
-    fontSize: scale(12),
+    lineHeight: scale(14),
+    fontSize: FontSizes.xsmall,
     color: '#555',
   },
   metaContainer: {
@@ -146,17 +137,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  metaIcon: {
-    width: scale(20),
-    height: scale(20),
-    borderRadius: scale(10),
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: scale(6),
-  },
-  metaIconText: {
-    fontSize: FontSizes.xsmall,
+  dateIcon: {
+    width: scale(14),
+    height: scale(14),
+    marginRight: scale(4),
   },
   metaText: {
     color: Colors.grayText,

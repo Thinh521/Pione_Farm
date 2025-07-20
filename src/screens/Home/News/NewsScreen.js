@@ -1,29 +1,41 @@
-import React, {useState, useMemo, useEffect} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import React, {useState, useMemo, useEffect, useCallback} from 'react';
 import {FlatList, Text, View} from 'react-native';
+import {useQuery} from '@tanstack/react-query';
 import styles from './News.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import ChatBot from '~/components/ChatBot/ChatBot';
 import {scale} from '~/utils/scaling';
 import NewsList from '~/components/NewsCard/NewsList';
-import useNewsStore from '~/store/useNewsStore';
 import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
+import useNewsStore from '~/store/useNewsStore';
 import {getAllProvinceApii} from '~/api/provinceApi';
 import {useSearchAndFilter} from '~/hook/useSearch';
+
+const EmptyComponent = ({message}) => (
+  <View style={{alignItems: 'center', marginTop: scale(40)}}>
+    <Text style={{fontSize: scale(14), color: '#888'}}>{message}</Text>
+  </View>
+);
+
+const Section = ({title, subtitle, data, loading}) => {
+  if (!data.length && !loading) return null;
+  return (
+    <View style={{marginBottom: scale(20)}}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.headerSubtitle}>{subtitle}</Text>
+      {loading ? <NewsSkeleton itemCount={5} /> : <NewsList data={data} />}
+    </View>
+  );
+};
 
 const NewsScreen = () => {
   const [selectedFilters, setSelectedFilters] = useState({});
   const [provinceOptions, setProvinceOptions] = useState([]);
   const [date, setDate] = useState(null);
 
-  const {newsData, loading, fetchNewsData, hasFetched, error} = useNewsStore();
+  const {newsData, loading, fetchNewsData, hasFetched} = useNewsStore();
 
-  const {
-    data: provinceList = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
+  const {data: provinceList = []} = useQuery({
     queryKey: ['provinces'],
     queryFn: getAllProvinceApii,
     select: res => res.data,
@@ -31,9 +43,7 @@ const NewsScreen = () => {
   });
 
   useEffect(() => {
-    if (!hasFetched) {
-      fetchNewsData();
-    }
+    if (!hasFetched) fetchNewsData();
   }, []);
 
   useEffect(() => {
@@ -41,6 +51,7 @@ const NewsScreen = () => {
   }, [provinceList]);
 
   const enrichedNews = useMemo(() => {
+    if (!newsData?.length) return [];
     return newsData.map(item => {
       const province = provinceList.find(p => p._id === item.provinceId);
       return {
@@ -51,13 +62,14 @@ const NewsScreen = () => {
     });
   }, [newsData, provinceList]);
 
-  const filterOptions = useMemo(() => {
-    return [
+  const filterOptions = useMemo(
+    () => [
       {label: 'Tin tức', options: ['Tất cả', 'Trong nước', 'Ngoài nước']},
       {label: 'Ngày', options: []},
       {label: 'Tỉnh', options: provinceOptions},
-    ];
-  }, [provinceOptions]);
+    ],
+    [provinceOptions],
+  );
 
   const {filteredData, searchKeyword, setSearchKeyword} = useSearchAndFilter({
     data: enrichedNews,
@@ -67,14 +79,31 @@ const NewsScreen = () => {
     filters: selectedFilters,
   });
 
-  const handleFilterSelect = (type, value) => {
+  const handleFilterSelect = useCallback((type, value) => {
     setSelectedFilters(prev => ({...prev, [type]: value}));
-
     if (type === 'Ngày') {
       const [day, month, year] = value.split('/');
       setDate(new Date(`${year}-${month}-${day}`));
     }
-  };
+  }, []);
+
+  const {latestNews, domesticNews, internationalNews} = useMemo(() => {
+    const sorted = [...filteredData].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+    );
+
+    return {
+      latestNews: sorted.slice(0, 5),
+      domesticNews: sorted.filter(i => i.type === 'trongnuoc').slice(0, 5),
+      internationalNews: sorted.filter(i => i.type === 'ngoainuoc').slice(0, 5),
+    };
+  }, [filteredData]);
+
+  const nothingToShow =
+    !loading &&
+    !latestNews.length &&
+    !domesticNews.length &&
+    !internationalNews.length;
 
   return (
     <View style={styles.container}>
@@ -86,60 +115,44 @@ const NewsScreen = () => {
           filterOptions={filterOptions}
           placeholder="Tìm kiếm thông tin"
           onFilterSelect={handleFilterSelect}
-          onDateChange={date => {
-            setDate(date);
-          }}
+          onDateChange={setDate}
         />
       </View>
 
       <View style={styles.main}>
         <FlatList
-          data={[{}]}
-          keyExtractor={(item, index) =>
-            item._id?.toString() || `item-${index}`
-          }
+          data={[]}
+          keyExtractor={() => 'news-screen'}
           showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            nothingToShow ? (
+              <EmptyComponent message="Không tìm thấy tin tức phù hợp." />
+            ) : (
+              <View>
+                <Section
+                  title="Tin mới"
+                  subtitle="Cập nhật thông tin mới nhất về nông nghiệp"
+                  data={latestNews}
+                  loading={loading}
+                />
+                <Section
+                  title="Tin trong nước"
+                  subtitle="Cập nhật thông tin mới nhất về nông nghiệp"
+                  data={domesticNews}
+                  loading={loading}
+                />
+                <Section
+                  title="Tin ngoài nước"
+                  subtitle="Cập nhật thông tin mới nhất về nông nghiệp"
+                  data={internationalNews}
+                  loading={loading}
+                />
+              </View>
+            )
+          }
           contentContainerStyle={{
             marginTop: scale(20),
             paddingBottom: scale(170),
-          }}
-          renderItem={() => {
-            const sortedData = [...filteredData].sort(
-              (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-            );
-
-            const domesticNews = sortedData
-              .filter(item => item.type === 'trongnuoc')
-              .slice(0, 5);
-
-            const internationalNews = sortedData
-              .filter(item => item.type === 'ngoainuoc')
-              .slice(0, 5);
-
-            return (
-              <View>
-                <Text style={styles.sectionTitle}>Tin mới</Text>
-                {loading && !hasFetched ? (
-                  <NewsSkeleton itemCount={sortedData} />
-                ) : (
-                  <NewsList data={sortedData} />
-                )}
-
-                <Text style={styles.sectionTitle}>Tin trong nước</Text>
-                {loading && !hasFetched ? (
-                  <NewsSkeleton itemCount={domesticNews} />
-                ) : (
-                  <NewsList data={domesticNews} />
-                )}
-
-                <Text style={styles.sectionTitle}>Tin ngoài nước</Text>
-                {loading && !hasFetched ? (
-                  <NewsSkeleton itemCount={internationalNews} />
-                ) : (
-                  <NewsList data={internationalNews} />
-                )}
-              </View>
-            );
           }}
         />
       </View>

@@ -17,4 +17,7 @@ export default StyleSheet.create({
     fontWeight: FontWeights.semiBold,
     marginBottom: scale(4),
   },
+  headerSubtitle: {
+    marginBottom: scale(16),
+  },
 });
