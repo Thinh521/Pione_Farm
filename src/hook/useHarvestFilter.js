@@ -1,4 +1,4 @@
-import {useEffect, useState, useCallback, useMemo} from 'react';
+import {useEffect, useState, useCallback} from 'react';
 import {Alert, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import XLSX from 'xlsx';
@@ -12,7 +12,6 @@ import {
 } from '../api/productApi';
 import {requestStoragePermission} from '../utils/permissionHelper';
 
-// Hàm debounce đơn giản
 const debounce = (func, wait) => {
   let timeout;
   return (...args) => {
@@ -59,8 +58,7 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
         setTodayHarvestData(todayRes.data);
       }
     } catch (err) {
-      console.error('Lỗi tải dữ liệu ban đầu:', err.message);
-      Alert.alert('Lỗi', 'Không thể tải dữ liệu ban đầu');
+      console.log('Lỗi tải dữ liệu ban đầu:', err.message);
     } finally {
       setIsLoading(false);
     }
@@ -142,7 +140,6 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
     } catch (err) {
       console.log('Lỗi lấy dữ liệu giá:', err.message);
       setCollectionAndYieldData([]);
-      Alert.alert('Lỗi', 'Không thể lấy dữ liệu giá');
     } finally {
       setIsLoading(false);
     }
@@ -223,7 +220,6 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
     );
   }, [selectedFilters]);
 
-  // Các effect gọi API
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);

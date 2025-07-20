@@ -20,24 +20,6 @@ import {useHarvestFilter} from '~/hook/useHarvestFilter';
 import {useSearchAndFilter} from '~/hook/useSearch';
 
 const AdvancedSearchScreen = () => {
-  const columns = useMemo(
-    () => [
-      {title: 'Khu vực', key: 'provinceName', flex: 1},
-      {title: 'Giá tại chợ', key: 'marketPrice', flex: 1},
-      {title: 'Giá tại Vườn', key: 'farmPrice', flex: 1},
-    ],
-    [],
-  );
-
-  const columns_2 = useMemo(
-    () => [
-      {title: 'Ngày tháng', key: 'date', flex: 1},
-      {title: 'Nơi thu thập', key: 'provinceName', flex: 1},
-      {title: 'Số lượng', key: 'quantitySum', flex: 1},
-    ],
-    [],
-  );
-
   const {
     isLoading,
     fruitCategory,
@@ -58,15 +40,34 @@ const AdvancedSearchScreen = () => {
     searchableFields: ['provinceName'],
   });
 
-  const [searchText, setSearchText] = useState('');
   const [activeFilter, setActiveFilter] = useState({
     index: null,
     anim: new Animated.Value(0),
   });
   const filterRotate = useRef(new Animated.Value(0)).current;
 
-  const fruitCategorySafe =
-    fruitCategory.length > 0 ? fruitCategory : ['Tất cả'];
+  const columns = useMemo(
+    () => [
+      {title: 'Khu vực', key: 'provinceName', flex: 1},
+      {title: 'Giá tại chợ', key: 'marketPrice', flex: 1},
+      {title: 'Giá tại Vườn', key: 'farmPrice', flex: 1},
+    ],
+    [],
+  );
+
+  const columns_2 = useMemo(
+    () => [
+      {title: 'Ngày tháng', key: 'date', flex: 1},
+      {title: 'Nơi thu thập', key: 'provinceName', flex: 1},
+      {title: 'Số lượng', key: 'quantitySum', flex: 1},
+    ],
+    [],
+  );
+
+  const fruitCategorySafe = useMemo(
+    () => (fruitCategory.length > 0 ? fruitCategory : ['Tất cả']),
+    [fruitCategory],
+  );
 
   const filterOptions = useMemo(
     () => [
@@ -79,33 +80,33 @@ const AdvancedSearchScreen = () => {
 
   const toggleFilter = useCallback(
     index => {
+      const newAnim = new Animated.Value(0);
       if (activeFilter.index === index) {
         Animated.parallel([
           Animated.timing(activeFilter.anim, {
             toValue: 0,
-            duration: 200,
+            duration: 150,
             useNativeDriver: true,
           }),
           Animated.timing(filterRotate, {
             toValue: 0,
-            duration: 200,
+            duration: 150,
             useNativeDriver: true,
           }),
         ]).start(() => {
           setActiveFilter({index: null, anim: new Animated.Value(0)});
         });
       } else {
-        const newAnim = new Animated.Value(0);
         setActiveFilter({index, anim: newAnim});
         Animated.parallel([
           Animated.timing(newAnim, {
             toValue: 1,
-            duration: 200,
+            duration: 150,
             useNativeDriver: true,
           }),
           Animated.timing(filterRotate, {
             toValue: 1,
-            duration: 200,
+            duration: 150,
             useNativeDriver: true,
           }),
         ]).start();
@@ -131,9 +132,8 @@ const AdvancedSearchScreen = () => {
     return `${start} - ${end}`;
   }, [selectedFilters]);
 
-  const capitalize = useMemo(
-    () => str => str ? str.charAt(0).toUpperCase() + str.slice(1) : '',
-    [],
+  const capitalize = useCallback(
+    str => (str ? str.charAt(0).toUpperCase() + str.slice(1) : ''),
     [],
   );
 
@@ -279,7 +279,7 @@ const AdvancedSearchScreen = () => {
                     ? 'Đang xuất...'
                     : 'Xuất bảng giá'
                 }
-                disabled={filteredData.length === 0}
+                disabled={filteredData?.length === 0}
                 onPress={handleExportPrice}
                 style={styles.buttonExcel}
               />
