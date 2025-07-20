@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   ScrollView,
   Text,
@@ -7,15 +7,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import styles from './Trend.styles';
-import SearchAndFilterBar from '../../components/SearchAndFilterBar/SearchAndFilterBar';
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import WalletList from '../Home/components/WalletList';
-import WalletListSkeleton from '../../components/Skeleton/WalletListSkeleton';
-import {scale} from '../../utils/scaling';
-import {Colors} from '../../theme/theme';
-import useWalletStore from '../../store/useWalletStore';
+import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
+import {scale} from '~/utils/scaling';
+import {Colors} from '~/theme/theme';
 import * as Animatable from 'react-native-animatable';
 import {useNavigation} from '@react-navigation/native';
 import {Flame, CalendarDays, History} from 'lucide-react-native';
+import useWalletData from '~/hook/useWalletData';
 
 const FILTER_OPTIONS = [
   {
@@ -31,24 +31,8 @@ const TrendScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
 
-  const {walletData, loading, fetchWalletData, hasFetched} = useWalletStore();
-
-  useEffect(() => {
-    if (!hasFetched) {
-      fetchWalletData();
-    }
-  }, []);
-
-  // const today = new Date().toDateString();
-  // const yesterday = new Date(Date.now() - 86400000).toDateString();
-
-  // const walletData = walletData.filter(
-  //   item => new Date(item.createdAt).toDateString() === today,
-  // );
-
-  // const walletData = walletData.filter(
-  //   item => new Date(item.createdAt).toDateString() === yesterday,
-  // );
+  const {data, isLoading, isFetched} = useWalletData();
+  const walletData = data?.merged || [];
 
   const navigateToWalletAll = (title, data) => {
     navigation.navigate('NoBottomTab', {
@@ -74,7 +58,7 @@ const TrendScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {loading ? (
+      {isLoading ? (
         <WalletListSkeleton itemCount={5} />
       ) : (
         <WalletList
@@ -128,7 +112,7 @@ const TrendScreen = () => {
         />
       </View>
 
-      {!hasFetched ? (
+      {!isFetched ? (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={Colors.green} />
         </View>

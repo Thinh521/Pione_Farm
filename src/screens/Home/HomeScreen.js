@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {View, Text, StatusBar, FlatList, TouchableOpacity} from 'react-native';
 
 import WalletList from './components/WalletList';
@@ -8,10 +8,10 @@ import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterB
 import styles from './Home.styles';
 import {Colors} from '~/theme/theme';
 import {useNavigation} from '@react-navigation/core';
-import useWalletStore from '~/store/useWalletStore';
 import ChatBot from '~/components/ChatBot/ChatBot';
 import {scale} from '~/utils/scaling';
 import {useSearchAndFilter} from '~/hook/useSearch';
+import useWalletData from '~/hook/useWalletData';
 
 const FILTER_OPTIONS = [
   {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
@@ -24,7 +24,6 @@ const FILTER_OPTIONS = [
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({
     Giá: 'Tất cả',
@@ -32,8 +31,9 @@ const HomeScreen = () => {
     'Số lượng': 'Tất cả',
   });
 
-  const {walletData, productList, loading, fetchWalletData, hasFetched} =
-    useWalletStore();
+  const {data, isLoading} = useWalletData();
+  const walletData = data?.merged || [];
+  const productList = data?.products || [];
 
   const {
     filteredData: filteredWalletData,
@@ -45,12 +45,6 @@ const HomeScreen = () => {
     searchKeyword: searchText,
     filters: selectedFilters,
   });
-
-  useEffect(() => {
-    if (!hasFetched) {
-      fetchWalletData();
-    }
-  }, []);
 
   const navigateToWalletAll = () => {
     navigation.navigate('NoBottomTab', {
@@ -102,11 +96,11 @@ const HomeScreen = () => {
               </View>
 
               <WalletList
-                loading={loading}
+                loading={isLoading}
                 data={filteredWalletData.slice(0, 5)}
               />
 
-              <FruitPriceList loading={loading} products={productList} />
+              <FruitPriceList loading={isLoading} products={productList} />
             </>
           )}
         />
