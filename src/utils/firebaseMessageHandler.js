@@ -46,7 +46,7 @@ export const getFcmToken = async () => {
   try {
 
     const newToken = await messaging().getToken();
-    console.log('✅ FCM Token mới:', newToken);
+    console.log('FCM Token mới:', newToken);
 
     if (newToken) {
       saveFcmToken(newToken); 
@@ -54,7 +54,7 @@ export const getFcmToken = async () => {
 
     return newToken;
   } catch (error) {
-    console.log('❌ Lỗi khi lấy FCM Token mới:', error);
+    console.log('Lỗi khi lấy FCM Token mới:', error);
   }
 };
 

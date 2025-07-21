@@ -6,10 +6,6 @@ import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterB
 import {scale} from '~/utils/scaling';
 import {getNotification, getFilterNotification} from '~/api/notificationApi';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
-import Button from '~/components/ui/Button/ButtonComponent';
-import {getUserData} from '~/utils/storage/userStorage';
-import {getSavedFcmToken} from '~/utils/storage/fcmStorage';
-import {saveFcmToken} from '~/api/fcmApi';
 
 const FILTER_OPTIONS = [
   {
@@ -138,23 +134,6 @@ const NotificationScreen = () => {
   useEffect(() => {
     fetchDefaultNotification();
   }, []);
-
-  const handleSaveFcmToken = async () => {
-    try {
-      const res = await getUserData();
-      const userId = res.id;
-      const fcmToken = await getSavedFcmToken();
-
-      if (userId && fcmToken) {
-        const res = await saveFcmToken({userId, fcmToken});
-        console.log('Đã lưu FCM token:', res);
-      } else {
-        console.log('Thiếu userId hoặc fcmToken');
-      }
-    } catch (error) {
-      console.log('Không thể lưu FCM token:', error);
-    }
-  };
 
   const renderSectionHeader = ({section: {title}}) => (
     <View style={styles.headerContainer}>

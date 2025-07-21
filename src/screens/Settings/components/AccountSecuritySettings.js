@@ -12,6 +12,10 @@ const AccountSecuritySettings = ({user}) => {
   const {address, isConnected, provider} = useWalletInfo();
   const [ethBalance, setEthBalance] = useState(null);
 
+  console.log('address', address);
+  console.log('provider', provider);
+  console.log('ethBalance', ethBalance);
+
   useEffect(() => {
     const fetchBalance = async () => {
       try {
@@ -40,7 +44,7 @@ const AccountSecuritySettings = ({user}) => {
       const signer = provider.getSigner();
 
       const tx = await signer.sendTransaction({
-        to: '0xRecipientAddressHere', // thay bằng địa chỉ thực tế mà mình muốn gửi ETH tới.
+        to: '0xRecipientAddressHere',
         value: ethers.utils.parseEther('0.01'),
       });
 
