@@ -1,12 +1,21 @@
 import React, {useEffect, useRef, useCallback, memo} from 'react';
-import {Animated, FlatList, StyleSheet, Text, View} from 'react-native';
+import {
+  Animated,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {API_BASE_URL} from '@env';
 import {scale} from '~/utils/scaling';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {DateIcon} from '~/assets/icons/Icons';
+import {useNavigation} from '@react-navigation/core';
 
 const AnimatedCard = memo(({item, index}) => {
+  const navigation = useNavigation();
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -31,37 +40,46 @@ const AnimatedCard = memo(({item, index}) => {
     ],
   };
 
+  const handlePress = () => {
+    navigation.navigate('NoBottomTab', {
+      screen: 'NewDetail',
+      params: {newsId: item._id},
+    });
+  };
+
   return (
-    <Animated.View style={[styles.card, animatedStyle]}>
-      <FastImage
-        source={{uri: `${API_BASE_URL}/api/upload/${item.images?.[0]}`}}
-        style={styles.image}
-        resizeMode={FastImage.resizeMode.cover}
-      />
-      <View style={styles.textContainer}>
-        <Text style={styles.title} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.description} numberOfLines={2}>
-          {item.summary}
-        </Text>
+    <TouchableOpacity onPress={handlePress} activeOpacity={0.9}>
+      <Animated.View style={[styles.card, animatedStyle]}>
+        <FastImage
+          source={{uri: `${API_BASE_URL}/api/upload/${item.images?.[0]}`}}
+          style={styles.image}
+          resizeMode={FastImage.resizeMode.cover}
+        />
+        <View style={styles.textContainer}>
+          <Text style={styles.title} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <Text style={styles.description} numberOfLines={2}>
+            {item.summary}
+          </Text>
 
-        <View style={styles.metaContainer}>
-          <View style={styles.metaItem}>
-            <DateIcon style={styles.dateIcon} />
-            <Text style={styles.metaText}>
-              {new Date(item.createdAt).toLocaleDateString('vi-VN')}
-            </Text>
-          </View>
+          <View style={styles.metaContainer}>
+            <View style={styles.metaItem}>
+              <DateIcon style={styles.dateIcon} />
+              <Text style={styles.metaText}>
+                {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+              </Text>
+            </View>
 
-          <View style={styles.metaItem}>
-            <Text style={styles.metaText}>
-              Tỉnh: {item.provinceName || 'Tin chung'}
-            </Text>
+            <View style={styles.metaItem}>
+              <Text style={styles.metaText}>
+                Tỉnh: {item.provinceName || 'Tin chung'}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </TouchableOpacity>
   );
 });
 

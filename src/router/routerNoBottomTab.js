@@ -1,24 +1,25 @@
 import LoginScreen from '~/screens/Auth/Login/LoginScreen';
 import RegisterScreen from '~/screens/Auth/Register';
 import OnboardingScreen from '~/screens/Onboarding/OnboardingScreen';
-import ForgotPasswordScreen from '../screens/Auth/ForgotPassword/ForgotPassword';
-import OTPInputScreen from '../screens/Auth/OtpInput/OtpInputScreen';
-import LoginRequiredScreen from '../screens/Auth/Login/LoginRequiredScreen';
-import ResetPasswordScreen from '../screens/Auth/ResetPassword/ResetPasswordScreen';
-import ProfileScreen from '../screens/Profile/ProfileScreen';
-import EditProfileScreen from '../screens/Profile/EditProfileScreen';
-import ForgotPasswordProfileScreen from '../screens/Profile/ForgotPasswordScreen';
-import PriceComparisonScreen from '../screens/Home/PriceComparison/PriceComparisonScreen';
-import AdvancedSearchScreen from '../screens/Home/AdvancedSearch/AdvancedSearchScreen';
-import IntroScreen from '../screens/Home/Intro/IntroScreen';
-import MarketScreen from '../screens/Home/Market/MarketScreen';
-import NewsScreen from '../screens/Home/News/NewsScreen';
-import LanguageScreen from '../screens/Settings/Language/LanguageScreen';
-import TestScreen from '../screens/Test/TestScreen';
-import FruitListScreen from '../screens/FruitList/FruitList';
-import CustomHeader from '../components/CustomNavigation/CustomHeader';
-import WalletAllScreen from '../screens/Home/WalletAll/WalletAllScreen';
-import ChatbotScreen from '../screens/Chatbot/ChatbotScreen';
+import ForgotPasswordScreen from '~/screens/Auth/ForgotPassword/ForgotPassword';
+import OTPInputScreen from '~/screens/Auth/OtpInput/OtpInputScreen';
+import LoginRequiredScreen from '~/screens/Auth/Login/LoginRequiredScreen';
+import ResetPasswordScreen from '~/screens/Auth/ResetPassword/ResetPasswordScreen';
+import ProfileScreen from '~/screens/Profile/ProfileScreen';
+import EditProfileScreen from '~/screens/Profile/EditProfileScreen';
+import ForgotPasswordProfileScreen from '~/screens/Profile/ForgotPasswordScreen';
+import PriceComparisonScreen from '~/screens/Home/PriceComparison/PriceComparisonScreen';
+import AdvancedSearchScreen from '~/screens/Home/AdvancedSearch/AdvancedSearchScreen';
+import IntroScreen from '~/screens/Home/Intro/IntroScreen';
+import MarketScreen from '~/screens/Home/Market/MarketScreen';
+import NewsScreen from '~/screens/Home/News/NewsScreen';
+import LanguageScreen from '~/screens/Settings/Language/LanguageScreen';
+import TestScreen from '~/screens/Test/TestScreen';
+import FruitListScreen from '~/screens/FruitList/FruitList';
+import CustomHeader from '~/components/CustomNavigation/CustomHeader';
+import WalletAllScreen from '~/screens/Home/WalletAll/WalletAllScreen';
+import ChatbotScreen from '~/screens/Chatbot/ChatbotScreen';
+import NewDetail from '~/screens/NewDetail/NewDetail';
 
 const routerNoBottomTab = [
   {
@@ -200,6 +201,15 @@ const routerNoBottomTab = [
       headerShown: false,
       animation: 'slide_from_bottom',
     },
+  },
+  {
+    name: 'NewDetail',
+    component: NewDetail,
+    options: ({navigation}) => ({
+      header: () => (
+        <CustomHeader title="Chi tiết tin tức" navigation={navigation} />
+      ),
+    }),
   },
 ];
 

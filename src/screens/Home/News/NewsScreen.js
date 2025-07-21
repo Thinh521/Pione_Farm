@@ -92,6 +92,8 @@ const NewsScreen = () => {
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     );
 
+    console.log('sorted', sorted);
+
     return {
       latestNews: sorted.slice(0, 5),
       domesticNews: sorted.filter(i => i.type === 'trongnuoc').slice(0, 5),
