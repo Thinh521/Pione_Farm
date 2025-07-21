@@ -6,12 +6,12 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import Input from '../../../components/ui/Input/InputComponents';
-import {SearchIcon} from '../../../assets/icons/Icons';
-import {scale} from '../../../utils/scaling';
-import {Colors, FontSizes, FontWeights} from '../../../theme/theme';
-import {removeVietnameseTones} from '../../../utils/normalize';
-import FruitPriceListSkeleton from '../../../components/Skeleton/FruitPriceListSkeleton';
+import Input from '~/components/ui/Input/InputComponents';
+import {SearchIcon} from '~/assets/icons/Icons';
+import {scale} from '~/utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {removeVietnameseTones} from '~/utils/normalize';
+import FruitPriceListSkeleton from '~/components/Skeleton/FruitPriceListSkeleton';
 
 const FruitPriceList = ({products = [], loading}) => {
   const [searchText, setSearchText] = useState('');

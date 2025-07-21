@@ -1,21 +1,15 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {
-  SectionList,
-  Text,
-  View,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
+import {SectionList, Text, View, ActivityIndicator} from 'react-native';
 
 import styles from './Notification.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import {scale} from '~/utils/scaling';
 import {getNotification, getFilterNotification} from '~/api/notificationApi';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
-import Button from '../../components/ui/Button/ButtonComponent';
-import {getUserData} from '../../utils/storage/userStorage';
-import {getSavedFcmToken} from '../../utils/storage/fcmStorage';
-import { saveFcmToken } from '../../api/fcmApi';
+import Button from '~/components/ui/Button/ButtonComponent';
+import {getUserData} from '~/utils/storage/userStorage';
+import {getSavedFcmToken} from '~/utils/storage/fcmStorage';
+import {saveFcmToken} from '~/api/fcmApi';
 
 const FILTER_OPTIONS = [
   {
@@ -199,8 +193,6 @@ const NotificationScreen = () => {
         />
       </View>
 
-      <Button.Main title="Thông báo" onPress={handleSaveFcmToken} />
-
       {loading ? (
         <ActivityIndicator
           style={{marginTop: scale(250)}}
@@ -210,8 +202,10 @@ const NotificationScreen = () => {
       ) : (
         <SectionList
           sections={notificationData}
+          showsVerticalScrollIndicator={false}
           keyExtractor={(item, index) => item.id + index}
           renderSectionHeader={renderSectionHeader}
+          contentContainerStyle={{paddingBottom: scale(80)}}
           renderItem={renderItem}
         />
       )}

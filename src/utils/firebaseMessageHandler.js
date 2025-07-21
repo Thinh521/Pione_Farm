@@ -1,7 +1,7 @@
 import {PermissionsAndroid, Platform} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import PushNotification from 'react-native-push-notification';
-import { saveFcmToken } from './storage/fcmStorage';
+import {saveFcmToken} from './storage/fcmStorage';
 
 const requestAndroidNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
@@ -44,17 +44,17 @@ export const requestUserPermission = async () => {
 
 export const getFcmToken = async () => {
   try {
-    const token = await messaging().getToken();
 
-    console.log('FCM Token:', token);
+    const newToken = await messaging().getToken();
+    console.log('✅ FCM Token mới:', newToken);
 
-    if (token) {
-      saveFcmToken(token);
+    if (newToken) {
+      saveFcmToken(newToken); 
     }
-    
-    return token;
+
+    return newToken;
   } catch (error) {
-    console.log('Lỗi khi lấy FCM Token:', error);
+    console.log('❌ Lỗi khi lấy FCM Token mới:', error);
   }
 };
 

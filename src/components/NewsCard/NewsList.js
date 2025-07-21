@@ -55,7 +55,9 @@ const AnimatedCard = memo(({item, index}) => {
           </View>
 
           <View style={styles.metaItem}>
-            <Text style={styles.metaText}>Tỉnh: {item.provinceName}</Text>
+            <Text style={styles.metaText}>
+              Tỉnh: {item.provinceName || 'Tin chung'}
+            </Text>
           </View>
         </View>
       </View>

@@ -1,31 +1,21 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {FlatList, StyleSheet, Text, View} from 'react-native';
-import Background_2 from '../../../components/Background/Background_2';
+import Background_2 from '~/components/Background/Background_2';
 import WalletList from '../components/WalletList';
-import WalletListSkeleton from '../../../components/Skeleton/WalletListSkeleton';
-import {FontSizes, FontWeights} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
-import useWalletStore from '~/store/useWalletStore';
+import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
+import {FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 import {useRoute} from '@react-navigation/core';
+import useWalletData from '~/hook/useWalletData';
 
 const WalletAllScreen = () => {
-  const {data, title} = useRoute().params || {};
+  const {data: routeData, title: routeTitle} = useRoute().params || {};
 
-  const {
-    walletData: defaultData,
-    loading,
-    fetchWalletData,
-    hasFetched,
-  } = useWalletStore();
+  const {data, isLoading} = useWalletData();
+  const mergedData = data?.merged || [];
 
-  useEffect(() => {
-    if (!hasFetched) {
-      fetchWalletData();
-    }
-  }, []);
-
-  const displayData = data || defaultData;
-  const displayTitle = title || 'Danh sách';
+  const displayData = routeData || mergedData;
+  const displayTitle = routeTitle || 'Danh sách';
 
   return (
     <>
@@ -39,7 +29,7 @@ const WalletAllScreen = () => {
           renderItem={() => (
             <>
               <Text style={styles.title}>{displayTitle}</Text>
-              {loading && !data ? (
+              {isLoading && !routeData ? (
                 <WalletListSkeleton itemCount={10} />
               ) : (
                 <WalletList data={displayData} />

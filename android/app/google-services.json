@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "748359074033",
-    "project_id": "phuc-thinh-dev-c3c2d",
-    "storage_bucket": "phuc-thinh-dev-c3c2d.firebasestorage.app"
+    "project_number": "163253185227",
+    "project_id": "statistical-21835",
+    "storage_bucket": "statistical-21835.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:748359074033:android:762dfca29898be9c626950",
+        "mobilesdk_app_id": "1:163253185227:android:dbbd3ac07d248ad6c1894e",
         "android_client_info": {
           "package_name": "com.pione_farm"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCk5D6HCjZiES6ahqb8TZQXxc2esRPzUaY"
+          "current_key": "AIzaSyCwLGjGxHv5zEYZ2z_2iXXHNEEEkcAPNd0"
         }
       ],
       "services": {
