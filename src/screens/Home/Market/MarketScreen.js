@@ -30,7 +30,7 @@ const MarketScreen = () => {
     return [
       {
         label: 'Xuất xứ',
-        options: ['Tất cả', 'Trong nước', 'Ngoài nước'],
+        options: ['Trong nước', 'Ngoài nước'],
       },
       {
         label: 'Trái cây',
@@ -38,7 +38,7 @@ const MarketScreen = () => {
       },
       {
         label: 'Tỉnh',
-        options: ['Tất cả', ...provinceOptions.map(item => item.name)],
+        options: provinceOptions,
       },
     ];
   }, [fruitCategory, provinceOptions]);

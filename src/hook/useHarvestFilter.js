@@ -135,6 +135,12 @@ export const useHarvestFilter = (excludeTodayHarvest = false) => {
         if (selectedType) payload.typeId = selectedType._id;
       }
 
+      if (selectedFilters?.Xuất_xứ && selectedFilters?.Xuất_xứ !== 'Tất cả') {
+        if (selectedFilters?.Xuất_xứ === 'Ngoài nước') {
+          payload.scope = 'abroad';
+        }
+      }
+
       const res = await getFarmMarketPrices(payload);
       setCollectionAndYieldData(res.data || []);
     } catch (err) {
