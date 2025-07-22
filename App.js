@@ -12,6 +12,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {AppKit} from '@reown/appkit-ethers-react-native';
 
 import './src/config/AppKitSetup';
+
 import {
   getFcmToken,
   requestUserPermission,
@@ -88,10 +89,10 @@ export default function App() {
         <ThemeProvider>
           <AuthProvider>
             <NavigationContainer>
-              <AppKit />
               <AppNavigator initialRouteName={initialRoute} />
               <FlashMessage position="top" />
             </NavigationContainer>
+            <AppKit />
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>

@@ -4,17 +4,18 @@ import {View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
 import {RightIcon} from '~/assets/icons/Icons';
 import {scale} from '~/utils/scaling';
 import {Colors, Shadows} from '~/theme/theme';
-import {AppKitButton, useWalletInfo} from '@reown/appkit-ethers-react-native';
+import {AppKitButton, useAppKit} from '@reown/appkit-ethers-react-native';
 import {ethers} from 'ethers';
 
 const AccountSecuritySettings = ({user}) => {
   const navigation = useNavigation();
-  const {address, isConnected, provider} = useWalletInfo();
+  const {connect, address, provider, isConnected} = useAppKit();
   const [ethBalance, setEthBalance] = useState(null);
 
   console.log('address', address);
   console.log('provider', provider);
   console.log('ethBalance', ethBalance);
+  console.log('isConnected', isConnected);
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -125,8 +126,11 @@ const AccountSecuritySettings = ({user}) => {
           Quản lí tài chính
         </Text>
 
-        {/* Nút kết nối ví từ AppKit */}
-        <AppKitButton />
+        <AppKitButton balance="show" />
+
+        <TouchableOpacity style={styles.sendButton} onPress={connect}>
+          <Text style={styles.sendButtonText}>Kết nối ví</Text>
+        </TouchableOpacity>
 
         {isConnected ? (
           <>

@@ -56,6 +56,8 @@ const HomeScreen = () => {
     });
   };
 
+  console.log('filteredWalletData', filteredWalletData);
+
   return (
     <>
       <StatusBar backgroundColor={Colors.headerBack} barStyle="light-content" />

@@ -1,12 +1,11 @@
 import '@walletconnect/react-native-compat';
 import {createAppKit, defaultConfig} from '@reown/appkit-ethers-react-native';
-
-const projectId = '6266bc3a03cf648c4df2288f781c7e25';
+import {REOWN_PROJECT_ID} from '@env';
 
 const metadata = {
-  name: 'AppKit RN',
-  description: 'AppKit RN Example',
-  url: 'https://reown.com/appkit',
+  name: 'Pione Farm',
+  description: 'DApp Pione Farm',
+  url: 'https://pionefarm.com',
   icons: ['https://avatars.githubusercontent.com/u/179229932'],
   redirect: {native: 'pionefarm://'},
 };
@@ -31,15 +30,15 @@ const chains = [
   {
     chainId: 5080,
     name: 'Pione Zero',
-    currency: 'Pione Zero',
-    rpcUrl: 'https://rpc.zeroscan.org',
+    currency: 'PIONE',
     explorerUrl: 'https://zeroscan.org',
+    rpcUrl: 'https://rpc.zeroscan.org',
   },
 ];
 
 if (!global.__APPKIT_INITIALIZED__) {
   createAppKit({
-    projectId,
+    projectId: REOWN_PROJECT_ID,
     chains,
     config,
     enableAnalytics: true,
