@@ -20,6 +20,7 @@ import {
 } from './src/utils/firebaseMessageHandler';
 import {getSavedFcmToken} from './src/utils/storage/fcmStorage';
 import {saveFcmToken} from './src/api/fcmApi';
+import {getUserData} from './src/utils/storage/userStorage';
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,9 @@ export default function App() {
         if (!user?.id) return;
 
         const newToken = await getFcmToken();
+        console.log('user.id', user.id);
+        console.log('newToken', newToken);
+
         const oldToken = await getSavedFcmToken();
 
         if (newToken && newToken !== oldToken) {

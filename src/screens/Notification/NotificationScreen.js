@@ -9,7 +9,7 @@ import {getAccessToken} from '~/utils/storage/tokenStorage';
 
 const FILTER_OPTIONS = [
   {
-    label: 'Ngày BĐ',
+    label: 'Ngày',
     options: [],
   },
   {
@@ -34,6 +34,8 @@ const NotificationScreen = () => {
   const [accessToken, setAccessToken] = useState('');
   const lastNotificationIdRef = useRef(null);
 
+  console.log('notificationData', notificationData);
+
   const fetchDefaultNotification = async () => {
     setLoading(true);
     try {
@@ -41,6 +43,8 @@ const NotificationScreen = () => {
       setAccessToken(token);
       const res = await getNotification(token);
       const rawData = res.data;
+
+      console.log('rawData', rawData);
 
       const mapped = [];
 
@@ -150,12 +154,14 @@ const NotificationScreen = () => {
   const renderItem = ({item}) => (
     <View style={styles.itemContainer}>
       <View style={styles.row}>
-        <Text style={styles.dot}>🌱</Text>
+        <Text style={styles.dot}></Text>
         <Text style={styles.label}>{item.label}</Text>
         <Text style={styles.badge}>{item.badge}</Text>
       </View>
       <Text style={styles.admin}>Admin</Text>
-      <Text style={styles.desc}>{item.desc}</Text>
+      <Text style={styles.desc} numberOfLines={2}>
+        {item.desc}
+      </Text>
     </View>
   );
 
