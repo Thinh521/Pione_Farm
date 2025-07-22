@@ -1,27 +1,20 @@
 import React, {useState} from 'react';
 import {FlatList, StatusBar, Text, TouchableOpacity, View} from 'react-native';
 import styles from './Statistical.styles';
-import SearchAndFilterBar from '../../components/SearchAndFilterBar/SearchAndFilterBar';
-import {scale} from '../../utils/scaling';
-import {DownIcon} from '../../assets/icons/Icons';
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
+import {scale} from '~/utils/scaling';
+import {DownIcon} from '~/assets/icons/Icons';
 import TrendAnalyticsCard from './components/TrendAnalyticsCard';
 import PriceMovementSummary from './components/PriceMovementSummary';
-import {Colors} from '../../theme/theme';
+import {Colors} from '~/theme/theme';
+import TopTrend from './components/TopTrend';
 
-const DROPDOWN_OPTIONS = [
-  {label: 'Tra cứu tổng hợp', route: 'PriceComparison'},
-  {label: 'Tra cứu tổng nâng cao', route: 'AdvancedSearch'},
-  {label: 'Giới thiệu chung', route: 'Intro'},
-  {
-    label: 'Thị trường trong nước và ngoài nước',
-    route: 'Market',
-  },
-  {label: 'Tin tức', route: 'News'},
-];
+const TIME_OPTIONS = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
 
 const StatisticalScreen = () => {
   const [searchText, setSearchText] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState('');
+  const [selectedTimeRange, setSelectedTimeRange] = useState('Monthly');
+  const [showDropdown, setShowDropdown] = useState(false);
 
   return (
     <>
@@ -33,12 +26,10 @@ const StatisticalScreen = () => {
             searchText={searchText}
             setSearchText={setSearchText}
             filterOptions={[]}
-            dropdownOptions={DROPDOWN_OPTIONS}
             showProductButton={false}
             placeholder="Tìm kiếm thông tin"
-            onFilterSelect={(type, value) =>
-              setSelectedFilters(prev => ({...prev, [type]: value}))
-            }
+            containerStyle={{marginBottom: 0}}
+            wrapperStyle={{marginBottom: 0}}
           />
           <View style={styles.headerBottom}>
             <View>
@@ -54,17 +45,37 @@ const StatisticalScreen = () => {
                 <Text style={styles.buttonText}>Online orders</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.dropdown}>
-              <Text style={styles.dropdownText}>Monthly</Text>
-              <DownIcon />
-            </TouchableOpacity>
+            <View style={{position: 'relative'}}>
+              <TouchableOpacity
+                style={styles.dropdown}
+                onPress={() => setShowDropdown(prev => !prev)}>
+                <Text style={styles.dropdownText}>{selectedTimeRange}</Text>
+                <DownIcon />
+              </TouchableOpacity>
+
+              {showDropdown && (
+                <View style={styles.dropdownList}>
+                  {TIME_OPTIONS.map(option => (
+                    <TouchableOpacity
+                      key={option}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setSelectedTimeRange(option);
+                        setShowDropdown(false);
+                      }}>
+                      <Text style={styles.dropdownItemText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
         </View>
 
         <FlatList
           data={[{}]}
           contentContainerStyle={{
-            paddingBottom: scale(70),
+            paddingBottom: scale(90),
           }}
           showsVerticalScrollIndicator={false}
           keyExtractor={(_, index) => index.toString()}
@@ -72,6 +83,7 @@ const StatisticalScreen = () => {
             <View style={styles.main}>
               <TrendAnalyticsCard />
               <PriceMovementSummary />
+              <TopTrend />
             </View>
           )}
         />

@@ -3,8 +3,8 @@ import {View, Text, StyleSheet} from 'react-native';
 import {LineChart, XAxis, YAxis} from 'react-native-svg-charts';
 import * as shape from 'd3-shape';
 import {Rect, Circle, Text as SvgText} from 'react-native-svg';
-import {Shadows} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 const TrendAnalyticsCard = () => {
   const orangeData = [
@@ -16,8 +16,7 @@ const TrendAnalyticsCard = () => {
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
 
-  // Component để tạo vùng highlight xanh nhạt
-  const HighlightArea = ({x, y, width, height}) => (
+  const HighlightArea = ({x, height}) => (
     <Rect
       x={x(6)}
       y={0}
@@ -124,33 +123,31 @@ const TrendAnalyticsCard = () => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    ...Shadows.medium,
-    marginBottom: scale(20),
+    borderRadius: scale(10),
+    backgroundColor: Colors.white,
+    padding: scale(16),
+    marginBottom: scale(30),
+    borderWidth: 1,
+    borderColor: '#E6EDFF',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 20,
+    color: Colors.title,
+    fontSize: FontSizes.semiLarge,
+    fontWeight: FontWeights.semiBold,
+    marginBottom: scale(20),
   },
   chartContainer: {
-    height: 250,
+    height: scale(250),
     flexDirection: 'row',
   },
   yAxis: {
-    width: 40,
+    width: scale(20),
   },
   chartWrapper: {
     flex: 1,
-    marginLeft: 10,
   },
   xAxis: {
-    marginHorizontal: 10,
-    marginTop: 10,
-    height: 30,
+    marginTop: scale(10),
   },
 });
 

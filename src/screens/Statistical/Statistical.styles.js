@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
-import {scale} from '../../utils/scaling';
-import {Colors} from '../../theme/theme';
+import {scale} from '~/utils/scaling';
+import {Colors, FontSizes, FontWeights, Shadows} from '~/theme/theme';
 
 export default StyleSheet.create({
   container: {
@@ -15,53 +15,66 @@ export default StyleSheet.create({
   main: {
     marginTop: scale(20),
   },
-  title: {
-    marginVertical: scale(16),
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1f2937',
-  },
   headerBottom: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: scale(10),
     marginBottom: scale(16),
   },
   headerBottomTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginRight: 20,
+    color: Colors.title,
+    fontSize: FontSizes.regular,
+    fontWeight: FontWeights.semiBold,
   },
   buttonContainer: {
+    gap: scale(10),
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 15,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 5,
+    width: scale(10),
+    height: scale(10),
+    borderRadius: scale(999),
+    marginRight: scale(5),
   },
   buttonText: {
-    fontSize: 10,
-    color: '#4B5563',
+    color: Colors.grayText,
+    fontSize: FontSizes.xsmall,
   },
   dropdown: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: '#E5E7EB',
+    justifyContent: 'space-between',
+    paddingVertical: scale(5),
+    paddingHorizontal: scale(10),
+    borderRadius: scale(8),
+    backgroundColor: Colors.white,
   },
   dropdownText: {
-    fontSize: 12,
-    color: '#4B5563',
+    fontSize: FontSizes.small,
+  },
+  dropdownList: {
+    position: 'absolute',
+    top: scale(28),
+    right: 0,
+    width: '100%',
+    backgroundColor: Colors.white,
+    borderRadius: scale(8),
+    paddingVertical: scale(4),
+    zIndex: 10,
+    ...Shadows.dropdown,
+  },
+  dropdownItem: {
+    paddingVertical: scale(8),
+    paddingHorizontal: scale(12),
+  },
+  dropdownItemText: {
+    fontSize: FontSizes.small,
   },
 });

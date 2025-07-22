@@ -1,3 +1,4 @@
+import {Platform} from 'react-native';
 import {scale} from '~/utils/scaling';
 
 export const Colors = {
@@ -13,6 +14,7 @@ export const Colors = {
   overlay: 'rgba(0,0,0,0.4)',
   border: '#D6D6D6',
   border_2: '#b0ffce',
+  border_3: '#E6EDFF',
   greenText: '#2E7D32',
   title: '#212121',
   grayText: '#333333',
@@ -71,6 +73,17 @@ export const Shadows = {
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 10,
+  },
+  dropdown: {
+    ...Platform.select({
+      android: {elevation: 5},
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+      },
+    }),
   },
 };
 

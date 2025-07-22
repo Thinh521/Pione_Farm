@@ -14,6 +14,7 @@ import {scale} from '~/utils/scaling';
 import {FontSizes, FontWeights, Colors} from '~/theme/theme';
 import Button from '../ui/Button/ButtonComponent';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {Shadows} from '../../theme/theme';
 
 const DROPDOWN_OPTIONS = [
   {label: 'Tra cứu tổng hợp', route: 'PriceComparison'},
@@ -34,6 +35,8 @@ const SearchAndFilterBar = ({
   placeholder,
   showProductButton,
   selectedFilters,
+  containerStyle,
+  wrapperStyle,
 }) => {
   const navigation = useNavigation();
   const dropdownAnim = useRef(new Animated.Value(0)).current;
@@ -169,9 +172,9 @@ const SearchAndFilterBar = ({
     capitalizeFirstLetter(selectedFilters?.[label] || label);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       {/* Search and dropdown */}
-      <View style={styles.wrapper}>
+      <View style={[styles.wrapper, wrapperStyle]}>
         <View style={styles.row}>
           <View style={styles.inputWrapper}>
             <Input
@@ -364,10 +367,21 @@ const SearchAndFilterBar = ({
 };
 
 const styles = StyleSheet.create({
-  container: {marginBottom: scale(16)},
-  wrapper: {position: 'relative', marginBottom: scale(16)},
-  row: {flexDirection: 'row', alignItems: 'center'},
-  inputWrapper: {flex: 1, marginRight: scale(8)},
+  container: {
+    marginBottom: scale(16),
+  },
+  wrapper: {
+    position: 'relative',
+    marginBottom: scale(16),
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputWrapper: {
+    flex: 1,
+    marginRight: scale(8),
+  },
   searchContainer: {
     borderRadius: scale(8),
     backgroundColor: '#F5F5F5',
@@ -378,7 +392,9 @@ const styles = StyleSheet.create({
     paddingVertical: scale(10),
     fontSize: FontSizes.regular,
   },
-  searchInputActive: {borderColor: '#D9D9D9'},
+  searchInputActive: {
+    borderColor: '#D9D9D9',
+  },
   buttonDown: {
     width: scale(50),
     height: scale(50),
@@ -397,15 +413,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(8),
     paddingVertical: scale(6),
     paddingHorizontal: scale(16),
-    ...Platform.select({
-      android: {elevation: 4},
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-    }),
+    ...Shadows.dropdown,
   },
   headerText: {
     paddingTop: scale(10),
@@ -413,7 +421,9 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
   },
-  option: {paddingVertical: scale(10)},
+  option: {
+    paddingVertical: scale(10),
+  },
   optionText: {
     fontSize: FontSizes.medium,
     fontWeight: FontWeights.regular,
@@ -434,17 +444,11 @@ const styles = StyleSheet.create({
     borderRadius: scale(6),
     paddingVertical: scale(6),
     paddingHorizontal: scale(12),
-    ...Platform.select({
-      android: {elevation: 5},
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-      },
-    }),
+    ...Shadows.dropdown,
   },
-  filterOption: {paddingVertical: scale(8)},
+  filterOption: {
+    paddingVertical: scale(8),
+  },
   filterOptionText: {
     fontSize: FontSizes.small,
     color: '#333',
