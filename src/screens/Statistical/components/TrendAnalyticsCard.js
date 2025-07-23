@@ -44,6 +44,12 @@ const TrendAnalyticsCard = ({
     }
   });
 
+  // Tìm giá trị lớn nhất để scale
+  const maxValue = Math.max(...onlineData, ...offlineData, 1);
+
+  const scaledOnlineData = onlineData.map(v => (v / maxValue) * 100);
+  const scaledOfflineData = offlineData.map(v => (v / maxValue) * 100);
+
   const contentInset = {top: 40, bottom: 20, left: 20, right: 20};
 
   const HighlightArea = ({x, height}) => (
@@ -58,15 +64,15 @@ const TrendAnalyticsCard = ({
 
   const DataPoint = ({x, y}) => {
     const pointIndex = 9;
-    const pointValue = onlineData[pointIndex];
-
-    if (!pointValue) return null;
+    const scaledValue = scaledOnlineData[pointIndex];
+    const actualValue = onlineData[pointIndex];
+    if (!scaledValue || !actualValue) return null;
 
     return (
       <>
         <Circle
           cx={x(pointIndex)}
-          cy={y(pointValue)}
+          cy={y(scaledValue)}
           r={4}
           fill="#f59e0b"
           stroke="#fff"
@@ -74,16 +80,16 @@ const TrendAnalyticsCard = ({
         />
         <SvgText
           x={x(pointIndex)}
-          y={y(pointValue) - 15}
+          y={y(scaledValue) - 15}
           fontSize="12"
           fill="#374151"
           textAnchor="middle"
           fontWeight="600">
-          {pointValue?.toLocaleString('vi-VN')} VND
+          {actualValue?.toLocaleString('vi-VN')} VND
         </SvgText>
         <SvgText
           x={x(pointIndex)}
-          y={y(pointValue) - 30}
+          y={y(scaledValue) - 30}
           fontSize="10"
           fill="#9ca3af"
           textAnchor="middle">
@@ -115,15 +121,13 @@ const TrendAnalyticsCard = ({
       <Text style={styles.title}>Thống kê giá {selectedProductType?.name}</Text>
 
       <View style={styles.chartContainer}>
+        {/* Trục Y cố định từ 0–100 */}
         <YAxis
-          data={[0, 20, 40, 60, 80, 100]}
+          data={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
           style={styles.yAxis}
           contentInset={contentInset}
-          svg={{
-            fill: '#9ca3af',
-            fontSize: 12,
-          }}
           numberOfTicks={6}
+          svg={{fill: '#9ca3af', fontSize: 12}}
           formatLabel={value => value.toString()}
         />
 
@@ -131,22 +135,22 @@ const TrendAnalyticsCard = ({
           {(selectedOrderType === 'online' || selectedOrderType === null) && (
             <LineChart
               style={StyleSheet.absoluteFill}
-              data={onlineData}
+              data={scaledOnlineData}
               svg={{
                 stroke: '#f59e0b',
                 strokeWidth: 2.5,
               }}
               contentInset={contentInset}
               curve={shape.curveCardinal.tension(0.3)}>
-              {selectedOrderType !== 'offline' && <HighlightArea />}
-              {selectedOrderType !== 'offline' && <DataPoint />}
+              <HighlightArea />
+              <DataPoint />
             </LineChart>
           )}
 
           {(selectedOrderType === 'offline' || selectedOrderType === null) && (
             <LineChart
               style={StyleSheet.absoluteFill}
-              data={offlineData}
+              data={scaledOfflineData}
               svg={{
                 stroke: '#3b82f6',
                 strokeWidth: 2.5,

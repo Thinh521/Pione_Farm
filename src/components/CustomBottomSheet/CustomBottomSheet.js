@@ -10,6 +10,8 @@ import {
   ScrollView,
 } from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {Colors, FontSizes, FontWeights} from '../../theme/theme';
+import {scale} from '../../utils/scaling';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -144,16 +146,16 @@ const CustomBottomSheet = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'flex-end',
   },
   backdrop: {
     flex: 1,
   },
   bottomSheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: scale(20),
+    borderTopRightRadius: scale(20),
     maxHeight: SCREEN_HEIGHT * 0.7,
     paddingBottom: 20,
     shadowColor: '#000',
@@ -163,66 +165,66 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   handleBar: {
-    width: 40,
-    height: 4,
+    width: scale(40),
+    height: scale(4),
     backgroundColor: '#E0E0E0',
-    borderRadius: 2,
+    borderRadius: scale(2),
     alignSelf: 'center',
-    marginTop: 8,
-    marginBottom: 12,
+    marginTop: scale(8),
+    marginBottom: scale(12),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingHorizontal: scale(20),
+    paddingBottom: scale(16),
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#222',
+    color: Colors.title,
+    fontSize: FontSizes.medium,
+    fontWeight: FontWeights.semiBold,
   },
   closeButton: {
-    padding: 4,
+    padding: scale(4),
   },
   closeButtonText: {
-    fontSize: 16,
+    fontSize: FontSizes.medium,
     color: '#666',
   },
   content: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingHorizontal: scale(20),
+    paddingTop: scale(8),
   },
   item: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 4,
+    paddingVertical: scale(16),
+    paddingHorizontal: scale(4),
     borderBottomWidth: 1,
     borderBottomColor: '#F8F8F8',
   },
   selectedItem: {
     backgroundColor: '#F0F8FF',
-    borderRadius: 8,
-    marginHorizontal: -4,
-    paddingHorizontal: 8,
+    borderRadius: scale(8),
+    marginHorizontal: -scale(4),
+    paddingHorizontal: scale(10),
   },
   itemText: {
-    fontSize: 14,
-    color: '#222',
+    fontSize: FontSizes.small,
+    color: Colors.title,
   },
   selectedItemText: {
-    color: '#007BFF',
+    color: Colors.greenText,
     fontWeight: '500',
   },
   checkmark: {
-    fontSize: 14,
-    color: '#007BFF',
-    fontWeight: 'bold',
+    fontSize: FontSizes.regular,
+    color: Colors.greenText,
+    fontWeight: FontWeights.bold,
   },
 });
 
