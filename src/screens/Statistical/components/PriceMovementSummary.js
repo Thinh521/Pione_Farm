@@ -1,137 +1,157 @@
 import React from 'react';
-import {View, Text, Image, StyleSheet, FlatList} from 'react-native';
-import Images from '~/assets/images/Images';
-import {TrendDownIcon, TrendUpIcon} from '~/assets/icons/Icons';
+import {API_BASE_URL} from '@env';
+import {View, Text, StyleSheet, FlatList} from 'react-native';
+import FastImage from 'react-native-fast-image';
+import {
+  TrendDownIcon,
+  TrendUpIcon,
+  NeutralTrendIcon,
+} from '~/assets/icons/Icons';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
-const PriceItem = ({
-  price,
-  name,
-  image,
-  change,
-  changePercent,
-  isIncrease,
-  isLast,
-}) => {
+const PriceSkeletonItem = () => (
+  <SkeletonPlaceholder borderRadius={4}>
+    <View style={[styles.itemContainer]}>
+      <View style={{flex: 1}}>
+        <View style={{width: 120, height: 16, borderRadius: 4}} />
+        <View style={{width: 80, height: 14, marginTop: 12, borderRadius: 4}} />
+        <View
+          style={{width: 100, height: 12, marginTop: 12, borderRadius: 4}}
+        />
+      </View>
+      <View
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: 25,
+          marginLeft: 10,
+        }}
+      />
+    </View>
+  </SkeletonPlaceholder>
+);
+
+const PriceItem = ({item, isLast}) => {
+  const {price, productName, images, changePrice} = item;
+
   return (
     <View style={styles.itemWrapper}>
       <View style={styles.itemContainer}>
         <View style={styles.priceSection}>
           <View style={styles.priceInfo}>
             <View style={styles.textContainer}>
-              <Text style={styles.price}>${price}</Text>
-              <Text style={styles.name}>{name}</Text>
+              <Text style={styles.price}>
+                {price?.toLocaleString('vi-VN')} VND
+              </Text>
+              <Text style={styles.name} numberOfLines={1}>
+                {productName}
+              </Text>
             </View>
-            <Image source={image} style={styles.image} />
+            <FastImage
+              source={{uri: `${API_BASE_URL}/api/upload/${images?.[0]}`}}
+              style={styles.image}
+              resizeMode={FastImage.resizeMode.cover}
+            />
           </View>
           <View style={styles.changeContainer}>
-            <Text>{isIncrease ? <TrendUpIcon /> : <TrendDownIcon />}</Text>
+            {changePrice > 0 ? (
+              <TrendUpIcon />
+            ) : changePrice < 0 ? (
+              <TrendDownIcon />
+            ) : (
+              <NeutralTrendIcon />
+            )}
             <Text style={styles.change}>
-              {change} {changePercent && `+${changePercent}%`} this week
+              {changePrice === 0 || !changePrice
+                ? 'No change this week'
+                : `${Math.abs(changePrice).toLocaleString(
+                    'vi-VN',
+                  )} VND this week`}
             </Text>
           </View>
         </View>
       </View>
-
       {!isLast && <View style={styles.customRightBorder} />}
     </View>
   );
 };
 
-const PriceMovementSummary = () => {
-  const data = [
-    {
-      id: '1',
-      price: '17',
-      name: 'Mango',
-      image: Images.Mango_2,
-      change: '10.2',
-      changePercent: '89.01',
-      isIncrease: true,
-    },
-    {
-      id: '2',
-      price: '23',
-      name: 'Rambut',
-      image: Images.Mango_2,
-      change: '3.1',
-      changePercent: '',
-      isIncrease: true,
-    },
-    {
-      id: '3',
-      price: '17',
-      name: 'Mango',
-      image: Images.Mango_2,
-      change: '10.2',
-      changePercent: '89.01',
-      isIncrease: false,
-    },
-    {
-      id: '4',
-      price: '23',
-      name: 'Consum',
-      image: Images.Mango_2,
-      change: '3.1',
-      changePercent: '',
-      isIncrease: false,
-    },
-    {
-      id: '5',
-      price: '23',
-      name: 'Consum',
-      image: Images.Mango_2,
-      change: '3.1',
-      changePercent: '',
-      isIncrease: false,
-    },
-    {
-      id: '6',
-      price: '23',
-      name: 'Rambut',
-      image: Images.Mango_2,
-      change: '3.1',
-      changePercent: '',
-      isIncrease: true,
-    },
-  ];
+const PriceListSection = ({title, titleStyle, data}) => {
+  const renderItem = ({item, index}) => (
+    <PriceItem item={item} isLast={index === data.length - 1} />
+  );
 
-  const increasedData = data.filter(item => item.isIncrease);
-  const decreasedData = data.filter(item => !item.isIncrease);
+  return (
+    <>
+      <Text style={[titleStyle, styles.title]}>{title}</Text>
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.flatListContent}
+      />
+    </>
+  );
+};
 
-  const renderItem =
-    listData =>
-    ({item, index}) => {
-      const isLast = index === listData.length - 1;
-      return <PriceItem {...item} isLast={isLast} />;
-    };
+const PriceMovementSummary = ({data, isLoading, isError}) => {
+  const renderSkeletonList = () => (
+    <FlatList
+      data={[1, 2, 3]}
+      horizontal
+      keyExtractor={(item, index) => `skeleton-${index}`}
+      renderItem={() => <PriceSkeletonItem />}
+      contentContainerStyle={styles.flatListContent}
+      showsHorizontalScrollIndicator={false}
+    />
+  );
+
+  if (isLoading) {
+    return (
+      <View style={{marginBottom: scale(10)}}>
+        <Text style={[styles.sectionTitleUp, styles.title]}>
+          Price increase
+        </Text>
+        {renderSkeletonList()}
+        <Text style={[styles.sectionTitleDown, styles.title]}>
+          Price reduction
+        </Text>
+        {renderSkeletonList()}
+      </View>
+    );
+  }
+
+  if (isError || !Array.isArray(data)) {
+    return (
+      <View style={styles.errorWrapper}>
+        <Text style={{color: 'red'}}>Không thể tải dữ liệu</Text>
+      </View>
+    );
+  }
+
+  const increasedData = data.filter(item => item.changePrice > 0);
+  const decreasedData = data.filter(item => item.changePrice < 0);
 
   return (
     <View style={{marginBottom: scale(10)}}>
-      {/* Price Increase Section */}
-      <Text style={[styles.sectionTitleUp, styles.title]}>Price increase</Text>
-      <FlatList
-        data={increasedData}
-        renderItem={renderItem(increasedData)}
-        keyExtractor={item => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.flatListContent}
-      />
-
-      {/* Price Decrease Section */}
-      <Text style={[styles.sectionTitleDown, styles.title]}>
-        Price reduction
-      </Text>
-      <FlatList
-        data={decreasedData}
-        renderItem={renderItem(decreasedData)}
-        keyExtractor={item => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.flatListContent}
-      />
+      {increasedData.length > 0 && (
+        <PriceListSection
+          title="Price increase"
+          titleStyle={styles.sectionTitleUp}
+          data={increasedData}
+        />
+      )}
+      {decreasedData.length > 0 && (
+        <PriceListSection
+          title="Price reduction"
+          titleStyle={styles.sectionTitleDown}
+          data={decreasedData}
+        />
+      )}
     </View>
   );
 };
@@ -157,6 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(10),
     overflow: 'hidden',
     backgroundColor: Colors.white,
+    paddingHorizontal: scale(8),
   },
   itemWrapper: {
     flexDirection: 'row',
@@ -188,17 +209,19 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   price: {
-    fontSize: FontSizes.large,
+    fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
   },
   name: {
+    width: scale(150),
     fontSize: FontSizes.small,
     marginVertical: scale(6),
   },
   changeContainer: {
-    gap: scale(4),
     flexDirection: 'row',
     alignItems: 'center',
+    gap: scale(4),
+    marginTop: scale(6),
   },
   change: {
     color: Colors.gray,
@@ -208,5 +231,15 @@ const styles = StyleSheet.create({
     width: scale(50),
     height: scale(50),
     resizeMode: 'contain',
+    borderRadius: scale(999),
+  },
+  skeletonBox: {
+    backgroundColor: '#ccc',
+    borderRadius: 4,
+  },
+  errorWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: scale(20),
   },
 });

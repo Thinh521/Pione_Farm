@@ -11,7 +11,7 @@ export const Colors = {
   headerBack: '#50CFA1',
   black: '#000000',
   red: '#FF0000',
-  overlay: 'rgba(0,0,0,0.4)',
+  overlay: 'rgba(156, 102, 102, 0.4)',
   border: '#D6D6D6',
   border_2: '#b0ffce',
   border_3: '#E6EDFF',

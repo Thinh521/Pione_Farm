@@ -1,4 +1,4 @@
-import api from './baseApi';
+import api from './api';
 
 export const getNewsList = async (page = 1, type = null, accessToken) => {
   try {
@@ -15,7 +15,7 @@ export const getNewsList = async (page = 1, type = null, accessToken) => {
     return response.data;
   } catch (error) {
     const message =
-      error?.response?.data?.message || 'Không thể tải danh sách tin tức';
+    error?.response?.data?.message || 'Không thể tải danh sách tin tức';
     console.log('Lỗi getNewsList:', message);
     throw new Error(message);
   }

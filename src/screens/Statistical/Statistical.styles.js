@@ -10,7 +10,7 @@ export default StyleSheet.create({
   header: {
     marginTop: scale(20),
     borderBottomWidth: 1,
-    borderColor: '#b0ffce',
+    borderColor: Colors.border_2,
   },
   main: {
     marginTop: scale(20),
@@ -24,7 +24,7 @@ export default StyleSheet.create({
   },
   headerBottomTitle: {
     color: Colors.title,
-    fontSize: FontSizes.regular,
+    fontSize: FontSizes.medium,
     fontWeight: FontWeights.semiBold,
   },
   buttonContainer: {
@@ -51,12 +51,26 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: scale(5),
-    paddingHorizontal: scale(10),
-    borderRadius: scale(8),
+    borderRadius: scale(10),
     backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.border_3,
+  },
+  headerdropdown: {
+    width: scale(75),
+    paddingVertical: scale(4),
+    paddingHorizontal: scale(10),
+  },
+  dropdownHeaderText: {
+    fontSize: FontSizes.xsmall,
+  },
+  dropdownProduct: {
+    marginBottom: 16,
+    paddingVertical: scale(10),
+    paddingHorizontal: scale(16),
   },
   dropdownText: {
+    color: Colors.title,
     fontSize: FontSizes.small,
   },
   dropdownList: {
@@ -73,8 +87,5 @@ export default StyleSheet.create({
   dropdownItem: {
     paddingVertical: scale(8),
     paddingHorizontal: scale(12),
-  },
-  dropdownItemText: {
-    fontSize: FontSizes.small,
   },
 });

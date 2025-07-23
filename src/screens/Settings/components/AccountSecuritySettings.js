@@ -128,9 +128,9 @@ const AccountSecuritySettings = ({user}) => {
 
         <AppKitButton balance="show" />
 
-        <TouchableOpacity style={styles.sendButton} onPress={connect}>
+        {/* <TouchableOpacity style={styles.sendButton} onPress={connect}>
           <Text style={styles.sendButtonText}>Kết nối ví</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {isConnected ? (
           <>

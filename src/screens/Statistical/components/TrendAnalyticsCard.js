@@ -1,20 +1,50 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
 import {LineChart, XAxis, YAxis} from 'react-native-svg-charts';
 import * as shape from 'd3-shape';
 import {Rect, Circle, Text as SvgText} from 'react-native-svg';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
 
-const TrendAnalyticsCard = () => {
-  const orangeData = [
-    5, 12, 8, 18, 25, 40, 38, 45, 52, 67, 62, 58, 55, 60, 45, 42,
-  ];
-  const blueData = [
-    2, 8, 12, 15, 22, 28, 35, 50, 42, 38, 35, 32, 30, 35, 28, 58,
-  ];
+const TrendAnalyticsCard = ({
+  selectedOrderType,
+  data,
+  isLoading,
+  isError,
+  error,
+  selectedProductType,
+}) => {
+  const onlineData = data?.onlineOrders || [];
+  const offlineData = data?.offlineOrders || [];
+  const rawLabels = data?.labels || [];
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const seenMonths = new Set();
+  const months = rawLabels.map(dateStr => {
+    const date = new Date(dateStr);
+    const monthName = monthNames[date.getMonth()];
+    if (seenMonths.has(monthName)) {
+      return '';
+    } else {
+      seenMonths.add(monthName);
+      return monthName;
+    }
+  });
+
+  const contentInset = {top: 40, bottom: 20, left: 20, right: 20};
 
   const HighlightArea = ({x, height}) => (
     <Rect
@@ -28,7 +58,9 @@ const TrendAnalyticsCard = () => {
 
   const DataPoint = ({x, y}) => {
     const pointIndex = 9;
-    const pointValue = orangeData[pointIndex];
+    const pointValue = onlineData[pointIndex];
+
+    if (!pointValue) return null;
 
     return (
       <>
@@ -47,7 +79,7 @@ const TrendAnalyticsCard = () => {
           fill="#374151"
           textAnchor="middle"
           fontWeight="600">
-          $59,492.10
+          {pointValue?.toLocaleString('vi-VN')} VND
         </SvgText>
         <SvgText
           x={x(pointIndex)}
@@ -55,21 +87,36 @@ const TrendAnalyticsCard = () => {
           fontSize="10"
           fill="#9ca3af"
           textAnchor="middle">
-          15 Aug 2022
+          {rawLabels[pointIndex] || ''}
         </SvgText>
       </>
     );
   };
 
-  const contentInset = {top: 40, bottom: 20, left: 20, right: 20};
+  if (isLoading) {
+    return (
+      <View style={styles.cardSkelenton}>
+        <ActivityIndicator size="large" color={Colors.greenText} />
+        <Text style={{marginTop: scale(10)}}>Đang tải biểu đồ...</Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.cardSkelenton}>
+        <Text style={{color: 'red'}}>Lỗi tải dữ liệu</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Mango</Text>
+      <Text style={styles.title}>Thống kê giá {selectedProductType?.name}</Text>
 
       <View style={styles.chartContainer}>
         <YAxis
-          data={orangeData}
+          data={[0, 20, 40, 60, 80, 100]}
           style={styles.yAxis}
           contentInset={contentInset}
           svg={{
@@ -81,36 +128,40 @@ const TrendAnalyticsCard = () => {
         />
 
         <View style={styles.chartWrapper}>
-          <LineChart
-            style={StyleSheet.absoluteFill}
-            data={orangeData}
-            svg={{
-              stroke: '#f59e0b',
-              strokeWidth: 2.5,
-            }}
-            contentInset={contentInset}
-            curve={shape.curveCardinal.tension(0.3)}>
-            <HighlightArea />
-            <DataPoint />
-          </LineChart>
+          {(selectedOrderType === 'online' || selectedOrderType === null) && (
+            <LineChart
+              style={StyleSheet.absoluteFill}
+              data={onlineData}
+              svg={{
+                stroke: '#f59e0b',
+                strokeWidth: 2.5,
+              }}
+              contentInset={contentInset}
+              curve={shape.curveCardinal.tension(0.3)}>
+              {selectedOrderType !== 'offline' && <HighlightArea />}
+              {selectedOrderType !== 'offline' && <DataPoint />}
+            </LineChart>
+          )}
 
-          <LineChart
-            style={StyleSheet.absoluteFill}
-            data={blueData}
-            svg={{
-              stroke: '#3b82f6',
-              strokeWidth: 2.5,
-            }}
-            contentInset={contentInset}
-            curve={shape.curveCardinal.tension(0.3)}
-          />
+          {(selectedOrderType === 'offline' || selectedOrderType === null) && (
+            <LineChart
+              style={StyleSheet.absoluteFill}
+              data={offlineData}
+              svg={{
+                stroke: '#3b82f6',
+                strokeWidth: 2.5,
+              }}
+              contentInset={contentInset}
+              curve={shape.curveCardinal.tension(0.3)}
+            />
+          )}
         </View>
       </View>
 
       <XAxis
         style={styles.xAxis}
-        data={months}
-        formatLabel={(value, index) => months[index]}
+        data={months.map((_, index) => index)}
+        formatLabel={(value, index) => months[index] || ''}
         contentInset={{left: 40, right: 20}}
         svg={{
           fontSize: 12,
@@ -122,17 +173,27 @@ const TrendAnalyticsCard = () => {
 };
 
 const styles = StyleSheet.create({
+  cardSkelenton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: scale(348),
+    borderRadius: scale(10),
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.border_3,
+    marginBottom: scale(30),
+  },
   card: {
     borderRadius: scale(10),
     backgroundColor: Colors.white,
     padding: scale(16),
     marginBottom: scale(30),
     borderWidth: 1,
-    borderColor: '#E6EDFF',
+    borderColor: Colors.border_3,
   },
   title: {
     color: Colors.title,
-    fontSize: FontSizes.semiLarge,
+    fontSize: FontSizes.medium,
     fontWeight: FontWeights.semiBold,
     marginBottom: scale(20),
   },

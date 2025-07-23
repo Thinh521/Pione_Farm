@@ -1,6 +1,5 @@
 import api from './api';
 
-// Lấy thông tin user hiện tại
 export const getCurrentUser = async () => {
   try {
     const res = await api.get('/api/user/get-user');
@@ -17,7 +16,6 @@ export const getCurrentUser = async () => {
   }
 };
   
-// Cập nhật thông tin user hiện tại
 export const updateUser = async formData => {
   try {
     const res = await api.put('/api/user/user', formData, {
