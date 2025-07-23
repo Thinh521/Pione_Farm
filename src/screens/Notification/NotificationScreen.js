@@ -1,5 +1,11 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {SectionList, Text, View, ActivityIndicator} from 'react-native';
+import {
+  SectionList,
+  Text,
+  View,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 
 import styles from './Notification.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
@@ -34,8 +40,6 @@ const NotificationScreen = () => {
   const [accessToken, setAccessToken] = useState('');
   const lastNotificationIdRef = useRef(null);
 
-  console.log('notificationData', notificationData);
-
   const fetchDefaultNotification = async () => {
     setLoading(true);
     try {
@@ -43,8 +47,6 @@ const NotificationScreen = () => {
       setAccessToken(token);
       const res = await getNotification(token);
       const rawData = res.data;
-
-      console.log('rawData', rawData);
 
       const mapped = [];
 
@@ -91,8 +93,8 @@ const NotificationScreen = () => {
 
     const filterPayload = {};
 
-    if (newFilters['Ngày BĐ'] && newFilters['Ngày BĐ'] !== 'Tất cả') {
-      const [day, month, year] = newFilters['Ngày BĐ'].split('/');
+    if (newFilters['Ngày'] && newFilters['Ngày'] !== 'Tất cả') {
+      const [day, month, year] = newFilters['Ngày'].split('/');
       filterPayload.date = `${year}-${month}-${day}`;
     }
 
@@ -139,6 +141,11 @@ const NotificationScreen = () => {
     fetchDefaultNotification();
   }, []);
 
+  const handleResetFilters = () => {
+    setSelectedFilters({});
+    fetchDefaultNotification();
+  };
+
   const renderSectionHeader = ({section: {title}}) => (
     <View style={styles.headerContainer}>
       <Text
@@ -177,6 +184,14 @@ const NotificationScreen = () => {
           onFilterSelect={handleFilterSelect}
         />
       </View>
+
+      {Object.keys(selectedFilters).length > 0 && (
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={handleResetFilters}>
+          <Text style={styles.resetText}>Đặt lại</Text>
+        </TouchableOpacity>
+      )}
 
       {loading ? (
         <ActivityIndicator

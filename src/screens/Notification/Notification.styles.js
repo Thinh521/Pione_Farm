@@ -74,4 +74,18 @@ export default StyleSheet.create({
     color: Colors.grayText,
     lineHeight: scale(18),
   },
+  resetButton: {
+    marginTop: 8,
+    marginLeft: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  resetText: {
+    color: '#111827',
+    fontWeight: '500',
+    fontSize: 13,
+  },
 });
