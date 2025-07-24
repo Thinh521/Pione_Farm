@@ -11,12 +11,14 @@ const TrendAnalyticsCard = ({
   data,
   isLoading,
   isError,
-  error,
   selectedProductType,
 }) => {
   const onlineData = data?.onlineOrders || [];
   const offlineData = data?.offlineOrders || [];
   const rawLabels = data?.labels || [];
+
+  console.log('onlineData', onlineData);
+  console.log('offlineData', offlineData);
 
   const monthNames = [
     'Jan',
@@ -44,7 +46,6 @@ const TrendAnalyticsCard = ({
     }
   });
 
-  // Tìm giá trị lớn nhất để scale
   const maxValue = Math.max(...onlineData, ...offlineData, 1);
 
   const scaledOnlineData = onlineData.map(v => (v / maxValue) * 100);
@@ -121,9 +122,8 @@ const TrendAnalyticsCard = ({
       <Text style={styles.title}>Thống kê giá {selectedProductType?.name}</Text>
 
       <View style={styles.chartContainer}>
-        {/* Trục Y cố định từ 0–100 */}
         <YAxis
-          data={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+          data={[0, 2, 4, 6, 8, 10]}
           style={styles.yAxis}
           contentInset={contentInset}
           numberOfTicks={6}
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   yAxis: {
-    width: scale(20),
+    width: scale(24),
   },
   chartWrapper: {
     flex: 1,

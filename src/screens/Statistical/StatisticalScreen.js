@@ -62,8 +62,6 @@ const StatisticalScreen = () => {
     staleTime: 10 * 60 * 1000,
   });
 
-  console.log('data', data);
-
   const filteredChartData = useMemo(() => {
     if (!data) return null;
     return filterDataByTimeRange(
