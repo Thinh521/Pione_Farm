@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {API_BASE_URL} from '@env';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import FastImage from 'react-native-fast-image';
@@ -6,6 +6,7 @@ import LineChartWrapper from '~/components/LineChart/LineChartWrapper';
 import {scale} from '~/utils/scaling';
 import {formatCurrencyVND} from '~/utils/format';
 import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
+import {Colors, FontSizes} from '../../../theme/theme';
 
 const WalletItem = ({
   images,
@@ -21,7 +22,7 @@ const WalletItem = ({
 
   console.log('price', price);
 
-  const color = isIncrease ? '#34C759' : isDecrease ? '#FF9B9B' : '#6b7280';
+  const color = isIncrease ? '#34C759' : isDecrease ? '#FF9B9B' : '#FFB229';
 
   return (
     <View style={styles.itemContainer}>
@@ -141,23 +142,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   image: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 8,
+    width: scale(40),
+    height: scale(40),
+    borderRadius: scale(999),
+    marginRight: scale(8),
   },
   assetInfo: {
     flexShrink: 1,
   },
   assetName: {
-    fontSize: 14,
+    fontSize: FontSizes.small,
     fontWeight: '600',
     color: '#1f2937',
-    maxWidth: 100,
+    maxWidth: scale(100),
   },
   assetSymbol: {
-    fontSize: 12,
-    color: '#9ca3af',
+    fontSize: FontSizes.xsmall,
+    color: Colors.gray,
     marginTop: 2,
   },
   price: {
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   change: {
-    fontSize: 12,
+    fontSize: FontSizes.xsmall,
   },
 });
 
