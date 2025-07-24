@@ -12,11 +12,6 @@ const AccountSecuritySettings = ({user}) => {
   const {connect, address, provider, isConnected} = useAppKit();
   const [ethBalance, setEthBalance] = useState(null);
 
-  console.log('address', address);
-  console.log('provider', provider);
-  console.log('ethBalance', ethBalance);
-  console.log('isConnected', isConnected);
-
   useEffect(() => {
     const fetchBalance = async () => {
       try {
@@ -128,11 +123,7 @@ const AccountSecuritySettings = ({user}) => {
 
         <AppKitButton balance="show" />
 
-        {/* <TouchableOpacity style={styles.sendButton} onPress={connect}>
-          <Text style={styles.sendButtonText}>Kết nối ví</Text>
-        </TouchableOpacity> */}
-
-        {isConnected ? (
+        {/* {isConnected ? (
           <>
             <Text style={{marginTop: 10}}>Ví đã kết nối: {address}</Text>
             <Text style={{marginTop: 5}}>
@@ -152,7 +143,7 @@ const AccountSecuritySettings = ({user}) => {
           </>
         ) : (
           <Text style={{marginTop: 10}}>Ví chưa được kết nối</Text>
-        )}
+        )} */}
       </View>
     </View>
   );
