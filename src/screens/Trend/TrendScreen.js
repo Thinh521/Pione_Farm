@@ -1,10 +1,11 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState, useCallback} from 'react';
 import {
   ScrollView,
   Text,
   View,
   TouchableOpacity,
-  ActivityIndicator,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import styles from './Trend.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
@@ -19,23 +20,27 @@ import {getTrendAll} from '~/api/trendApi';
 import {getAllProvinceApii} from '~/api/provinceApi';
 import {useSearchAndFilter} from '~/hook/useSearch';
 
+const INITIAL_COUNT = 7;
+const LOAD_MORE_COUNT = 7;
+
 const TrendScreen = () => {
   const navigation = useNavigation();
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
   const [date, setDate] = useState(null);
   const [provinceOptions, setProvinceOptions] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
 
-  // Get dữ liệu xu hướng từ API
-  const {data, isLoading, isFetched, isError} = useQuery({
+  const {data: trendList = [], isLoading} = useQuery({
     queryKey: ['trend-data', date],
     queryFn: () => getTrendAll(date),
     select: res => res.data,
-    enabled: true,
     staleTime: 10 * 60 * 1000,
+    onSuccess: () => {
+      setVisibleCount(INITIAL_COUNT); // reset khi có dữ liệu mới
+    },
   });
 
-  // Get danh sách tỉnh
   const {data: provinceList = []} = useQuery({
     queryKey: ['provinces'],
     queryFn: getAllProvinceApii,
@@ -43,9 +48,6 @@ const TrendScreen = () => {
     staleTime: 10 * 60 * 1000,
   });
 
-  const trendList = data || [];
-
-  // Áp dụng hook lọc
   const {
     filteredData: filteredTrendList,
     searchKeyword,
@@ -56,6 +58,22 @@ const TrendScreen = () => {
     searchKeyword: searchText,
     filters: selectedFilters,
   });
+
+  const visibleItems = useMemo(
+    () => filteredTrendList.slice(0, visibleCount),
+    [filteredTrendList, visibleCount],
+  );
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const {layoutMeasurement, contentOffset, contentSize} = event.nativeEvent;
+
+    const isCloseToBottom =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+
+    if (isCloseToBottom && visibleCount < filteredTrendList.length) {
+      setVisibleCount(prev => prev + LOAD_MORE_COUNT);
+    }
+  };
 
   useEffect(() => {
     if (provinceList.length) {
@@ -72,9 +90,8 @@ const TrendScreen = () => {
     [provinceOptions],
   );
 
-  const handleFilterSelect = (type, value) => {
-    const newFilters = {...selectedFilters, [type]: value};
-    setSelectedFilters(newFilters);
+  const handleFilterSelect = useCallback((type, value) => {
+    setSelectedFilters(prev => ({...prev, [type]: value}));
 
     if (type === 'Ngày') {
       if (value) {
@@ -88,9 +105,9 @@ const TrendScreen = () => {
         setDate(null);
       }
     }
-  };
+  }, []);
 
-  const navigateToWalletAll = () => {
+  const navigateToWalletAll = useCallback(() => {
     navigation.navigate('NoBottomTab', {
       screen: 'WalletAll',
       params: {
@@ -98,28 +115,36 @@ const TrendScreen = () => {
         data: trendList,
       },
     });
-  };
+  }, [navigation, trendList]);
 
-  const renderTrendSection = () => (
-    <Animatable.View animation="fadeInUp" duration={500} style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <View style={styles.headerTitle}>
-          <Flame size={20} color="orange" style={{marginRight: 8}} />
-          <Text style={[styles.title, {color: 'orange'}]}>Xu hướng</Text>
+  const renderTrendSection = useMemo(
+    () => (
+      <Animatable.View
+        animation="fadeInUp"
+        duration={400}
+        style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.headerTitle}>
+            <Flame size={20} color="orange" style={{marginRight: 8}} />
+            <Text style={[styles.title, {color: 'orange'}]}>Xu hướng</Text>
+          </View>
+          <TouchableOpacity
+            onPress={navigateToWalletAll}
+            style={styles.seeMoreButton}>
+            <Text style={styles.seeMoreText}>Xem Tất cả</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={navigateToWalletAll}
-          style={styles.seeMoreButton}>
-          <Text style={styles.seeMoreText}>Xem Tất cả</Text>
-        </TouchableOpacity>
-      </View>
 
-      {isLoading ? (
-        <WalletListSkeleton itemCount={7} />
-      ) : (
-        <WalletList data={filteredTrendList} />
-      )}
-    </Animatable.View>
+        {isLoading ? (
+          <WalletListSkeleton itemCount={7} />
+        ) : visibleItems.length === 0 ? (
+          <Text style={styles.emptyText}>Không có dữ liệu</Text>
+        ) : (
+          <WalletList data={visibleItems} />
+        )}
+      </Animatable.View>
+    ),
+    [isLoading, visibleItems, navigateToWalletAll],
   );
 
   return (
@@ -137,12 +162,14 @@ const TrendScreen = () => {
       </View>
 
       <ScrollView
-        contentContainerStyle={{paddingBottom: scale(80)}}
-        showsVerticalScrollIndicator={false}>
-        <View style={styles.main}>{renderTrendSection()}</View>
+        contentContainerStyle={{paddingBottom: scale(150)}}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}>
+        <View style={styles.main}>{renderTrendSection}</View>
       </ScrollView>
     </View>
   );
 };
 
-export default TrendScreen;
+export default React.memo(TrendScreen);
