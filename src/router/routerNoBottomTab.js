@@ -20,6 +20,7 @@ import CustomHeader from '~/components/CustomNavigation/CustomHeader';
 import WalletAllScreen from '~/screens/Home/WalletAll/WalletAllScreen';
 import ChatbotScreen from '~/screens/Chatbot/ChatbotScreen';
 import NewDetail from '~/screens/NewDetail/NewDetail';
+import ConnectWallet from '../screens/ConnectWallet/ConnectWallet';
 
 const routerNoBottomTab = [
   {
@@ -208,6 +209,15 @@ const routerNoBottomTab = [
     options: ({navigation}) => ({
       header: () => (
         <CustomHeader title="Chi tiết tin tức" navigation={navigation} />
+      ),
+    }),
+  },
+  {
+    name: 'ConnectWallet',
+    component: ConnectWallet,
+    options: ({navigation}) => ({
+      header: () => (
+        <CustomHeader title="Quản lý ví điện tử" navigation={navigation} />
       ),
     }),
   },

@@ -1,10 +1,8 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {View, Text, StatusBar, FlatList, TouchableOpacity} from 'react-native';
-
 import WalletList from './components/WalletList';
 import FruitPriceList from './components/FruitPriceList';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
-
 import styles from './Home.styles';
 import {Colors} from '~/theme/theme';
 import {useNavigation} from '@react-navigation/core';
@@ -26,8 +24,8 @@ const HomeScreen = () => {
   });
 
   const {data, isLoading} = useWalletData();
-  const walletData = data?.merged || [];
-  const productList = data?.products || [];
+  const walletData = useMemo(() => data?.merged || [], [data]);
+  const productList = useMemo(() => data?.products || [], [data]);
 
   const {
     filteredData: filteredWalletData,
@@ -65,7 +63,7 @@ const HomeScreen = () => {
     [provinceOptions],
   );
 
-  const navigateToWalletAll = () => {
+  const navigateToWalletAll = useCallback(() => {
     navigation.navigate('NoBottomTab', {
       screen: 'WalletAll',
       params: {
@@ -73,7 +71,7 @@ const HomeScreen = () => {
         data: filteredWalletData,
       },
     });
-  };
+  }, [navigation, filteredWalletData]);
 
   return (
     <>
