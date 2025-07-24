@@ -30,7 +30,7 @@ export const useSearchAndFilter = ({
     // Filter theo ngày (1 ngày hoặc khoảng ngày)
     if (startDate || endDate) {
       const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
-      const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : start; // nếu chỉ có startDate thì end = start
+      const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : start;
 
       result = result.filter(item => {
         const createdAt = new Date(item.createdAt).getTime();
@@ -43,11 +43,22 @@ export const useSearchAndFilter = ({
     if (priceFilter === 'Tăng dần' || priceFilter === 'Giảm dần') {
       result.sort((a, b) => {
         const priceA = parseFloat(
-          (a.marketPrice || '0').toString().replace(/,/g, ''),
+          (
+            (a.marketPrice && a.marketPrice > 0 ? a.marketPrice : a.price) ||
+            '0'
+          )
+            .toString()
+            .replace(/,/g, ''),
         );
         const priceB = parseFloat(
-          (b.marketPrice || '0').toString().replace(/,/g, ''),
+          (
+            (b.marketPrice && b.marketPrice > 0 ? b.marketPrice : b.price) ||
+            '0'
+          )
+            .toString()
+            .replace(/,/g, ''),
         );
+
         return priceFilter === 'Tăng dần' ? priceA - priceB : priceB - priceA;
       });
     }

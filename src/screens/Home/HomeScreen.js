@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {View, Text, StatusBar, FlatList, TouchableOpacity} from 'react-native';
 
 import WalletList from './components/WalletList';
@@ -12,19 +12,13 @@ import ChatBot from '~/components/ChatBot/ChatBot';
 import {scale} from '~/utils/scaling';
 import {useSearchAndFilter} from '~/hook/useSearch';
 import useWalletData from '~/hook/useWalletData';
-
-const FILTER_OPTIONS = [
-  {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
-  {
-    label: 'Tỉnh',
-    options: ['Tất cả', 'Long An', 'Tiền Giang', 'HCM', 'Hà Nội', 'An Giang'],
-  },
-  {label: 'Số lượng', options: ['Tất cả', 'Dưới 100', '100 - 500', 'Trên 500']},
-];
+import {useQuery} from '@tanstack/react-query';
+import {getAllProvinceApii} from '~/api/provinceApi';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [searchText, setSearchText] = useState('');
+  const [provinceOptions, setProvinceOptions] = useState([]);
   const [selectedFilters, setSelectedFilters] = useState({
     Giá: 'Tất cả',
     Tỉnh: 'Tất cả',
@@ -46,6 +40,31 @@ const HomeScreen = () => {
     filters: selectedFilters,
   });
 
+  const {data: provinceList = []} = useQuery({
+    queryKey: ['provinces'],
+    queryFn: getAllProvinceApii,
+    select: res => res.data,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    if (provinceList.length) {
+      setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
+    }
+  }, [provinceList]);
+
+  const filterOptions = useMemo(
+    () => [
+      {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
+      {label: 'Tỉnh', options: provinceOptions},
+      {
+        label: 'Số lượng',
+        options: ['Tất cả', 'Dưới 100', '100 - 500', 'Trên 500'],
+      },
+    ],
+    [provinceOptions],
+  );
+
   const navigateToWalletAll = () => {
     navigation.navigate('NoBottomTab', {
       screen: 'WalletAll',
@@ -55,8 +74,6 @@ const HomeScreen = () => {
       },
     });
   };
-
-  console.log('filteredWalletData', filteredWalletData);
 
   return (
     <>
@@ -70,7 +87,7 @@ const HomeScreen = () => {
               setSearchText(text);
               setSearchKeyword(text);
             }}
-            filterOptions={FILTER_OPTIONS}
+            filterOptions={filterOptions}
             showProductButton={false}
             selectedFilters={selectedFilters}
             placeholder="Tìm kiếm trái cây"

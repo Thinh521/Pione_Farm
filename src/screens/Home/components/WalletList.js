@@ -11,12 +11,15 @@ const WalletItem = ({
   images,
   productName,
   provinceName,
+  price,
   marketPrice = 0,
   priceChange = 0,
   priceTrend = [],
 }) => {
   const isIncrease = priceChange > 0;
   const isDecrease = priceChange < 0;
+
+  console.log('price', price);
 
   const color = isIncrease ? '#34C759' : isDecrease ? '#FF9B9B' : '#6b7280';
 
@@ -51,7 +54,11 @@ const WalletItem = ({
       </View>
 
       <View style={styles.columnRight}>
-        <Text style={styles.price}>{formatCurrencyVND(marketPrice)}</Text>
+        <Text style={styles.price}>
+          {formatCurrencyVND(
+            marketPrice && marketPrice > 0 ? marketPrice : price ?? 0,
+          )}
+        </Text>
         <Text style={[styles.change, {color}]}>
           {isIncrease ? '+' : ''}
           {formatCurrencyVND(priceChange)}

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {
   ScrollView,
   Text,
@@ -11,118 +11,136 @@ import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterB
 import WalletList from '../Home/components/WalletList';
 import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
 import {scale} from '~/utils/scaling';
-import {Colors} from '~/theme/theme';
 import * as Animatable from 'react-native-animatable';
 import {useNavigation} from '@react-navigation/native';
-import {Flame, CalendarDays, History} from 'lucide-react-native';
-import useWalletData from '~/hook/useWalletData';
-
-const FILTER_OPTIONS = [
-  {
-    label: 'Tất cả',
-    options: ['Tất cả', 'Xu hướng', 'Hôm nay', 'Hôm qua'],
-  },
-  {label: 'Ngày BĐ', options: []},
-  {label: 'Ngày KT', options: []},
-];
+import {Flame} from 'lucide-react-native';
+import {useQuery} from '@tanstack/react-query';
+import {getTrendAll} from '~/api/trendApi';
+import {getAllProvinceApii} from '~/api/provinceApi';
+import {useSearchAndFilter} from '~/hook/useSearch';
 
 const TrendScreen = () => {
   const navigation = useNavigation();
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
+  const [date, setDate] = useState(null);
+  const [provinceOptions, setProvinceOptions] = useState([]);
 
-  const {data, isLoading, isFetched} = useWalletData();
-  const walletData = data?.merged || [];
+  // Get dữ liệu xu hướng từ API
+  const {data, isLoading, isFetched, isError} = useQuery({
+    queryKey: ['trend-data', date],
+    queryFn: () => getTrendAll(date),
+    select: res => res.data,
+    enabled: true,
+    staleTime: 10 * 60 * 1000,
+  });
 
-  const navigateToWalletAll = (title, data) => {
+  // Get danh sách tỉnh
+  const {data: provinceList = []} = useQuery({
+    queryKey: ['provinces'],
+    queryFn: getAllProvinceApii,
+    select: res => res.data,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const trendList = data || [];
+
+  // Áp dụng hook lọc
+  const {
+    filteredData: filteredTrendList,
+    searchKeyword,
+    setSearchKeyword,
+  } = useSearchAndFilter({
+    data: trendList,
+    searchableFields: ['productName', 'provinceName'],
+    searchKeyword: searchText,
+    filters: selectedFilters,
+  });
+
+  useEffect(() => {
+    if (provinceList.length) {
+      setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
+    }
+  }, [provinceList]);
+
+  const filterOptions = useMemo(
+    () => [
+      {label: 'Ngày', options: []},
+      {label: 'Tỉnh', options: provinceOptions},
+      {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
+    ],
+    [provinceOptions],
+  );
+
+  const handleFilterSelect = (type, value) => {
+    const newFilters = {...selectedFilters, [type]: value};
+    setSelectedFilters(newFilters);
+
+    if (type === 'Ngày') {
+      if (value) {
+        const [day, month, year] = value.split('/');
+        const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(
+          2,
+          '0',
+        )}`;
+        setDate(formattedDate);
+      } else {
+        setDate(null);
+      }
+    }
+  };
+
+  const navigateToWalletAll = () => {
     navigation.navigate('NoBottomTab', {
       screen: 'WalletAll',
       params: {
-        title,
-        data,
+        title: 'Xu hướng',
+        data: trendList,
       },
     });
   };
 
-  const renderWalletSection = (title, data, Icon, color) => (
+  const renderTrendSection = () => (
     <Animatable.View animation="fadeInUp" duration={500} style={styles.section}>
       <View style={styles.sectionHeader}>
         <View style={styles.headerTitle}>
-          <Icon size={20} color={color} style={{marginRight: 8}} />
-          <Text style={[styles.title, {color}]}>{title}</Text>
+          <Flame size={20} color="orange" style={{marginRight: 8}} />
+          <Text style={[styles.title, {color: 'orange'}]}>Xu hướng</Text>
         </View>
         <TouchableOpacity
-          onPress={() => navigateToWalletAll(title, data)}
+          onPress={navigateToWalletAll}
           style={styles.seeMoreButton}>
           <Text style={styles.seeMoreText}>Xem Tất cả</Text>
         </TouchableOpacity>
       </View>
 
       {isLoading ? (
-        <WalletListSkeleton itemCount={5} />
+        <WalletListSkeleton itemCount={7} />
       ) : (
-        <WalletList
-          data={data.slice(0, 5)}
-          searchText={searchText}
-          selectedFilters={selectedFilters}
-        />
+        <WalletList data={filteredTrendList} />
       )}
     </Animatable.View>
   );
-
-  const renderSections = () => {
-    const section = selectedFilters['Tất cả'] || 'Tất cả';
-
-    switch (section) {
-      case 'Xu hướng':
-        return renderWalletSection('Xu hướng', walletData, Flame, 'orange');
-      case 'Hôm nay':
-        return renderWalletSection(
-          'Hôm nay',
-          walletData,
-          CalendarDays,
-          'green',
-        );
-      case 'Hôm qua':
-        return renderWalletSection('Hôm qua', walletData, History, 'gray');
-      default:
-        return (
-          <>
-            {renderWalletSection('Xu hướng', walletData, Flame, 'orange')}
-            {renderWalletSection('Hôm nay', walletData, CalendarDays, 'green')}
-            {renderWalletSection('Hôm qua', walletData, History, 'gray')}
-          </>
-        );
-    }
-  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <SearchAndFilterBar
-          searchText={searchText}
-          setSearchText={setSearchText}
-          filterOptions={FILTER_OPTIONS}
+          searchText={searchKeyword}
+          setSearchText={setSearchKeyword}
+          filterOptions={filterOptions}
           selectedFilters={selectedFilters}
           showProductButton={false}
           placeholder="Tìm kiếm thông tin"
-          onFilterSelect={(type, value) =>
-            setSelectedFilters(prev => ({...prev, [type]: value}))
-          }
+          onFilterSelect={handleFilterSelect}
         />
       </View>
 
-      {!isFetched ? (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={Colors.green} />
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerStyle={{paddingBottom: scale(80)}}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.main}>{renderSections()}</View>
-        </ScrollView>
-      )}
+      <ScrollView
+        contentContainerStyle={{paddingBottom: scale(80)}}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.main}>{renderTrendSection()}</View>
+      </ScrollView>
     </View>
   );
 };

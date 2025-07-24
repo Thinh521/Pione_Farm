@@ -12,3 +12,18 @@ export const getAnalysisAi = async () => {
     throw new Error(message);
   }
 };
+
+export const getTrendAll = async date => {
+  try {
+    const body = date ? {date} : {};
+
+    const res = await api.post('/api/statistical/get-trend', body);
+
+    return res.data;
+  } catch (error) {
+    const message =
+      error?.response?.data?.message || 'Không thể tải dữ liệu xu hướng';
+    console.log('Lỗi khi lấy xu hướng:', message);
+    throw new Error(message);
+  }
+};
