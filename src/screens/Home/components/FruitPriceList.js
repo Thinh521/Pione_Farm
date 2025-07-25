@@ -40,7 +40,7 @@ const FruitPriceList = ({products = [], loading}) => {
         </Text>
       </View>
       <View style={styles.unitCol}>
-        <Text style={styles.unit}>{item.marketUnit}</Text>
+        <Text style={styles.unit}>VNĐ/kg</Text>
       </View>
       <View style={styles.priceCol}>
         <Text style={styles.price}>
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     marginBottom: scale(4),
   },
   headerText: {
-    color: '#374151',
+    color: Colors.title,
     fontSize: FontSizes.small,
     fontWeight: FontWeights.semiBold,
   },
@@ -183,12 +183,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   itemName: {
-    color: '#1f2937',
+    color: Colors.title,
     fontSize: FontSizes.small,
     fontWeight: FontWeights.regular,
   },
   unit: {
-    fontSize: FontSizes.small,
+    fontWeight: FontWeights.semiBold,
+    fontSize: FontSizes.xsmall,
     backgroundColor: '#dbeafe',
     color: '#1e3a8a',
     paddingHorizontal: scale(8),

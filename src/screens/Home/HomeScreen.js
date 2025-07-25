@@ -27,6 +27,8 @@ const HomeScreen = () => {
   const walletData = useMemo(() => data?.merged || [], [data]);
   const productList = useMemo(() => data?.products || [], [data]);
 
+  console.log('productList', productList);
+
   const {
     filteredData: filteredWalletData,
     searchKeyword,

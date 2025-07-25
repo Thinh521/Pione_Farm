@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     marginTop: scale(20),
+    paddingBottom: scale(40),
   },
   title: {
     marginBottom: scale(16),
