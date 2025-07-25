@@ -37,7 +37,7 @@ const TrendScreen = () => {
     select: res => res.data,
     staleTime: 10 * 60 * 1000,
     onSuccess: () => {
-      setVisibleCount(INITIAL_COUNT); // reset khi có dữ liệu mới
+      setVisibleCount(INITIAL_COUNT);
     },
   });
 

@@ -6,7 +6,7 @@ import LineChartWrapper from '~/components/LineChart/LineChartWrapper';
 import {scale} from '~/utils/scaling';
 import {formatCurrencyVND} from '~/utils/format';
 import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
-import {Colors, FontSizes} from '../../../theme/theme';
+import {Colors, FontSizes} from '~/theme/theme';
 
 const WalletItem = ({
   images,
@@ -19,8 +19,6 @@ const WalletItem = ({
 }) => {
   const isIncrease = priceChange > 0;
   const isDecrease = priceChange < 0;
-
-  console.log('price', price);
 
   const color = isIncrease ? '#34C759' : isDecrease ? '#FF9B9B' : '#FFB229';
 
