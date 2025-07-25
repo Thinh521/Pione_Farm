@@ -1,44 +1,118 @@
-import React, {useEffect, useState} from 'react';
-import {Text, View, ScrollView, TouchableOpacity} from 'react-native';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
+import {Text, View, Animated, Share, Alert} from 'react-native';
 import {API_BASE_URL} from '@env';
 import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import styles from './NewDetail.styles';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
 import {getNewsById} from '~/api/newsApi';
 import FastImage from 'react-native-fast-image';
-import {DateIcon} from '../../assets/icons/Icons';
-import Background_2 from '../../components/Background/Background_2';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import Button from '~/components/ui/Button/ButtonComponent';
+import {
+  BookmarkFillIcon,
+  BookmarkIcon,
+  ShareIcon,
+} from '../../assets/icons/Icons';
+import {Colors} from '../../theme/theme';
+
+const LoadingSkeleton = () => {
+  return (
+    <SkeletonPlaceholder borderRadius={4}>
+      <View style={styles.loadingContainer}>
+        <View style={styles.skeletonContent}>
+          <View style={styles.skeletonImage} />
+          <View style={styles.skeletonTitle} />
+          <View style={styles.skeletonTitleSecond} />
+
+          <View style={styles.skeletonMeta}>
+            <View style={styles.skeletonMetaItem} />
+            <View style={styles.skeletonMetaItem} />
+          </View>
+
+          <View style={styles.skeletonSummary} />
+          <View style={styles.skeletonContent1} />
+          <View style={styles.skeletonContent2} />
+          <View style={styles.skeletonContent3} />
+        </View>
+      </View>
+    </SkeletonPlaceholder>
+  );
+};
+
+const AnimatedContent = ({children, delay = 0}) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        delay,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        delay,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: fadeAnim,
+        transform: [{translateY: slideAnim}],
+      }}>
+      {children}
+    </Animated.View>
+  );
+};
+
+const HighlightItem = React.memo(({text, index}) => (
+  <AnimatedContent delay={100 * index}>
+    <View style={styles.highlightItem}>
+      <LinearGradient
+        colors={['#4CAF50', '#66BB6A']}
+        style={styles.highlightDot}
+      />
+      <Text style={styles.highlightText}>{text}</Text>
+    </View>
+  </AnimatedContent>
+));
 
 const NewDetail = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const {newsId} = route.params || {};
-  const accessToken = getAccessToken();
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  console.log('news', news);
-
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        if (newsId) {
-          const res = await getNewsById(newsId, accessToken);
-          setNews(res.data);
-        }
-      } catch (error) {
-        console.log('Lỗi tải tin tức:', error.message);
-      } finally {
-        setLoading(false);
+  const fetchNews = useCallback(async () => {
+    try {
+      if (newsId) {
+        const token = await getAccessToken();
+        const res = await getNewsById(newsId, token);
+        setNews(res.data);
       }
-    };
-
-    fetchNews();
+    } catch (error) {
+      console.log('Lỗi tải tin tức:', error.message);
+    } finally {
+      setTimeout(() => setLoading(false), 800);
+    }
   }, [newsId]);
 
-  const formatDate = dateString => {
+  useEffect(() => {
+    fetchNews();
+  }, [fetchNews]);
+
+  const formatDate = useCallback(dateString => {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
       year: 'numeric',
@@ -47,104 +121,145 @@ const NewDetail = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
-  };
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    try {
+      await Share.share({
+        message: `${news.title}\n\n${news.summary}\n\nĐọc thêm tại ứng dụng của chúng tôi!`,
+        title: news.title,
+      });
+    } catch (error) {
+      console.log('Lỗi chia sẻ:', error.message);
+    }
+  }, [news]);
+
+  const handleBookmark = useCallback(() => {
+    setBookmarked(!bookmarked);
+    Alert.alert(
+      bookmarked ? 'Đã bỏ lưu' : 'Đã lưu',
+      bookmarked
+        ? 'Bài viết đã được bỏ khỏi danh sách yêu thích'
+        : 'Bài viết đã được lưu vào danh sách yêu thích',
+    );
+  }, [bookmarked]);
+
+  const highlights = [
+    'Sản lượng thu hoạch giảm mạnh gần đây',
+    'Tăng nhập khẩu để bù đắp thiếu hụt',
+    'Thời tiết cực đoan ảnh hưởng mùa vụ',
+    'Xu hướng thị trường trong tương lai',
+  ];
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Đang tải tin tức...</Text>
-      </View>
-    );
+    return <LoadingSkeleton />;
   }
 
   if (!news) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Không tìm thấy bài viết</Text>
-        <TouchableOpacity
+        <Button.Main
+          title="Quay lại"
+          onPress={() => navigation.goBack()}
           style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <Text style={styles.backButtonText}>Quay lại</Text>
-        </TouchableOpacity>
+        />
       </View>
     );
   }
 
   return (
     <>
-      <View style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.contentCard}>
-            <View style={styles.categoryContainer}>
-              <Text style={styles.categoryText}>Thị Trường Nông Sản</Text>
+      <Animated.ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{nativeEvent: {contentOffset: {y: scrollY}}}],
+          {useNativeDriver: false},
+        )}
+        scrollEventThrottle={16}>
+        <View style={styles.contentCard}>
+          <AnimatedContent>
+            <View style={styles.imageContainer}>
+              <FastImage
+                source={{
+                  uri: `${API_BASE_URL}/api/upload/${news.images?.[0]}`,
+                }}
+                style={styles.image}
+                resizeMode={FastImage.resizeMode.cover}
+                onLoad={() => setImageLoaded(true)}
+              />
             </View>
+          </AnimatedContent>
 
-            <FastImage
-              source={{uri: `${API_BASE_URL}/api/upload/${news.images?.[0]}`}}
-              style={styles.image}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-
+          <AnimatedContent delay={100}>
             <Text style={styles.title}>{news.title}</Text>
+          </AnimatedContent>
 
+          <AnimatedContent delay={200}>
             <View style={styles.metaContainer}>
-              <View style={styles.dateContainer}>
-                <DateIcon style={styles.dateIcon} />
-                <Text style={styles.date}>{formatDate(news.createdAt)}</Text>
+              <View style={[styles.metaItem, {backgroundColor: '#E8F5E8'}]}>
+                <Text style={[styles.metaText, {color: '#2E7D32'}]}>
+                  {formatDate(news.createdAt)}
+                </Text>
               </View>
-              <View style={styles.sourceContainer}>
-                <Text style={styles.source}>FreshPlaza.com</Text>
+              <View style={[styles.metaItem, {backgroundColor: '#F3E5F5'}]}>
+                <Text style={[styles.metaText, {color: '#4A148C'}]}>
+                  FreshPlaza.com
+                </Text>
               </View>
             </View>
+          </AnimatedContent>
 
+          <AnimatedContent delay={300}>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryTitle}>Tóm tắt</Text>
               <Text style={styles.summary}>{news.summary}</Text>
             </View>
+          </AnimatedContent>
 
+          <AnimatedContent delay={400}>
             <View style={styles.contentContainer}>
               <Text style={styles.contentTitle}>Nội dung chi tiết</Text>
               <Text style={styles.content}>{news.description}</Text>
             </View>
+          </AnimatedContent>
 
+          <AnimatedContent delay={500}>
             <View style={styles.highlightsCard}>
-              <Text style={styles.highlightsTitle}>Điểm nổi bật</Text>
-              <Text style={styles.highlightText}>
-                Sản lượng cà chua giảm 700.000 tấn trong thập kỷ qua
-              </Text>
-              <Text style={styles.highlightText}>
-                Khối lượng nhập khẩu tăng 400.000 tấn
-              </Text>
-              <Text style={styles.highlightText}>
-                Ảnh hưởng của thời tiết và nhiệt độ cao
-              </Text>
+              <View style={styles.highlightsHeader}>
+                <Text style={styles.contentTitle}>Điểm nổi bật</Text>
+              </View>
+              {highlights.map((highlight, index) => (
+                <HighlightItem key={index} text={highlight} index={index} />
+              ))}
             </View>
+          </AnimatedContent>
 
-            {/* Action Buttons */}
+          <AnimatedContent delay={600}>
             <View style={styles.actionContainer}>
-              <TouchableOpacity style={styles.actionButton}>
-                <LinearGradient
-                  colors={['#4CAF50', '#66BB6A']}
-                  style={styles.actionButtonGradient}>
-                  <Icon name="bookmark" size={20} color="#fff" />
-                  <Text style={styles.actionButtonText}>Lưu bài viết</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.actionButton}>
-                <LinearGradient
-                  colors={['#FF9800', '#FFB74D']}
-                  style={styles.actionButtonGradient}>
-                  <Icon name="share" size={20} color="#fff" />
-                  <Text style={styles.actionButtonText}>Chia sẻ</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+              <Button.Main
+                title={bookmarked ? 'Đã lưu' : 'Lưu bài viết'}
+                iconLeft={
+                  bookmarked ? (
+                    <BookmarkFillIcon style={{color: Colors.white}} />
+                  ) : (
+                    <BookmarkIcon style={{color: Colors.white}} />
+                  )
+                }
+                onPress={handleBookmark}
+                style={styles.actionButton}
+              />
+              <Button.Main
+                title="Chia sẻ"
+                iconLeft={<ShareIcon style={{color: Colors.white}} />}
+                onPress={handleShare}
+                style={styles.actionButton}
+              />
             </View>
-          </View>
-        </ScrollView>
-      </View>
+          </AnimatedContent>
+        </View>
+      </Animated.ScrollView>
     </>
   );
 };

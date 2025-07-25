@@ -18,6 +18,7 @@ export const Colors = {
   greenText: '#2E7D32',
   title: '#212121',
   grayText: '#333333',
+  grayText_2: '#4a5568',
 };
 
 export const FontSizes = {
