@@ -3,6 +3,7 @@ import api from './baseApi';
 export const getProvinceProducts = async (payload = {}) => {
   try {
     const res = await api.post('/api/statistical/province-product', payload);
+
     return res.data;
   } catch (error) {
     const message =

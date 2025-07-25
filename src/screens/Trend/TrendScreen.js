@@ -1,12 +1,5 @@
 import React, {useEffect, useMemo, useState, useCallback} from 'react';
-import {
-  ScrollView,
-  Text,
-  View,
-  TouchableOpacity,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from 'react-native';
+import {ScrollView, Text, View, TouchableOpacity} from 'react-native';
 import styles from './Trend.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import WalletList from '../Home/components/WalletList';
@@ -16,9 +9,9 @@ import * as Animatable from 'react-native-animatable';
 import {useNavigation} from '@react-navigation/native';
 import {Flame} from 'lucide-react-native';
 import {useQuery} from '@tanstack/react-query';
-import {getTrendAll} from '~/api/trendApi';
 import {getAllProvinceApii} from '~/api/provinceApi';
 import {useSearchAndFilter} from '~/hook/useSearch';
+import {getTrendAll} from '~/api/trendApi';
 
 const INITIAL_COUNT = 7;
 const LOAD_MORE_COUNT = 7;
@@ -34,7 +27,7 @@ const TrendScreen = () => {
   const {data: trendList = [], isLoading} = useQuery({
     queryKey: ['trend-data', date],
     queryFn: () => getTrendAll(date),
-    select: res => res.data,
+    select: res => res?.data,
     staleTime: 10 * 60 * 1000,
     onSuccess: () => {
       setVisibleCount(INITIAL_COUNT);
@@ -44,7 +37,7 @@ const TrendScreen = () => {
   const {data: provinceList = []} = useQuery({
     queryKey: ['provinces'],
     queryFn: getAllProvinceApii,
-    select: res => res.data,
+    select: res => res?.data,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -59,14 +52,12 @@ const TrendScreen = () => {
     filters: selectedFilters,
   });
 
-  const visibleItems = useMemo(
-    () => filteredTrendList.slice(0, visibleCount),
-    [filteredTrendList, visibleCount],
-  );
+  const visibleItems = useMemo(() => {
+    return filteredTrendList.slice(0, visibleCount);
+  }, [filteredTrendList, visibleCount]);
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const handleScroll = event => {
     const {layoutMeasurement, contentOffset, contentSize} = event.nativeEvent;
-
     const isCloseToBottom =
       layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
 
@@ -81,14 +72,13 @@ const TrendScreen = () => {
     }
   }, [provinceList]);
 
-  const filterOptions = useMemo(
-    () => [
+  const filterOptions = useMemo(() => {
+    return [
       {label: 'Ngày', options: []},
       {label: 'Tỉnh', options: provinceOptions},
       {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
-    ],
-    [provinceOptions],
-  );
+    ];
+  }, [provinceOptions]);
 
   const handleFilterSelect = useCallback((type, value) => {
     setSelectedFilters(prev => ({...prev, [type]: value}));
@@ -117,8 +107,8 @@ const TrendScreen = () => {
     });
   }, [navigation, trendList]);
 
-  const renderTrendSection = useMemo(
-    () => (
+  const renderTrendSection = useMemo(() => {
+    return (
       <Animatable.View
         animation="fadeInUp"
         duration={400}
@@ -143,9 +133,8 @@ const TrendScreen = () => {
           <WalletList data={visibleItems} />
         )}
       </Animatable.View>
-    ),
-    [isLoading, visibleItems, navigateToWalletAll],
-  );
+    );
+  }, [isLoading, visibleItems, navigateToWalletAll]);
 
   return (
     <View style={styles.container}>

@@ -38,6 +38,8 @@ const HomeScreen = () => {
     filters: selectedFilters,
   });
 
+  console.log('filteredWalletData', filteredWalletData);
+
   const {data: provinceList = []} = useQuery({
     queryKey: ['provinces'],
     queryFn: getAllProvinceApii,

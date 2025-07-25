@@ -8,6 +8,8 @@ const useWalletData = () => {
       const res = await getProvinceProducts();
       const products = res?.data || [];
 
+      console.log('products', products);
+
       const productIds = products.map(p => p.productId || p._id);
       const provinceIds = products.map(p => p.provinceId || p._id);
 
