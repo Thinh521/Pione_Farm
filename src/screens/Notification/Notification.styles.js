@@ -15,6 +15,17 @@ export default StyleSheet.create({
   headerContainer: {
     paddingVertical: scale(12),
   },
+  headerTitle: {
+    marginVertical: scale(16),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: {
+    color: Colors.title,
+    fontSize: FontSizes.semiLarge,
+    fontWeight: FontWeights.semiBold,
+  },
   sectionTitle: {
     color: Colors.title,
     fontSize: FontSizes.semiLarge,
@@ -75,17 +86,20 @@ export default StyleSheet.create({
     lineHeight: scale(18),
   },
   resetButton: {
-    marginTop: 8,
-    marginLeft: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+    paddingHorizontal: scale(12),
+    paddingVertical: scale(6),
+    backgroundColor: Colors.green,
+    borderRadius: scale(10),
   },
   resetText: {
-    color: '#111827',
-    fontWeight: '500',
-    fontSize: 13,
+    color: Colors.white,
+    fontSize: FontSizes.xsmall,
+    fontWeight: FontWeights.semiBold,
+  },
+  loadingContainer: {
+    gap: scale(10),
+    marginTop: scale(220),
+    flexDirection: 'column',
+    alignItems: 'center',
   },
 });
