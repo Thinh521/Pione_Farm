@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import AppNavigator from './src/navigation';
+import SplashScreen from './src/screens/Splash/SplashScreen';
+import FlashMessage from 'react-native-flash-message';
 import {NavigationContainer} from '@react-navigation/native';
 import {ThemeProvider} from './src/context/ThemeContext';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {storage} from './src/utils/storage/onboardingStorage';
-import SplashScreen from './src/screens/Splash/SplashScreen';
-import FlashMessage from 'react-native-flash-message';
 import {AuthProvider} from './src/context/AuthContext';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
@@ -14,13 +14,10 @@ import {AppKit} from '@reown/appkit-ethers-react-native';
 import './src/config/AppKitSetup';
 
 import {
-  getFcmToken,
   requestUserPermission,
   setupFCMListeners,
+  uploadFcmTokenIfNeeded,
 } from './src/utils/firebaseMessageHandler';
-import {getSavedFcmToken} from './src/utils/storage/fcmStorage';
-import {saveFcmToken} from './src/api/fcmApi';
-import {getUserData} from './src/utils/storage/userStorage';
 
 const queryClient = new QueryClient();
 
@@ -30,42 +27,11 @@ export default function App() {
   useEffect(() => {
     const initNotification = async () => {
       await requestUserPermission();
-      await getFcmToken();
+      await uploadFcmTokenIfNeeded();
       setupFCMListeners();
     };
 
     initNotification();
-  }, []);
-
-  useEffect(() => {
-    const handleFCMToken = async () => {
-      try {
-        const user = await getUserData();
-        if (!user?.id) return;
-
-        const newToken = await getFcmToken();
-        console.log('user.id', user.id);
-        console.log('newToken', newToken);
-
-        const oldToken = await getSavedFcmToken();
-
-        if (newToken && newToken !== oldToken) {
-          const res = await saveFcmToken({
-            userId: user.id,
-            fcmToken: newToken,
-          });
-          console.log('Đã gửi FCM token mới lên server:', res);
-
-          await saveFcmTokenLocally(newToken);
-        } else {
-          console.log('FCM token chưa thay đổi, không cần gửi lại.');
-        }
-      } catch (error) {
-        console.log('Lỗi khi xử lý FCM token:', error);
-      }
-    };
-
-    handleFCMToken();
   }, []);
 
   useEffect(() => {
@@ -95,8 +61,8 @@ export default function App() {
             <NavigationContainer>
               <AppNavigator initialRouteName={initialRoute} />
               <FlashMessage position="top" />
+              <AppKit />
             </NavigationContainer>
-            <AppKit />
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>

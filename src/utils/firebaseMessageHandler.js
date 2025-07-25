@@ -1,7 +1,9 @@
-import {PermissionsAndroid, Platform} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import {PermissionsAndroid, Platform} from 'react-native';
 import PushNotification from 'react-native-push-notification';
-import {saveFcmToken} from './storage/fcmStorage';
+import {getUserData} from './storage/userStorage';
+import {saveFcmToken} from '../api/fcmApi';
+import { saveFcmTokenLocally } from './storage/fcmStorage';
 
 const requestAndroidNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
@@ -35,26 +37,38 @@ export const requestUserPermission = async () => {
     authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
     authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-  if (enabled) {
-    console.log('Firebase notification permission enabled:', authStatus);
-  } else {
-    console.log('Firebase notification permission denied');
-  }
+  console.log('Notification permission:', enabled ? 'granted' : 'denied');
 };
 
 export const getFcmToken = async () => {
   try {
+    const token = await messaging().getToken();
+    return token;
+  } catch (error) {
+    console.log('Lỗi khi lấy FCM Token:', error);
+    return null;
+  }
+};
 
-    const newToken = await messaging().getToken();
-    console.log('FCM Token mới:', newToken);
+export const uploadFcmTokenIfNeeded = async () => {
+  try {
+    const user = await getUserData();
+    if (!user?.id) return;
+
+    const newToken = await getFcmToken();
 
     if (newToken) {
-      saveFcmToken(newToken); 
+      const res = await saveFcmToken({
+        userId: user.id,
+        fcmToken: newToken,
+      });
+      console.log('Đã gửi FCM token mới lên server:', res);
+      saveFcmTokenLocally(newToken);
+    } else {
+      console.log('FCM token không thay đổi, không cần gửi lại.');
     }
-
-    return newToken;
   } catch (error) {
-    console.log('Lỗi khi lấy FCM Token mới:', error);
+    console.log('Lỗi khi xử lý gửi FCM token:', error);
   }
 };
 
@@ -69,8 +83,7 @@ export const setupFCMListeners = () => {
   );
 
   messaging().onMessage(async remoteMessage => {
-    console.log('Foreground FCM message:', remoteMessage);
-
+    console.log('Foreground message:', remoteMessage);
     PushNotification.localNotification({
       channelId: 'default-channel-id',
       title: remoteMessage.notification?.title || 'Thông báo',

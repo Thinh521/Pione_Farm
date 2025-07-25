@@ -4,7 +4,7 @@ const storage = new MMKV();
 
 const FCM_TOKEN_KEY = 'fcmToken';
 
-export const saveFcmToken = token => {
+export const saveFcmTokenLocally = token => {
   storage.set(FCM_TOKEN_KEY, token);
 };
 
