@@ -1,120 +1,130 @@
-import React from 'react';
 import {API_BASE_URL} from '@env';
-import {View, Text, StyleSheet, FlatList} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import React, {memo, useMemo, useCallback} from 'react';
+import {View, Text, StyleSheet, FlatList} from 'react-native';
+
 import LineChartWrapper from '~/components/LineChart/LineChartWrapper';
+import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
+
 import {scale} from '~/utils/scaling';
 import {formatCurrencyVND} from '~/utils/format';
-import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
-import {Colors, FontSizes} from '~/theme/theme';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 
-const WalletItem = ({
-  images,
-  productName,
-  provinceName,
-  price,
-  marketPrice = 0,
-  priceChange = 0,
-  priceTrend = [],
-}) => {
-  const isIncrease = priceChange > 0;
-  const isDecrease = priceChange < 0;
+const WalletItem = memo(
+  ({
+    images,
+    productName,
+    provinceName,
+    price,
+    marketPrice = 0,
+    priceChange = 0,
+    priceTrend = [],
+  }) => {
+    const color = useMemo(() => {
+      if (priceChange > 0) return '#34C759';
+      if (priceChange < 0) return '#FF9B9B';
+      return '#FFB229';
+    }, [priceChange]);
 
-  const color = isIncrease ? '#34C759' : isDecrease ? '#FF9B9B' : '#FFB229';
+    return (
+      <View style={styles.itemContainer}>
+        <View style={styles.columnLeft}>
+          <FastImage
+            source={{uri: `${API_BASE_URL}/api/upload/${images}`}}
+            style={styles.image}
+          />
+          <View style={styles.assetInfo}>
+            <Text style={styles.assetName} numberOfLines={1}>
+              {provinceName}
+            </Text>
+            <Text style={styles.assetSymbol} numberOfLines={1}>
+              {productName}
+            </Text>
+          </View>
+        </View>
 
-  return (
-    <View style={styles.itemContainer}>
-      <View style={styles.columnLeft}>
-        <FastImage
-          source={{uri: `${API_BASE_URL}/api/upload/${images}`}}
-          style={styles.image}
-        />
-        <View style={styles.assetInfo}>
-          <Text style={styles.assetName} numberOfLines={1}>
-            {provinceName}
+        <View style={styles.columnCenter}>
+          <LineChartWrapper
+            data={priceTrend}
+            mode="animated"
+            height={50}
+            width={80}
+            lineColor={color}
+            gradientColor={color}
+            strokeWidth={2}
+            showGradient
+          />
+        </View>
+
+        <View style={styles.columnRight}>
+          <Text style={styles.price}>
+            {formatCurrencyVND(
+              marketPrice && marketPrice > 0 ? marketPrice : price ?? 0,
+            )}
           </Text>
-          <Text style={styles.assetSymbol} numberOfLines={1}>
-            {productName}
+          <Text style={[styles.change, {color}]}>
+            {priceChange > 0 ? '+' : ''}
+            {formatCurrencyVND(priceChange)}
           </Text>
         </View>
       </View>
+    );
+  },
+);
 
-      <View style={styles.columnCenter}>
-        <LineChartWrapper
-          data={priceTrend}
-          mode="animated"
-          height={50}
-          width={80}
-          lineColor={color}
-          gradientColor={color}
-          strokeWidth={2}
-          showGradient
-        />
-      </View>
+const WalletList = ({data = [], loading, error}) => {
+  const renderItem = useCallback(({item}) => <WalletItem {...item} />, []);
 
-      <View style={styles.columnRight}>
-        <Text style={styles.price}>
-          {formatCurrencyVND(
-            marketPrice && marketPrice > 0 ? marketPrice : price ?? 0,
-          )}
-        </Text>
-        <Text style={[styles.change, {color}]}>
-          {isIncrease ? '+' : ''}
-          {formatCurrencyVND(priceChange)}
-        </Text>
-      </View>
-    </View>
-  );
-};
+  if (loading) return <WalletListSkeleton itemCount={5} />;
 
-const WalletList = ({data = [], loading}) => {
-  if (loading) {
-    return <WalletListSkeleton itemCount={5} />;
-  }
-
-  if (data.length === 0) {
+  if (error) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyIcon}>🔍</Text>
-        <Text style={styles.emptyText}>Không tìm thấy trái cây nào</Text>
-        <Text style={styles.emptySub}>Thử từ khóa khác</Text>
+        <Text style={styles.emptyText}>Đã có lỗi xảy ra</Text>
+        <Text style={styles.emptySub}>Vui lòng thử lại sau</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        keyExtractor={item => `${item.productId || item._productId}`}
-        renderItem={({item}) => <WalletItem {...item} />}
-        scrollEnabled={false}
-      />
-    </View>
+    <FlatList
+      data={data}
+      keyExtractor={item => `${item.productId || item._productId}`}
+      renderItem={renderItem}
+      scrollEnabled={false}
+      initialNumToRender={5}
+      removeClippedSubviews
+      ListEmptyComponent={() => (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>Không tìm thấy trái cây nào</Text>
+          <Text style={styles.emptySub}>Thử từ khóa hoặc bộ lọc khác</Text>
+        </View>
+      )}
+      contentContainerStyle={
+        data.length === 0 ? styles.emptyContainer : undefined
+      }
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  emptyContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   empty: {
     alignItems: 'center',
-    paddingVertical: 24,
-  },
-  emptyIcon: {
-    fontSize: 28,
-    color: '#9ca3af',
+    paddingVertical: scale(40),
   },
   emptyText: {
-    color: '#6b7280',
-    fontWeight: '500',
-    marginTop: 4,
+    color: Colors.title,
+    fontSize: FontSizes.medium,
+    fontWeight: FontWeights.medium,
   },
   emptySub: {
-    color: '#9ca3af',
-    fontSize: 12,
-    marginTop: 2,
+    color: Colors.grayText_3,
+    fontSize: FontSizes.small,
+    marginTop: scale(2),
   },
   itemContainer: {
     flexDirection: 'row',
@@ -122,7 +132,7 @@ const styles = StyleSheet.create({
     marginBottom: scale(16),
     borderBottomWidth: 1,
     borderBottomColor: '#E7E7E7',
-    paddingBottom: 12,
+    paddingBottom: scale(14),
   },
   columnLeft: {
     flex: 1.2,
@@ -150,20 +160,20 @@ const styles = StyleSheet.create({
   },
   assetName: {
     fontSize: FontSizes.small,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontWeight: FontWeights.semiBold,
+    color: Colors.title,
     maxWidth: scale(100),
   },
   assetSymbol: {
     fontSize: FontSizes.xsmall,
     color: Colors.gray,
-    marginTop: 2,
+    marginTop: scale(4),
   },
   price: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
+    fontSize: FontSizes.medium,
+    fontWeight: FontWeights.semiBold,
+    color: Colors.title,
+    marginBottom: scale(4),
   },
   change: {
     fontSize: FontSizes.xsmall,

@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
-import {scale} from '../../utils/scaling';
-import {FontSizes, FontWeights} from '../../theme/theme';
+import {scale} from '~/utils/scaling';
+import {FontSizes, FontWeights, Colors} from '~/theme/theme';
 
 export default StyleSheet.create({
   container: {
@@ -10,7 +10,7 @@ export default StyleSheet.create({
   header: {
     marginTop: scale(20),
     borderBottomWidth: 1,
-    borderColor: '#b0ffce',
+    borderColor: Colors.border_2,
   },
   scrollContainer: {
     flex: 1,
@@ -20,7 +20,8 @@ export default StyleSheet.create({
     paddingBottom: scale(90),
   },
   title: {
-    fontSize: FontSizes.xlarge,
+    color: Colors.title,
+    fontSize: FontSizes.large,
     fontWeight: FontWeights.semiBold,
   },
   box: {

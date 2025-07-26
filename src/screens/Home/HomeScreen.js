@@ -1,33 +1,34 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {View, Text, StatusBar, FlatList, TouchableOpacity} from 'react-native';
+import {useNavigation} from '@react-navigation/core';
+
 import WalletList from './components/WalletList';
 import FruitPriceList from './components/FruitPriceList';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
+import ChatBot from '~/components/ChatBot/ChatBot';
+
+import useWalletData from '~/hook/useWalletData';
+import useProvince from '~/hook/useProvince';
+import {useSearchAndFilter} from '~/hook/useSearch';
+
 import styles from './Home.styles';
 import {Colors} from '~/theme/theme';
-import {useNavigation} from '@react-navigation/core';
-import ChatBot from '~/components/ChatBot/ChatBot';
 import {scale} from '~/utils/scaling';
-import {useSearchAndFilter} from '~/hook/useSearch';
-import useWalletData from '~/hook/useWalletData';
-import {useQuery} from '@tanstack/react-query';
-import {getAllProvinceApii} from '~/api/provinceApi';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-  const [searchText, setSearchText] = useState('');
-  const [provinceOptions, setProvinceOptions] = useState([]);
+
   const [selectedFilters, setSelectedFilters] = useState({
     Giá: 'Tất cả',
     Tỉnh: 'Tất cả',
     'Số lượng': 'Tất cả',
   });
 
-  const {data, isLoading} = useWalletData();
+  const {data, isLoading, error} = useWalletData();
+  const {provinceOptions} = useProvince();
+
   const walletData = useMemo(() => data?.merged || [], [data]);
   const productList = useMemo(() => data?.products || [], [data]);
-
-  console.log('productList', productList);
 
   const {
     filteredData: filteredWalletData,
@@ -36,24 +37,8 @@ const HomeScreen = () => {
   } = useSearchAndFilter({
     data: walletData,
     searchableFields: ['productName', 'provinceName', 'typeName'],
-    searchKeyword: searchText,
     filters: selectedFilters,
   });
-
-  console.log('filteredWalletData', filteredWalletData);
-
-  const {data: provinceList = []} = useQuery({
-    queryKey: ['provinces'],
-    queryFn: getAllProvinceApii,
-    select: res => res.data,
-    staleTime: 10 * 60 * 1000,
-  });
-
-  useEffect(() => {
-    if (provinceList.length) {
-      setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
-    }
-  }, [provinceList]);
 
   const filterOptions = useMemo(
     () => [
@@ -80,19 +65,15 @@ const HomeScreen = () => {
   return (
     <>
       <StatusBar backgroundColor={Colors.headerBack} barStyle="light-content" />
-
       <View style={styles.container}>
         <View style={styles.header}>
           <SearchAndFilterBar
             searchText={searchKeyword}
-            setSearchText={text => {
-              setSearchText(text);
-              setSearchKeyword(text);
-            }}
+            setSearchText={setSearchKeyword}
             filterOptions={filterOptions}
-            showProductButton={false}
             selectedFilters={selectedFilters}
             placeholder="Tìm kiếm trái cây"
+            showProductButton={false}
             onFilterSelect={(type, value) =>
               setSelectedFilters(prev => ({...prev, [type]: value}))
             }
@@ -100,7 +81,7 @@ const HomeScreen = () => {
         </View>
 
         <FlatList
-          data={[{}]}
+          data={[1]}
           keyExtractor={(_, index) => index.toString()}
           style={styles.scrollContainer}
           contentContainerStyle={styles.contentContainer}
@@ -109,19 +90,22 @@ const HomeScreen = () => {
             <>
               <View style={styles.box}>
                 <Text style={styles.title}>Danh sách</Text>
-                <TouchableOpacity
-                  style={styles.buttonMore}
-                  onPress={navigateToWalletAll}>
+                <TouchableOpacity onPress={navigateToWalletAll}>
                   <Text>Xem tất cả</Text>
                 </TouchableOpacity>
               </View>
 
               <WalletList
                 loading={isLoading}
+                error={error}
                 data={filteredWalletData.slice(0, 5)}
               />
 
-              <FruitPriceList loading={isLoading} products={productList} />
+              <FruitPriceList
+                loading={isLoading}
+                error={error}
+                products={productList}
+              />
             </>
           )}
         />

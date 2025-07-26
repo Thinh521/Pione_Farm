@@ -6,14 +6,16 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import Input from '~/components/ui/Input/InputComponents';
+
 import {SearchIcon} from '~/assets/icons/Icons';
-import {scale} from '~/utils/scaling';
-import {Colors, FontSizes, FontWeights} from '~/theme/theme';
-import {removeVietnameseTones} from '~/utils/normalize';
+import Input from '~/components/ui/Input/InputComponents';
 import FruitPriceListSkeleton from '~/components/Skeleton/FruitPriceListSkeleton';
 
-const FruitPriceList = ({products = [], loading}) => {
+import {removeVietnameseTones} from '~/utils/normalize';
+import {scale} from '~/utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+
+const FruitPriceList = ({products = [], loading, error}) => {
   const [searchText, setSearchText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -53,13 +55,11 @@ const FruitPriceList = ({products = [], loading}) => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Bảng Giá Mặt Hàng Trái Cây</Text>
         <Text style={styles.subtitle}>Cập nhật giá cả mới nhất tại chợ</Text>
       </View>
 
-      {/* Search */}
       <View style={styles.searchContainer}>
         <Input
           placeholder="Tìm kiếm tên trái cây..."
@@ -72,7 +72,6 @@ const FruitPriceList = ({products = [], loading}) => {
         />
       </View>
 
-      {/* Footer thống kê */}
       <View style={styles.footer}>
         <View style={styles.dot} />
         <Text style={styles.footerText}>
@@ -82,7 +81,6 @@ const FruitPriceList = ({products = [], loading}) => {
         </Text>
       </View>
 
-      {/* Table Header */}
       <View style={styles.tableHeader}>
         <Text style={[styles.headerText, {flex: 6}]}>Tên Mặt Hàng</Text>
         <Text style={[styles.headerText, {flex: 3, textAlign: 'center'}]}>
@@ -95,6 +93,11 @@ const FruitPriceList = ({products = [], loading}) => {
 
       {loading ? (
         <FruitPriceListSkeleton itemCount={10} />
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Đã có lỗi xảy ra</Text>
+          <Text style={styles.errorSub}>Vui lòng thử lại sau</Text>
+        </View>
       ) : isSearching ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color={Colors.green} />
@@ -107,7 +110,6 @@ const FruitPriceList = ({products = [], loading}) => {
           initialNumToRender={6}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>🔍</Text>
               <Text style={styles.emptyText}>Không tìm thấy trái cây nào</Text>
               <Text style={styles.emptySub}>Thử từ khóa khác</Text>
             </View>
@@ -212,9 +214,6 @@ const styles = StyleSheet.create({
   empty: {
     alignItems: 'center',
     paddingVertical: scale(24),
-  },
-  emptyIcon: {
-    fontSize: 28,
   },
   emptyText: {
     color: '#6b7280',
