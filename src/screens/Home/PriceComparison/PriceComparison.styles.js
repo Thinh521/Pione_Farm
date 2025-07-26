@@ -1,6 +1,6 @@
 import {Dimensions, StyleSheet} from 'react-native';
-import {Colors, FontSizes, FontWeights} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -11,7 +11,7 @@ export default StyleSheet.create({
   header: {
     marginTop: scale(20),
     borderBottomWidth: 1,
-    borderColor: '#b0ffce',
+    borderColor: Colors.border_2,
     paddingHorizontal: scale(16),
   },
   bodyWrapper: {
@@ -23,6 +23,7 @@ export default StyleSheet.create({
     marginTop: scale(20),
   },
   title: {
+    color: Colors.title,
     fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
     marginBottom: scale(16),
@@ -39,7 +40,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.3)',
-    borderColor: '#b0ffce',
+    borderColor: Colors.border_2,
     borderWidth: 1,
     borderRadius: scale(24),
     paddingHorizontal: scale(16),

@@ -18,6 +18,8 @@ import {DownIcon} from '~/assets/icons/Icons';
 import {Colors} from '~/theme/theme';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
 import {useSearchAndFilter} from '~/hook/useSearch';
+import {useQuery} from '@tanstack/react-query';
+import {getTodayHarvestSummary} from '../../../api/productApi';
 
 const AdvancedSearchScreen = () => {
   const {
@@ -27,19 +29,28 @@ const AdvancedSearchScreen = () => {
     selectedFilters,
     handleFilterSelect,
     collectionAndYieldData,
-    todayHarvestData,
     productTypeOptions,
     selectedTypeFilter,
     setSelectedTypeFilter,
-    exportDataToExcel,
-    exportingTable,
-  } = useHarvestFilter(false);
+  } = useHarvestFilter();
+
+  const {
+    data: todayHarvestData,
+    loading,
+    error,
+  } = useQuery({
+    queryKey: ['todayHarvest'],
+    queryFn: getTodayHarvestSummary,
+    select: res => res.data,
+    staleTime: 10 * 60 * 1000,
+  });
 
   const {filteredData, searchKeyword, setSearchKeyword} = useSearchAndFilter({
     data: collectionAndYieldData,
     searchableFields: ['provinceName'],
   });
 
+  const [isExporting, setIsExporting] = useState(false);
   const [activeFilter, setActiveFilter] = useState({
     index: null,
     anim: new Animated.Value(0),
@@ -137,13 +148,11 @@ const AdvancedSearchScreen = () => {
     [],
   );
 
-  const handleExportPrice = useCallback(() => {
-    exportDataToExcel(collectionAndYieldData, 'bang_gia');
-  }, [exportDataToExcel, collectionAndYieldData]);
-
-  const handleExportHarvest = useCallback(() => {
-    exportDataToExcel(todayHarvestData, 'bang_san_luong');
-  }, [exportDataToExcel, todayHarvestData]);
+  const handleExport = async () => {
+    setIsExporting(true);
+    await exportToExcel(filteredData, 'price_comparison');
+    setIsExporting(false);
+  };
 
   return (
     <>
@@ -275,12 +284,10 @@ const AdvancedSearchScreen = () => {
               />
               <Button.Main
                 title={
-                  exportingTable === 'bang_gia'
-                    ? 'Đang xuất...'
-                    : 'Xuất bảng giá'
+                  isExporting === 'bang_gia' ? 'Đang xuất...' : 'Xuất bảng giá'
                 }
                 disabled={filteredData?.length === 0}
-                onPress={handleExportPrice}
+                onPress={handleExport}
                 style={styles.buttonExcel}
               />
             </View>
@@ -300,12 +307,12 @@ const AdvancedSearchScreen = () => {
               />
               <Button.Main
                 title={
-                  exportingTable === 'bang_san_luong'
+                  isExporting === 'bang_san_luong'
                     ? 'Đang xuất...'
                     : 'Xuất bảng sản lượng'
                 }
                 disabled={todayHarvestData?.length === 0}
-                onPress={handleExportHarvest}
+                onPress={handleExport}
                 style={styles.buttonExcel}
               />
             </View>

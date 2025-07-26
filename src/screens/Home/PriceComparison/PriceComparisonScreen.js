@@ -1,15 +1,8 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {
-  Animated,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-  Platform,
-} from 'react-native';
+import React, {useMemo, useRef, useState} from 'react';
+import {Animated, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {DownIcon} from '~/assets/icons/Icons';
-import {Colors} from '~/theme/theme';
+import {Colors, Shadows} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
 import Images from '~/assets/images/Images';
 import styles from './PriceComparison.styles';
@@ -20,8 +13,10 @@ import Button from '~/components/ui/Button/ButtonComponent';
 import {getAnalysisAi} from '~/api/trendApi';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
 import {useSearchAndFilter} from '~/hook/useSearch';
+import {exportToExcel} from '~/utils/excelExporter';
+import {useQuery} from '@tanstack/react-query';
 
-const FilterDropdown = ({options, selected, onSelect, anim}) => (
+const FilterDropdown = ({options, selected, onSelect}) => (
   <Animated.View
     style={{
       position: 'absolute',
@@ -32,20 +27,7 @@ const FilterDropdown = ({options, selected, onSelect, anim}) => (
       borderRadius: scale(6),
       paddingVertical: scale(6),
       paddingHorizontal: scale(12),
-      elevation: Platform.OS === 'android' ? 5 : undefined,
-      shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
-      shadowOffset: Platform.OS === 'ios' ? {width: 0, height: 2} : undefined,
-      shadowOpacity: Platform.OS === 'ios' ? 0.15 : undefined,
-      shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
-      opacity: anim,
-      transform: [
-        {
-          translateY: anim.interpolate({
-            inputRange: [0, 1],
-            outputRange: [-10, 0],
-          }),
-        },
-      ],
+      ...Shadows.dropdown,
     }}>
     <ScrollView
       style={{maxHeight: scale(200)}}
@@ -81,17 +63,15 @@ const columns = [
 
 const PriceComparisonScreen = () => {
   const {
+    isLoading,
     fruitCategory,
     provinceOptions,
     selectedFilters,
     handleFilterSelect,
     collectionAndYieldData,
-    isLoading,
     productTypeOptions,
     selectedTypeFilter,
     setSelectedTypeFilter,
-    exportDataToExcel,
-    exportingTable,
   } = useHarvestFilter();
 
   const {filteredData, searchKeyword, setSearchKeyword} = useSearchAndFilter({
@@ -99,8 +79,7 @@ const PriceComparisonScreen = () => {
     searchableFields: ['provinceName'],
   });
 
-  const [analysisData, setAnalysisData] = useState([]);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
   const [activeFilter, setActiveFilter] = useState({
     index: null,
     anim: new Animated.Value(0),
@@ -110,22 +89,12 @@ const PriceComparisonScreen = () => {
   const fruitCategorySafe =
     fruitCategory.length > 0 ? fruitCategory : ['Tất cả'];
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchAnalysisAi = async () => {
-      try {
-        const result = await getAnalysisAi();
-        if (isMounted) setAnalysisData(result.data || []);
-      } catch (error) {
-        if (isMounted) setErrorMsg(error.message);
-      }
-    };
-
-    fetchAnalysisAi();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const {data: analysisData} = useQuery({
+    queryKey: ['analysisAi'],
+    queryFn: getAnalysisAi,
+    select: res => res.data,
+    staleTime: 10 * 60 * 1000,
+  });
 
   const filterOptions = useMemo(
     () => [
@@ -184,13 +153,11 @@ const PriceComparisonScreen = () => {
     return `${start} - ${end}`;
   }, [selectedFilters]);
 
-  if (errorMsg) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={{color: 'red'}}>{errorMsg}</Text>
-      </View>
-    );
-  }
+  const handleExport = async () => {
+    setIsExporting(true);
+    await exportToExcel(filteredData, 'price_comparison');
+    setIsExporting(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -245,7 +212,6 @@ const PriceComparisonScreen = () => {
                       options={productTypeOptions}
                       selected={selectedTypeFilter}
                       onSelect={handleTypeSelection}
-                      anim={activeFilter.anim}
                     />
                   )}
                 </View>
@@ -264,15 +230,14 @@ const PriceComparisonScreen = () => {
             </View>
 
             <Button.Main
-              title={exportingTable ? 'Đang xuất...' : 'Xuất Excel'}
-              disabled={!!exportingTable}
-              onPress={() =>
-                exportDataToExcel(filteredData, 'price_comparison')
-              }
+              title={isExporting ? 'Đang xuất...' : 'Xuất Excel'}
+              disabled={isExporting}
+              onPress={handleExport}
               style={styles.buttonExcel}
             />
           </View>
 
+          {/* Phần phân tích xu hướng */}
           <View style={styles.footer}>
             <FastImage
               source={Images.PriceComparison_1}
