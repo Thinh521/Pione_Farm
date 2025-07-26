@@ -94,9 +94,9 @@ const FruitPriceList = ({products = [], loading, error}) => {
       {loading ? (
         <FruitPriceListSkeleton itemCount={10} />
       ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Đã có lỗi xảy ra</Text>
-          <Text style={styles.errorSub}>Vui lòng thử lại sau</Text>
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>Đã có lỗi xảy ra</Text>
+          <Text style={styles.emptySub}>Vui lòng thử lại sau</Text>
         </View>
       ) : isSearching ? (
         <View style={styles.loadingContainer}>
@@ -213,17 +213,17 @@ const styles = StyleSheet.create({
   },
   empty: {
     alignItems: 'center',
-    paddingVertical: scale(24),
+    paddingVertical: scale(50),
   },
   emptyText: {
-    color: '#6b7280',
-    fontWeight: FontWeights.semiBold,
-    marginTop: scale(8),
+    color: Colors.title,
+    fontSize: FontSizes.medium,
+    fontWeight: FontWeights.medium,
   },
   emptySub: {
-    color: '#9ca3af',
-    fontSize: FontSizes.xsmall,
-    marginTop: scale(4),
+    color: Colors.grayText_3,
+    fontSize: FontSizes.small,
+    marginTop: scale(2),
   },
   footer: {
     marginBlock: scale(20),
