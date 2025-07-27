@@ -6,11 +6,10 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-
 import {SearchIcon} from '~/assets/icons/Icons';
 import Input from '~/components/ui/Input/InputComponents';
 import FruitPriceListSkeleton from '~/components/Skeleton/FruitPriceListSkeleton';
-
+import ErrorView from '~/components/ErrorView/ErrorView';
 import {removeVietnameseTones} from '~/utils/normalize';
 import {scale} from '~/utils/scaling';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
@@ -94,10 +93,7 @@ const FruitPriceList = ({products = [], loading, error}) => {
       {loading ? (
         <FruitPriceListSkeleton itemCount={10} />
       ) : error ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyText}>Đã có lỗi xảy ra</Text>
-          <Text style={styles.emptySub}>Vui lòng thử lại sau</Text>
-        </View>
+        <ErrorView />
       ) : isSearching ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color={Colors.green} />
