@@ -12,7 +12,7 @@ const useWalletData = () => {
       const provinceIds = products.map(p => p.provinceId || p._id);
 
       const priceRes = await getProductPriceStats(productIds, provinceIds);
-      const stats = priceRes?.data || [];
+      const stats = priceRes?.data || []; 
 
       const merged = products.map(p => {
         const match = stats.find(

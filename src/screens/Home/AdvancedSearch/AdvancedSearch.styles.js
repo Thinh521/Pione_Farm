@@ -10,7 +10,7 @@ export default StyleSheet.create({
   header: {
     marginTop: scale(20),
     borderBottomWidth: 1,
-    borderColor: '#b0ffce',
+    borderColor: Colors.border_2,
   },
   bodyWrapper: {
     flex: 1,
@@ -20,6 +20,7 @@ export default StyleSheet.create({
     marginTop: scale(20),
   },
   title: {
+    color: Colors.title,
     fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
     marginBlock: scale(16),

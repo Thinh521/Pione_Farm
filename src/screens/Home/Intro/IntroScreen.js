@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {View, Text, FlatList} from 'react-native';
 import {useQuery} from '@tanstack/react-query';
 import {getIntroNews} from '~/api/newsApi';
-import {getAllProvinceApii} from '~/api/provinceApi';
 import styles from './Intro.styles';
 import {scale} from '~/utils/scaling';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
@@ -11,49 +10,44 @@ import {getAccessToken} from '~/utils/storage/tokenStorage';
 import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
 import {useSearchAndFilter} from '~/hook/useSearch';
 import NewsList from '~/components/NewsCard/NewsList';
+import useProvince from '~/hook/useProvince';
 
-const EmptyComponent = ({message}) => (
-  <View style={{alignItems: 'center', marginTop: scale(40)}}>
-    <Text style={{fontSize: scale(14), color: '#888'}}>{message}</Text>
-  </View>
-);
+const INITIAL_COUNT = 5;
+const LOAD_MORE_COUNT = 5;
 
 const IntroScreen = () => {
   const [selectedFilters, setSelectedFilters] = useState({});
   const [accessToken, setAccessToken] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [provinceOptions, setProvinceOptions] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
 
-  useEffect(() => {
-    (async () => {
-      const token = await getAccessToken();
-      setAccessToken(token);
-    })();
+  const fetchAccessToken = useCallback(async () => {
+    const token = await getAccessToken();
+    setAccessToken(token);
   }, []);
 
-  const {data: newsResponse = [], isLoading} = useQuery({
+  useEffect(() => {
+    fetchAccessToken();
+  }, [fetchAccessToken]);
+
+  const {
+    data: newsResponse = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['intro-news'],
     queryFn: () => getIntroNews(accessToken),
     enabled: !!accessToken,
     staleTime: 5 * 60 * 1000,
+    onSuccess: () => {
+      setVisibleCount(INITIAL_COUNT);
+    },
   });
 
-  const {data: provinceList = []} = useQuery({
-    queryKey: ['provinces'],
-    queryFn: getAllProvinceApii,
-    select: res => res.data,
-    staleTime: 10 * 60 * 1000,
-  });
-
-  useEffect(() => {
-    if (provinceList.length) {
-      setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
-    }
-  }, [provinceList]);
+  const {provinceOptions, provinceList} = useProvince();
 
   const enrichedNews = useMemo(() => {
-    if (!newsResponse.length) return [];
     return newsResponse.map(item => {
       const province = provinceList.find(p => p._id === item.provinceId);
       return {
@@ -81,6 +75,10 @@ const IntroScreen = () => {
     filters: selectedFilters,
   });
 
+  const visibleItems = useMemo(() => {
+    return filteredData.slice(0, visibleCount);
+  }, [filteredData, visibleCount]);
+
   const handleFilterSelect = useCallback((type, value) => {
     setSelectedFilters(prev => ({...prev, [type]: value}));
     const [day, month, year] = value.split('/');
@@ -88,6 +86,35 @@ const IntroScreen = () => {
     if (type === 'Ngày BĐ') setStartDate(parsedDate);
     if (type === 'Ngày KT') setEndDate(parsedDate);
   }, []);
+
+  const handleLoadMore = () => {
+    if (visibleCount < filteredData.length) {
+      setVisibleCount(prev => prev + LOAD_MORE_COUNT);
+    }
+  };
+
+  const renderFooter = () => {
+    if (isLoading || !accessToken) {
+      return <NewsSkeleton itemCount={6} />;
+    }
+    if (isError) {
+      return (
+        <View style={{marginTop: scale(40), alignItems: 'center'}}>
+          <Text style={{color: 'red'}}>Đã xảy ra lỗi khi tải dữ liệu.</Text>
+        </View>
+      );
+    }
+    if (visibleItems.length === 0) {
+      return (
+        <View style={{alignItems: 'center', marginTop: scale(40)}}>
+          <Text style={{fontSize: scale(14), color: '#888'}}>
+            Không tìm thấy bài viết phù hợp.
+          </Text>
+        </View>
+      );
+    }
+    return null;
+  };
 
   return (
     <View style={styles.container}>
@@ -107,27 +134,29 @@ const IntroScreen = () => {
       </View>
 
       <FlatList
-        data={[]}
-        keyExtractor={() => 'intro-header'}
-        showsVerticalScrollIndicator={false}
+        data={visibleItems}
+        keyExtractor={item => item._id || item.title}
+        renderItem={({item}) => <NewsList data={[item]} />}
+        onEndReached={() => {
+          console.log('Reached end!');
+          handleLoadMore();
+        }}
+        onEndReachedThreshold={0}
         ListHeaderComponent={
-          <View>
-            <View style={styles.headerContent}>
-              <Text style={styles.headerTitle}>Tin tức & Thông tin</Text>
-              <Text style={styles.headerSubtitle}>
-                Cập nhật thông tin mới nhất về nông nghiệp
-              </Text>
-            </View>
-
-            {isLoading || !accessToken ? (
-              <NewsSkeleton itemCount={6} />
-            ) : filteredData.length === 0 ? (
-              <EmptyComponent message="Không tìm thấy tin tức phù hợp." />
-            ) : (
-              <NewsList data={filteredData} />
-            )}
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Tin tức & Thông tin</Text>
+            <Text style={styles.headerSubtitle}>
+              Cập nhật thông tin mới nhất về nông nghiệp
+            </Text>
           </View>
         }
+        ListFooterComponent={renderFooter()}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{paddingBottom: scale(20)}}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={10}
+        removeClippedSubviews
       />
 
       <ChatBot style={{bottom: scale(40)}} />
@@ -135,4 +164,4 @@ const IntroScreen = () => {
   );
 };
 
-export default IntroScreen;
+export default React.memo(IntroScreen);

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  Platform,
   TouchableOpacity,
   Animated,
   StatusBar,
@@ -15,11 +14,11 @@ import {scale} from '~/utils/scaling';
 import Button from '~/components/ui/Button/ButtonComponent';
 import ChatBot from '~/components/ChatBot/ChatBot';
 import {DownIcon} from '~/assets/icons/Icons';
-import {Colors} from '~/theme/theme';
+import {Colors, Shadows} from '~/theme/theme';
 import {useHarvestFilter} from '~/hook/useHarvestFilter';
 import {useSearchAndFilter} from '~/hook/useSearch';
 import {useQuery} from '@tanstack/react-query';
-import {getTodayHarvestSummary} from '../../../api/productApi';
+import {getTodayHarvestSummary} from '~/api/productApi';
 
 const AdvancedSearchScreen = () => {
   const {
@@ -50,7 +49,7 @@ const AdvancedSearchScreen = () => {
     searchableFields: ['provinceName'],
   });
 
-  const [isExporting, setIsExporting] = useState(false);
+  const [exportingTable, setExportingTable] = useState(null);
   const [activeFilter, setActiveFilter] = useState({
     index: null,
     anim: new Animated.Value(0),
@@ -148,10 +147,16 @@ const AdvancedSearchScreen = () => {
     [],
   );
 
-  const handleExport = async () => {
-    setIsExporting(true);
-    await exportToExcel(filteredData, 'price_comparison');
-    setIsExporting(false);
+  const handleExportPrice = async () => {
+    setExportingTable('price');
+    await exportToExcel(filteredData, 'bang_gia');
+    setExportingTable(null);
+  };
+
+  const handleExportHarvest = async () => {
+    setExportingTable('harvest');
+    await exportToExcel(todayHarvestData, 'bang_san_luong');
+    setExportingTable(null);
   };
 
   return (
@@ -216,14 +221,7 @@ const AdvancedSearchScreen = () => {
                       borderRadius: scale(6),
                       paddingVertical: scale(6),
                       paddingHorizontal: scale(12),
-                      elevation: Platform.OS === 'android' ? 5 : undefined,
-                      shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
-                      shadowOffset:
-                        Platform.OS === 'ios'
-                          ? {width: 0, height: 2}
-                          : undefined,
-                      shadowOpacity: Platform.OS === 'ios' ? 0.15 : undefined,
-                      shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
+                      ...Shadows.dropdown,
                       opacity: activeFilter.anim,
                       transform: [
                         {
@@ -284,10 +282,10 @@ const AdvancedSearchScreen = () => {
               />
               <Button.Main
                 title={
-                  isExporting === 'bang_gia' ? 'Đang xuất...' : 'Xuất bảng giá'
+                  exportingTable === 'price' ? 'Đang xuất...' : 'Xuất bảng giá'
                 }
-                disabled={filteredData?.length === 0}
-                onPress={handleExport}
+                disabled={filteredData?.length === 0 || exportingTable !== null}
+                onPress={handleExportPrice}
                 style={styles.buttonExcel}
               />
             </View>
@@ -307,12 +305,14 @@ const AdvancedSearchScreen = () => {
               />
               <Button.Main
                 title={
-                  isExporting === 'bang_san_luong'
+                  exportingTable === 'harvest'
                     ? 'Đang xuất...'
                     : 'Xuất bảng sản lượng'
                 }
-                disabled={todayHarvestData?.length === 0}
-                onPress={handleExport}
+                disabled={
+                  todayHarvestData?.length === 0 || exportingTable !== null
+                }
+                onPress={handleExportHarvest}
                 style={styles.buttonExcel}
               />
             </View>

@@ -1,7 +1,7 @@
 import {useEffect, useState, useCallback} from 'react';
-import {getFarmMarketPrices, getProductTypesByProvince} from '~/api/productApi';
 import useProvince from '~/hook/useProvince';
 import useFruitCategory from '~/hook/useFruitCategory';
+import {getFarmMarketPrices, getProductTypesByProvince} from '~/api/productApi';
 
 const debounce = (func, wait) => {
   let timeout;
@@ -52,7 +52,7 @@ export const useHarvestFilter = () => {
       setProductTypeOptions(['Tất cả', ...types.map(t => t.name)]);
       setProductTypeData(types);
     } catch (err) {
-      console.error('Lỗi loại sản phẩm:', err.message);
+      console.log('Lỗi loại sản phẩm:', err.message);
     }
   }, [selectedFilters, provinceList]);
 
@@ -94,7 +94,7 @@ export const useHarvestFilter = () => {
       const res = await getFarmMarketPrices(payload);
       setResultData(res.data || []);
     } catch (err) {
-      console.error('Lỗi dữ liệu thu gom:', err.message);
+      console.log('Lỗi dữ liệu thu gom:', err.message);
       setResultData([]);
     } finally {
       setIsLoading(false);
