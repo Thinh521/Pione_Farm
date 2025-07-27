@@ -92,7 +92,7 @@ const NewsList = ({data = []}) => {
   return (
     <FlatList
       data={data}
-      keyExtractor={item => item._id.toString()}
+      keyExtractor={(item, index) => `${item._id}-${index}`}
       renderItem={renderItem}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.listContainer}

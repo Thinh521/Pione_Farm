@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useEffect, useCallback} from 'react';
+import React, {useState, useMemo, useCallback, memo} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import {useQuery} from '@tanstack/react-query';
 import styles from './News.styles';
@@ -7,17 +7,13 @@ import ChatBot from '~/components/ChatBot/ChatBot';
 import {scale} from '~/utils/scaling';
 import NewsList from '~/components/NewsCard/NewsList';
 import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
-import useNewsStore from '~/store/useNewsStore';
-import {getAllProvinceApii} from '~/api/provinceApi';
+import {getAccessToken} from '~/utils/storage/tokenStorage';
+import {getNewsList} from '~/api/newsApi';
 import {useSearchAndFilter} from '~/hook/useSearch';
+import useProvince from '~/hook/useProvince';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
-const EmptyComponent = ({message}) => (
-  <View style={{alignItems: 'center', marginTop: scale(40)}}>
-    <Text style={{fontSize: scale(14), color: '#888'}}>{message}</Text>
-  </View>
-);
-
-const Section = ({title, subtitle, data, loading}) => {
+const Section = memo(({title, subtitle, data = [], loading}) => {
   if (!data.length && !loading) return null;
   return (
     <View style={{marginBottom: scale(20)}}>
@@ -26,32 +22,39 @@ const Section = ({title, subtitle, data, loading}) => {
       {loading ? <NewsSkeleton itemCount={5} /> : <NewsList data={data} />}
     </View>
   );
-};
+});
 
 const NewsScreen = () => {
   const [selectedFilters, setSelectedFilters] = useState({});
-  const [provinceOptions, setProvinceOptions] = useState([]);
   const [date, setDate] = useState(null);
 
-  const {newsData, loading, fetchNewsData, hasFetched} = useNewsStore();
+  const {provinceOptions, provinceList} = useProvince();
 
-  const {data: provinceList = []} = useQuery({
-    queryKey: ['provinces'],
-    queryFn: getAllProvinceApii,
-    select: res => res.data,
-    staleTime: 1000 * 60 * 10,
+  const {
+    data: newsData = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['newsData'],
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      let result = [];
+      let page = 1;
+      let totalPages;
+
+      do {
+        const res = await getNewsList(page, null, accessToken);
+        const items = res?.data?.items || [];
+        totalPages = res?.data?.totalPages || 1;
+        result = [...result, ...items];
+        page++;
+      } while (page <= totalPages);
+
+      return result;
+    },
   });
 
-  useEffect(() => {
-    if (!hasFetched) fetchNewsData();
-  }, []);
-
-  useEffect(() => {
-    setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
-  }, [provinceList]);
-
   const enrichedNews = useMemo(() => {
-    if (!newsData?.length) return [];
     return newsData.map(item => {
       const province = provinceList.find(p => p._id === item.provinceId);
       return {
@@ -92,8 +95,6 @@ const NewsScreen = () => {
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     );
 
-    console.log('sorted', sorted);
-
     return {
       latestNews: sorted.slice(0, 5),
       domesticNews: sorted.filter(i => i.type === 'trongnuoc').slice(0, 5),
@@ -102,7 +103,7 @@ const NewsScreen = () => {
   }, [filteredData]);
 
   const nothingToShow =
-    !loading &&
+    !isLoading &&
     !latestNews.length &&
     !domesticNews.length &&
     !internationalNews.length;
@@ -121,40 +122,50 @@ const NewsScreen = () => {
         />
       </View>
 
-      <View style={styles.main}>
+      <View>
         <FlatList
           data={[]}
           keyExtractor={() => 'news-screen'}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
-            nothingToShow ? (
-              <EmptyComponent message="Không tìm thấy tin tức phù hợp." />
+            isError ? (
+              <ErrorView />
+            ) : nothingToShow ? (
+              <View style={styles.visiContainer}>
+                <Text style={styles.visiText}>
+                  Không tìm thấy tin tức phù hợp.
+                </Text>
+              </View>
             ) : (
               <View>
                 <Section
                   title="Tin mới"
                   subtitle="Cập nhật thông tin mới nhất về nông nghiệp"
                   data={latestNews}
-                  loading={loading}
+                  loading={isLoading}
                 />
                 <Section
                   title="Tin trong nước"
-                  subtitle="Cập nhật thông tin mới nhất về nông nghiệp"
+                  subtitle="Cập nhật thông tin mới nhất trong nước"
                   data={domesticNews}
-                  loading={loading}
+                  loading={isLoading}
                 />
                 <Section
                   title="Tin ngoài nước"
-                  subtitle="Cập nhật thông tin mới nhất về nông nghiệp"
+                  subtitle="Cập nhật thông tin quốc tế về nông nghiệp"
                   data={internationalNews}
-                  loading={loading}
+                  loading={isLoading}
                 />
               </View>
             )
           }
+          initialNumToRender={1}
+          maxToRenderPerBatch={2}
+          removeClippedSubviews={true}
           contentContainerStyle={{
             marginTop: scale(20),
             paddingBottom: scale(170),
+            paddingHorizontal: scale(16),
           }}
         />
       </View>
@@ -164,4 +175,4 @@ const NewsScreen = () => {
   );
 };
 
-export default NewsScreen;
+export default memo(NewsScreen);
