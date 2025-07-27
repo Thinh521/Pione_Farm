@@ -9,6 +9,7 @@ import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
 import {scale} from '~/utils/scaling';
 import {formatCurrencyVND} from '~/utils/format';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import ErrorView from '../../../components/ErrorView/ErrorView';
 
 const WalletItem = memo(
   ({
@@ -75,15 +76,12 @@ const WalletItem = memo(
 const WalletList = ({data = [], loading, error}) => {
   const renderItem = useCallback(({item}) => <WalletItem {...item} />, []);
 
-  if (loading) return <WalletListSkeleton itemCount={5} />;
+  if (loading) {
+    return <WalletListSkeleton itemCount={5} />;
+  }
 
   if (error) {
-    return (
-      <View style={styles.empty}>
-        <Text style={styles.emptyText}>Đã có lỗi xảy ra</Text>
-        <Text style={styles.emptySub}>Vui lòng thử lại sau</Text>
-      </View>
-    );
+    return <ErrorView />;
   }
 
   return (

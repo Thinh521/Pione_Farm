@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {View, Text, FlatList} from 'react-native';
 import {useQuery} from '@tanstack/react-query';
 import {getIntroNews} from '~/api/newsApi';
@@ -11,6 +11,7 @@ import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
 import {useSearchAndFilter} from '~/hook/useSearch';
 import NewsList from '~/components/NewsCard/NewsList';
 import useProvince from '~/hook/useProvince';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
 const INITIAL_COUNT = 5;
 const LOAD_MORE_COUNT = 5;
@@ -95,21 +96,15 @@ const IntroScreen = () => {
 
   const renderFooter = () => {
     if (isLoading || !accessToken) {
-      return <NewsSkeleton itemCount={6} />;
+      return <NewsSkeleton itemCount={5} />;
     }
     if (isError) {
-      return (
-        <View style={{marginTop: scale(40), alignItems: 'center'}}>
-          <Text style={{color: 'red'}}>Đã xảy ra lỗi khi tải dữ liệu.</Text>
-        </View>
-      );
+      return <ErrorView />;
     }
     if (visibleItems.length === 0) {
       return (
-        <View style={{alignItems: 'center', marginTop: scale(40)}}>
-          <Text style={{fontSize: scale(14), color: '#888'}}>
-            Không tìm thấy bài viết phù hợp.
-          </Text>
+        <View style={styles.visiContainer}>
+          <Text style={styles.visiText}>Không tìm thấy bài viết phù hợp.</Text>
         </View>
       );
     }
@@ -137,10 +132,7 @@ const IntroScreen = () => {
         data={visibleItems}
         keyExtractor={item => item._id || item.title}
         renderItem={({item}) => <NewsList data={[item]} />}
-        onEndReached={() => {
-          console.log('Reached end!');
-          handleLoadMore();
-        }}
+        onEndReached={handleLoadMore}
         onEndReachedThreshold={0}
         ListHeaderComponent={
           <View style={styles.headerContent}>
@@ -152,7 +144,10 @@ const IntroScreen = () => {
         }
         ListFooterComponent={renderFooter()}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{paddingBottom: scale(20)}}
+        contentContainerStyle={{
+          paddingBottom: scale(20),
+          paddingInline: scale(16),
+        }}
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         windowSize={10}
@@ -164,4 +159,4 @@ const IntroScreen = () => {
   );
 };
 
-export default React.memo(IntroScreen);
+export default memo(IntroScreen);

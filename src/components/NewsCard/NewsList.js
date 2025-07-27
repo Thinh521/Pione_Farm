@@ -10,7 +10,7 @@ import {
 import FastImage from 'react-native-fast-image';
 import {API_BASE_URL} from '@env';
 import {scale} from '~/utils/scaling';
-import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {Colors, FontSizes, FontWeights, Shadows} from '~/theme/theme';
 import {DateIcon} from '~/assets/icons/Icons';
 import {useNavigation} from '@react-navigation/core';
 
@@ -40,12 +40,12 @@ const AnimatedCard = memo(({item, index}) => {
     ],
   };
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     navigation.navigate('NoBottomTab', {
       screen: 'NewDetail',
       params: {newsId: item._id},
     });
-  };
+  }, [navigation, item._id]);
 
   return (
     <TouchableOpacity onPress={handlePress} activeOpacity={0.9}>
@@ -89,18 +89,16 @@ const NewsList = ({data = []}) => {
     [],
   );
 
-  const keyExtractor = useCallback((item, index) => `${item._id}-${index}`, []);
-
   return (
     <FlatList
       data={data}
-      keyExtractor={keyExtractor}
+      keyExtractor={item => item._id.toString()}
       renderItem={renderItem}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.listContainer}
       initialNumToRender={5}
-      maxToRenderPerBatch={8}
-      windowSize={5}
+      maxToRenderPerBatch={5}
+      windowSize={10}
       removeClippedSubviews={true}
     />
   );
@@ -118,11 +116,7 @@ const styles = StyleSheet.create({
     padding: scale(10),
     borderColor: Colors.border,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
+    ...Shadows.medium,
   },
   image: {
     width: scale(80),
