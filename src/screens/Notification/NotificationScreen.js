@@ -1,18 +1,19 @@
-import React, {useEffect, useState, useRef, useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
-  SectionList,
-  Text,
   View,
-  ActivityIndicator,
-  TouchableOpacity,
+  Text,
+  SectionList,
   RefreshControl,
+  TouchableOpacity,
+  ActivityIndicator,
   Animated,
 } from 'react-native';
 import styles from './Notification.styles';
-import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import {scale} from '~/utils/scaling';
-import {getNotification, getFilterNotification} from '~/api/notificationApi';
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
+import {getNotification, getFilterNotification} from '~/api/notificationApi';
+import {useQuery, useMutation} from '@tanstack/react-query';
 
 const FILTER_OPTIONS = [
   {
@@ -58,10 +59,7 @@ const NotificationItem = React.memo(({item, index}) => {
     <Animated.View
       style={[
         styles.itemContainer,
-        {
-          opacity: fadeAnim,
-          transform: [{translateY: slideAnim}],
-        },
+        {opacity: fadeAnim, transform: [{translateY: slideAnim}]},
       ]}>
       <View style={styles.row}>
         <Text style={styles.dot}></Text>
@@ -88,34 +86,20 @@ const SectionHeader = React.memo(({title}) => (
 const NotificationScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
-  const [notificationData, setNotificationData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [accessToken, setAccessToken] = useState('');
-  const lastNotificationIdRef = useRef(null);
-  const cacheRef = useRef({});
 
-  const filteredData = useMemo(() => {
-    if (!searchText.trim()) return notificationData;
-
-    return notificationData
-      .map(section => ({
-        ...section,
-        data: section.data.filter(
-          item =>
-            item.label.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.desc.toLowerCase().includes(searchText.toLowerCase()),
-        ),
-      }))
-      .filter(section => section.data.length > 0);
-  }, [notificationData, searchText]);
+  useEffect(() => {
+    (async () => {
+      const token = await getAccessToken();
+      setAccessToken(token);
+    })();
+  }, []);
 
   const mapNotificationData = useCallback(rawData => {
-    const mapped = [];
+    const result = [];
 
-    if (rawData.today?.length > 0) {
-      lastNotificationIdRef.current = rawData.today[0]._id;
-      mapped.push({
+    if (rawData.today?.length) {
+      result.push({
         title: 'Hôm nay',
         data: rawData.today.map(item => ({
           id: item._id,
@@ -128,8 +112,8 @@ const NotificationScreen = () => {
       });
     }
 
-    if (rawData.yesterday?.length > 0) {
-      mapped.push({
+    if (rawData.yesterday?.length) {
+      result.push({
         title: 'Hôm qua',
         data: rawData.yesterday.map(item => ({
           id: item._id,
@@ -142,125 +126,97 @@ const NotificationScreen = () => {
       });
     }
 
-    return mapped;
+    return result;
   }, []);
 
-  const fetchDefaultNotification = useCallback(
-    async (isRefresh = false) => {
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
-      try {
-        const token = await getAccessToken();
-        setAccessToken(token);
-
-        const cacheKey = 'default_notifications';
-        if (cacheRef.current[cacheKey] && !isRefresh) {
-          setNotificationData(cacheRef.current[cacheKey]);
-          return;
-        }
-
-        const res = await getNotification(token);
-        const rawData = res.data;
-        const mapped = mapNotificationData(rawData);
-
-        cacheRef.current[cacheKey] = mapped;
-        setNotificationData(mapped);
-      } catch (err) {
-        console.log('Lỗi khi lấy thông báo:', err.message);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
+  const {
+    data: notificationData = [],
+    isLoading,
+    isRefetching,
+    refetch,
+  } = useQuery({
+    queryKey: ['notifications', accessToken],
+    queryFn: async () => {
+      if (!accessToken) return [];
+      const res = await getNotification(accessToken);
+      return mapNotificationData(res.data);
     },
-    [mapNotificationData],
-  );
+    enabled: !!accessToken,
+    staleTime: 1000 * 60 * 3,
+    cacheTime: 1000 * 60 * 10,
+  });
+
+  const filterMutation = useMutation({
+    mutationFn: async payload => {
+      const res = await getFilterNotification({accessToken, filter: payload});
+      return [
+        {
+          title: 'Kết quả lọc',
+          data: res.data.map(item => ({
+            id: item._id,
+            label: item.title,
+            desc: item.description,
+            badge: item.hour,
+            type: item.type,
+            date: item.date,
+          })),
+        },
+      ];
+    },
+  });
 
   const handleFilterSelect = useCallback(
-    async (type, value) => {
+    (type, value) => {
       const newFilters = {...selectedFilters, [type]: value};
       setSelectedFilters(newFilters);
 
-      const filterPayload = {};
-
+      const payload = {};
       if (newFilters['Ngày'] && newFilters['Ngày'] !== 'Tất cả') {
         const [day, month, year] = newFilters['Ngày'].split('/');
-        filterPayload.date = `${year}-${month}-${day}`;
+        payload.date = `${year}-${month}-${day}`;
       }
-
       if (newFilters['Giờ'] && newFilters['Giờ'] !== 'Tất cả') {
-        filterPayload.hour = newFilters['Giờ'];
+        payload.hour = newFilters['Giờ'];
       }
 
-      if (Object.keys(filterPayload).length === 0) {
-        fetchDefaultNotification();
-        return;
-      }
-
-      const cacheKey = JSON.stringify(filterPayload);
-      if (cacheRef.current[cacheKey]) {
-        setNotificationData(cacheRef.current[cacheKey]);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const res = await getFilterNotification({
-          accessToken,
-          filter: filterPayload,
-        });
-
-        const rawData = res.data || [];
-        const mapped = [
-          {
-            title: 'Kết quả lọc',
-            data: rawData.map(item => ({
-              id: item._id,
-              label: item.title,
-              desc: item.description,
-              badge: item.hour,
-              type: item.type,
-              date: item.date,
-            })),
-          },
-        ];
-
-        cacheRef.current[cacheKey] = mapped;
-        setNotificationData(mapped);
-      } catch (error) {
-        console.log('Lỗi khi lọc:', error.message);
-      } finally {
-        setLoading(false);
+      if (Object.keys(payload).length === 0) {
+        refetch();
+      } else {
+        filterMutation.mutate(payload);
       }
     },
-    [selectedFilters, accessToken, fetchDefaultNotification],
+    [selectedFilters, accessToken],
   );
 
-  const handleResetFilters = useCallback(() => {
+  const handleResetFilters = () => {
     setSelectedFilters({});
     setSearchText('');
-    fetchDefaultNotification();
-  }, [fetchDefaultNotification]);
+    refetch();
+  };
 
-  const onRefresh = useCallback(() => {
-    cacheRef.current = {};
-    fetchDefaultNotification(true);
-  }, [fetchDefaultNotification]);
+  const filteredData = useMemo(() => {
+    const data = filterMutation.data || notificationData;
+    if (!searchText.trim()) return data;
 
-  useEffect(() => {
-    fetchDefaultNotification();
-  }, [fetchDefaultNotification]);
-
-  const renderSectionHeader = useCallback(
-    ({section: {title}}) => <SectionHeader title={title} />,
-    [],
-  );
+    return data
+      .map(section => ({
+        ...section,
+        data: section.data.filter(
+          item =>
+            item.label.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.desc.toLowerCase().includes(searchText.toLowerCase()),
+        ),
+      }))
+      .filter(section => section.data.length > 0);
+  }, [notificationData, filterMutation.data, searchText]);
 
   const renderItem = useCallback(
     ({item, index}) => <NotificationItem item={item} index={index} />,
+    [],
+  );
+
+  const renderSectionHeader = useCallback(
+    ({section: {title}}) => <SectionHeader title={title} />,
     [],
   );
 
@@ -317,7 +273,7 @@ const NotificationScreen = () => {
           )}
         </View>
 
-        {loading ? (
+        {isLoading || filterMutation.isPending ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#4CAF50" />
             <Text style={styles.loadingText}>Đang tải thông báo...</Text>
@@ -333,21 +289,19 @@ const NotificationScreen = () => {
         ) : (
           <SectionList
             sections={filteredData}
-            showsVerticalScrollIndicator={false}
             keyExtractor={keyExtractor}
             renderSectionHeader={renderSectionHeader}
             renderItem={renderItem}
             contentContainerStyle={{paddingBottom: scale(280)}}
-            removeClippedSubviews={true}
+            getItemLayout={getItemLayout}
+            removeClippedSubviews
             maxToRenderPerBatch={10}
-            updateCellsBatchingPeriod={50}
             initialNumToRender={10}
             windowSize={10}
-            getItemLayout={getItemLayout}
             refreshControl={
               <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
+                refreshing={isRefetching}
+                onRefresh={refetch}
                 colors={['#4CAF50']}
                 tintColor="#4CAF50"
                 title="Đang cập nhật..."
