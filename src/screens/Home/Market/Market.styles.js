@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
-import {Colors, FontSizes, FontWeights} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 export default StyleSheet.create({
   container: {
@@ -42,19 +42,20 @@ export default StyleSheet.create({
   itemName: {
     color: Colors.title,
     fontSize: FontSizes.small,
-    fontWeight: FontWeights.semiBold,
+    fontWeight: FontWeights.regular,
   },
   unit: {
+    fontWeight: FontWeights.semiBold,
     fontSize: FontSizes.xsmall,
     backgroundColor: '#dbeafe',
     color: '#1e3a8a',
     paddingHorizontal: scale(8),
     paddingVertical: scale(4),
-    borderRadius: scale(999),
+    borderRadius: 9999,
     overflow: 'hidden',
   },
   price: {
-    color: '#059669',
+    color: Colors.green,
     fontSize: FontSizes.medium,
     fontWeight: FontWeights.semiBold,
   },

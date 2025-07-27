@@ -14,13 +14,13 @@ const FruitPriceListSkeleton = ({itemCount = 3}) => {
             flexDirection: 'row',
             alignItems: 'center',
             marginTop: scale(8),
-            marginBottom: scale(15),
+            marginBottom: scale(10),
           }}>
           <View style={{flex: 1}}>
             <View
               style={{
                 width: '100%',
-                height: scale(40),
+                height: scale(36),
                 borderRadius: scale(10),
               }}
             />
