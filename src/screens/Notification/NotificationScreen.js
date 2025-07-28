@@ -15,7 +15,7 @@ import {getAccessToken} from '~/utils/storage/tokenStorage';
 import {getNotification, getFilterNotification} from '~/api/notificationApi';
 import {useQuery, useMutation} from '@tanstack/react-query';
 import {useSearchAndFilter} from '~/hook/useSearch';
-import ErrorView from '../../components/ErrorView/ErrorView';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
 const FILTER_OPTIONS = [
   {
