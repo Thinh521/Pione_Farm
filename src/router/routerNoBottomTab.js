@@ -21,6 +21,7 @@ import WalletAllScreen from '~/screens/Home/WalletAll/WalletAllScreen';
 import ChatbotScreen from '~/screens/Chatbot/ChatbotScreen';
 import NewDetail from '~/screens/NewDetail/NewDetail';
 import ConnectWallet from '../screens/ConnectWallet/ConnectWallet';
+import CropZoneScreen from '../screens/CropZone/CropZoneScreen';
 
 const routerNoBottomTab = [
   {
@@ -218,6 +219,15 @@ const routerNoBottomTab = [
     options: ({navigation}) => ({
       header: () => (
         <CustomHeader title="Quản lý ví điện tử" navigation={navigation} />
+      ),
+    }),
+  },
+  {
+    name: 'CropZone',
+    component: CropZoneScreen,
+    options: ({navigation}) => ({
+      header: () => (
+        <CustomHeader title="Thông tin vùng trồng" navigation={navigation} />
       ),
     }),
   },
