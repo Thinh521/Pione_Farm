@@ -25,6 +25,7 @@ const useWalletData = () => {
       return {merged, products};
     },
     staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
 };
 

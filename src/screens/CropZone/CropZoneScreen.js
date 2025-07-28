@@ -1,7 +1,11 @@
 import React from 'react';
-import {View, Text, StyleSheet, ScrollView, Dimensions} from 'react-native';
-
-const {width} = Dimensions.get('window');
+import {View, Text, ScrollView} from 'react-native';
+import styles from './CropZone.styles';
+import FeaturedFarms from './components/FeaturedFarms';
+import {useQuery} from '@tanstack/react-query';
+import {getFarmALl} from '../../api/farmAllApi';
+import {scale} from '../../utils/scaling';
+import LinearGradient from 'react-native-linear-gradient';
 
 const cropZone = {
   id: '1',
@@ -92,40 +96,23 @@ const cropZone = {
   ],
 };
 
-const farms = [
-  {
-    name: 'Trang trại Cà Phê Đắk Lắk',
-    owner: 'Nguyễn Văn A',
-    area: '120 ha',
-    location: 'Buôn Ma Thuột, Đắk Lắk',
-    crops: 'Cà phê Robusta',
-  },
-  {
-    name: 'Farm Hồ Tiêu Gia Lai',
-    owner: 'Trần Thị B',
-    area: '35 ha',
-    location: 'Chư Sê, Gia Lai',
-    crops: 'Hồ tiêu hữu cơ',
-  },
-  {
-    name: 'Cao su Lâm Đồng',
-    owner: 'HTX Cao Su 27/7',
-    area: '250 ha',
-    location: 'Bảo Lộc, Lâm Đồng',
-    crops: 'Cao su',
-  },
-  {
-    name: 'Trang trại Chè Kon Tum',
-    owner: 'Lê Văn C',
-    area: '80 ha',
-    location: 'Đắk Glei, Kon Tum',
-    crops: 'Chè Shan tuyết',
-  },
-];
-
 const CropZoneScreen = () => {
+  const {
+    data: farms,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['FarmAll'],
+    queryFn: getFarmALl,
+    select: res => res.data,
+    staleTime: 10 * 60 * 1000,
+  });
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{paddingBottom: scale(20)}}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.zoneName}>{cropZone.name}</Text>
@@ -231,41 +218,41 @@ const CropZoneScreen = () => {
         </ScrollView>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🏡 Các trang trại tiêu biểu</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalScroll}>
-          {farms.map((farm, index) => (
-            <View key={index} style={styles.farmCard}>
-              <Text style={styles.farmName}>{farm.name}</Text>
-              <Text style={styles.farmOwner}>👤 Chủ: {farm.owner}</Text>
-              <Text style={styles.farmArea}>📏 Diện tích: {farm.area}</Text>
-              <Text style={styles.farmLocation}>📍 {farm.location}</Text>
-              <Text style={styles.farmCrops}>🌾 Cây trồng: {farm.crops}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
+      <FeaturedFarms farms={farms} />
 
       {/* Advantages & Challenges */}
       <View>
         <View style={[styles.card, styles.halfCard]}>
-          <Text style={styles.sectionTitle}>✅ Ưu thế</Text>
+          <Text style={styles.sectionTitle}>Ưu thế</Text>
           {cropZone.advantages.map((advantage, index) => (
-            <Text key={index} style={styles.listItem}>
-              • {advantage}
-            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: scale(6),
+              }}>
+              <View style={styles.highlightDot} />
+              <Text key={index} style={styles.listItem}>
+                {advantage}
+              </Text>
+            </View>
           ))}
         </View>
 
         <View style={[styles.card, styles.halfCard]}>
-          <Text style={styles.sectionTitle}>⚠️ Thách thức</Text>
+          <Text style={styles.sectionTitle}>Thách thức</Text>
           {cropZone.challenges.map((challenge, index) => (
-            <Text key={index} style={styles.listItem}>
-              • {challenge}
-            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: scale(6),
+              }}>
+              <View style={styles.highlightDot} />
+              <Text key={index} style={styles.listItem}>
+                {challenge}
+              </Text>
+            </View>
           ))}
         </View>
       </View>
@@ -274,230 +261,3 @@ const CropZoneScreen = () => {
 };
 
 export default CropZoneScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fffe',
-  },
-  header: {
-    backgroundColor: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-    backgroundColor: '#2e7d32',
-    padding: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 16,
-  },
-  zoneName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  location: {
-    fontSize: 14,
-    color: '#e8f5e8',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statBox: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    minWidth: 120,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#e8f5e8',
-    marginTop: 4,
-  },
-  card: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-    marginBottom: 16,
-  },
-  infoGrid: {
-    marginBottom: 12,
-  },
-  infoItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  infoValue: {
-    fontSize: 14,
-    color: '#2e7d32',
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'right',
-  },
-  infoDescription: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-    marginTop: 8,
-  },
-  seasonText: {
-    fontSize: 14,
-    color: '#4caf50',
-    fontStyle: 'italic',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  advantageText: {
-    fontSize: 14,
-    color: '#4caf50',
-    fontWeight: '500',
-    marginTop: 8,
-  },
-  cropCard: {
-    backgroundColor: '#f9fff9',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4caf50',
-  },
-  cropHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  cropName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-  },
-  cropStats: {
-    alignItems: 'flex-end',
-  },
-  cropArea: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
-  },
-  cropYield: {
-    fontSize: 12,
-    color: '#4caf50',
-    fontWeight: '600',
-  },
-  cropDescription: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  cropDetails: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-  },
-  detailRow: {
-    marginBottom: 8,
-  },
-  detailLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#4caf50',
-    marginBottom: 2,
-  },
-  detailValue: {
-    fontSize: 13,
-    color: '#666',
-    lineHeight: 18,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  listItem: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 22,
-    marginBottom: 6,
-  },
-
-  horizontalScroll: {
-    paddingRight: 16,
-  },
-
-  farmCard: {
-    width: 250,
-    backgroundColor: '#f1fff5',
-    padding: 16,
-    borderRadius: 12,
-    marginRight: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#81c784',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  farmName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-    marginBottom: 8,
-  },
-
-  farmOwner: {
-    fontSize: 13,
-    color: '#555',
-    marginBottom: 4,
-  },
-
-  farmArea: {
-    fontSize: 13,
-    color: '#555',
-    marginBottom: 4,
-  },
-
-  farmLocation: {
-    fontSize: 13,
-    color: '#555',
-    marginBottom: 4,
-  },
-
-  farmCrops: {
-    fontSize: 13,
-    color: '#4caf50',
-    fontWeight: '600',
-    marginTop: 4,
-  },  
-});
