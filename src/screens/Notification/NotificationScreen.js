@@ -14,6 +14,8 @@ import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterB
 import {getAccessToken} from '~/utils/storage/tokenStorage';
 import {getNotification, getFilterNotification} from '~/api/notificationApi';
 import {useQuery, useMutation} from '@tanstack/react-query';
+import {useSearchAndFilter} from '~/hook/useSearch';
+import ErrorView from '../../components/ErrorView/ErrorView';
 
 const FILTER_OPTIONS = [
   {
@@ -132,6 +134,7 @@ const NotificationScreen = () => {
   const {
     data: notificationData = [],
     isLoading,
+    isError,
     isRefetching,
     refetch,
   } = useQuery({
@@ -191,24 +194,45 @@ const NotificationScreen = () => {
   const handleResetFilters = () => {
     setSelectedFilters({});
     setSearchText('');
-    refetch();
+    setSearchKeyword('');
+    filterMutation.reset();
+
+    setTimeout(() => {
+      refetch();
+    }, 100);
   };
 
-  const filteredData = useMemo(() => {
-    const data = filterMutation.data || notificationData;
-    if (!searchText.trim()) return data;
+  const flatData = useMemo(() => {
+    const sourceData = filterMutation.data || notificationData;
+    return sourceData.flatMap(section =>
+      section.data.map(item => ({
+        ...item,
+        sectionTitle: section.title,
+      })),
+    );
+  }, [notificationData, filterMutation.data]);
 
-    return data
-      .map(section => ({
-        ...section,
-        data: section.data.filter(
-          item =>
-            item.label.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.desc.toLowerCase().includes(searchText.toLowerCase()),
-        ),
-      }))
-      .filter(section => section.data.length > 0);
-  }, [notificationData, filterMutation.data, searchText]);
+  const {
+    filteredData: searchedData,
+    searchKeyword,
+    setSearchKeyword,
+  } = useSearchAndFilter({
+    data: flatData,
+    searchKeyword: searchText,
+    searchableFields: ['label', 'desc'],
+  });
+
+  const filteredData = useMemo(() => {
+    const grouped = {};
+    for (const item of searchedData) {
+      if (!grouped[item.sectionTitle]) {
+        grouped[item.sectionTitle] = [];
+      }
+      grouped[item.sectionTitle].push(item);
+    }
+
+    return Object.entries(grouped).map(([title, data]) => ({title, data}));
+  }, [searchedData]);
 
   const renderItem = useCallback(
     ({item, index}) => <NotificationItem item={item} index={index} />,
@@ -219,8 +243,6 @@ const NotificationScreen = () => {
     ({section: {title}}) => <SectionHeader title={title} />,
     [],
   );
-
-  const keyExtractor = useCallback((item, index) => `${item.id}-${index}`, []);
 
   const getItemLayout = useCallback(
     (data, index) => ({
@@ -238,8 +260,8 @@ const NotificationScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <SearchAndFilterBar
-          searchText={searchText}
-          setSearchText={setSearchText}
+          searchText={searchKeyword}
+          setSearchText={setSearchKeyword}
           filterOptions={FILTER_OPTIONS}
           selectedFilters={selectedFilters}
           placeholder="Tìm kiếm thông báo"
@@ -273,27 +295,37 @@ const NotificationScreen = () => {
           )}
         </View>
 
-        {isLoading || filterMutation.isPending ? (
+        {isError ? (
+          <ErrorView />
+        ) : isLoading || filterMutation.isPending ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#4CAF50" />
             <Text style={styles.loadingText}>Đang tải thông báo...</Text>
           </View>
-        ) : filteredData.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {searchText.trim()
-                ? 'Không tìm thấy thông báo phù hợp'
-                : 'Chưa có thông báo nào'}
-            </Text>
-          </View>
         ) : (
           <SectionList
-            sections={filteredData}
-            keyExtractor={keyExtractor}
-            renderSectionHeader={renderSectionHeader}
-            renderItem={renderItem}
-            contentContainerStyle={{paddingBottom: scale(280)}}
-            getItemLayout={getItemLayout}
+            sections={
+              filteredData.length > 0 ? filteredData : [{title: '', data: []}]
+            }
+            keyExtractor={item => item.id.toString()}
+            renderSectionHeader={
+              filteredData.length > 0 ? renderSectionHeader : undefined
+            }
+            renderItem={
+              filteredData.length > 0
+                ? renderItem
+                : () => (
+                    <View style={styles.emptyContainer}>
+                      <Text style={styles.emptyText}>
+                        {searchText.trim()
+                          ? 'Không tìm thấy thông báo phù hợp'
+                          : 'Chưa có thông báo nào'}
+                      </Text>
+                    </View>
+                  )
+            }
+            contentContainerStyle={{paddingBottom: scale(280), flexGrow: 1}}
+            getItemLayout={filteredData.length > 0 ? getItemLayout : undefined}
             removeClippedSubviews
             maxToRenderPerBatch={10}
             initialNumToRender={10}
