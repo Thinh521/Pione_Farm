@@ -17,11 +17,11 @@ export const getTrendAll = async date => {
   try {
     const body = date ? {date} : {};
 
+    console.log('getTrendAll body:', body);
+
     const res = await api.post('/api/statistical/get-trend', body);
 
-    console.log('trend', res.data);
-
-    return res.data;
+    return res.data || [];
   } catch (error) {
     const message =
       error?.response?.data?.message || 'Không thể tải dữ liệu xu hướng';

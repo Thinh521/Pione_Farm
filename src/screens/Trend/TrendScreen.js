@@ -10,8 +10,8 @@ import {useNavigation} from '@react-navigation/native';
 import {Flame} from 'lucide-react-native';
 import {useQuery} from '@tanstack/react-query';
 import {useSearchAndFilter} from '~/hook/useSearch';
+import useProvince from '~/hook/useProvince';
 import {getTrendAll} from '~/api/trendApi';
-import useProvince from '../../hook/useProvince';
 
 const INITIAL_COUNT = 7;
 const LOAD_MORE_COUNT = 7;
@@ -24,10 +24,13 @@ const TrendScreen = () => {
   const [provinceOptions, setProvinceOptions] = useState([]);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
 
+  console.log('date', date);
+
   const {data: trendList = [], isLoading} = useQuery({
     queryKey: ['trend-data', date],
     queryFn: () => getTrendAll(date),
     staleTime: 10 * 60 * 1000,
+    select: res => res.data,
     onSuccess: () => {
       setVisibleCount(INITIAL_COUNT);
     },
