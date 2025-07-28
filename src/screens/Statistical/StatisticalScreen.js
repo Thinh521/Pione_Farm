@@ -1,5 +1,12 @@
 import React, {useMemo, useState} from 'react';
-import {FlatList, StatusBar, Text, TouchableOpacity, View} from 'react-native';
+import {
+  FlatList,
+  RefreshControl,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import styles from './Statistical.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import {scale} from '~/utils/scaling';
@@ -54,7 +61,7 @@ const StatisticalScreen = () => {
     staleTime: 10 * 60 * 1000,
   });
 
-  const {data, isLoading, isError, error} = useQuery({
+  const {data, isLoading, isError, error, isRefetching, refetch} = useQuery({
     queryKey: ['order-stats', selectedProductType?._id],
     queryFn: () => getStatisticalApi(selectedProductType?._id),
     select: res => res.data,
@@ -177,6 +184,16 @@ const StatisticalScreen = () => {
               <TopTrend />
             </View>
           )}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              colors={['#4CAF50']}
+              tintColor="#4CAF50"
+              title="Đang cập nhật dữ liệu..."
+              titleColor="#666"
+            />
+          }
         />
 
         <CustomBottomSheet

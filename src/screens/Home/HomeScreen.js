@@ -1,16 +1,13 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {View, Text, StatusBar, FlatList, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/core';
-
 import WalletList from './components/WalletList';
 import FruitPriceList from './components/FruitPriceList';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import ChatBot from '~/components/ChatBot/ChatBot';
-
 import useWalletData from '~/hook/useWalletData';
 import useProvince from '~/hook/useProvince';
 import {useSearchAndFilter} from '~/hook/useSearch';
-
 import styles from './Home.styles';
 import {Colors} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
