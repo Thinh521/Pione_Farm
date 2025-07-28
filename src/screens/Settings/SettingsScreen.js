@@ -1,115 +1,113 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {
   View,
   ScrollView,
   StatusBar,
   Alert,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import {getCurrentUser} from '~/api/userApi';
-import styles from './Settings.styles';
 import {useNavigation} from '@react-navigation/core';
-import {scale} from '~/utils/scaling';
-import Button from '~/components/ui/Button/ButtonComponent';
+import {useQuery} from '@tanstack/react-query';
+import {getCurrentUser} from '~/api/userApi';
 import {logoutUser} from '~/api/authApi';
+import styles from './Settings.styles';
+import {Colors} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 import SettingsHeader from './components/SettingsHeader';
 import AccountSecuritySettings from './components/AccountSecuritySettings';
 import AccountPreferencesSettings from './components/AccountPreferencesSettings';
 import AccountLanguageSettings from './components/AccountLanguageSettings';
 import AccountSupportSettings from './components/AccountSupportSettings';
-import {Colors} from '~/theme/theme';
+import Button from '~/components/ui/Button/ButtonComponent';
 import Background_2 from '~/components/Background/Background_2';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
 const SettingsScreen = () => {
   const navigation = useNavigation();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch current user data
-  const fetchUser = async () => {
-    try {
-      const res = await getCurrentUser();
-      setUser(res);
-    } catch (err) {
-      console.log('Lỗi lấy user:', err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: userData,
+    isLoading,
+    isError,
+    isRefetching,
+    refetch,
+  } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: getCurrentUser,
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
+  });
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  // Handle logout
   const handleLogout = useCallback(async () => {
     try {
-      const result = await logoutUser();
+      await logoutUser();
       Alert.alert('Thành công', 'Đăng xuất thành công');
       navigation.reset({
         index: 0,
         routes: [{name: 'BottomTab', params: {screen: 'Home'}}],
       });
     } catch (error) {
-      console.log('Lỗi đăng xuất:', error.message || error);
-      Alert.alert('Lỗi', 'Đăng xuất thất bại. Vui lòng thử lại.');
+      console.log('Lỗi đăng xuất:', error?.message || error);
     }
   }, [navigation]);
 
-  // Handle test navigation
-  const handletest = () => {
-    navigation.navigate('NoBottomTab', {
-      screen: 'Test',
-    });
+  const handleSwitchAccount = () => {
+    navigation.navigate('NoBottomTab', {screen: 'Test'});
   };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.green} />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return <ErrorView />;
+  }
 
   return (
     <View style={styles.container}>
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.green} />
-        </View>
-      ) : (
-        <>
-          <StatusBar
-            backgroundColor={Colors.headerBack}
-            barStyle="light-content"
+      <StatusBar backgroundColor={Colors.headerBack} barStyle="light-content" />
+      <Background_2 />
+
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={{paddingBottom: scale(100)}}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            colors={[Colors.green]}
+            tintColor={Colors.green}
           />
+        }>
+        <SettingsHeader user={userData} />
 
-          <Background_2 />
+        <View style={styles.contentContainer}>
+          <AccountSecuritySettings user={userData} />
+          <AccountPreferencesSettings />
+          <AccountLanguageSettings />
+          <AccountSupportSettings />
+        </View>
 
-          <ScrollView
-            style={styles.content}
-            contentContainerStyle={{paddingBottom: scale(100)}}
-            showsVerticalScrollIndicator={false}>
-            <SettingsHeader user={user} />
-
-            <View style={styles.contentContainer}>
-              <AccountSecuritySettings user={user} />
-
-              <AccountPreferencesSettings />
-
-              <AccountLanguageSettings />
-
-              <AccountSupportSettings />
-            </View>
-
-            <View style={styles.buttonContainer}>
-              <Button.Main
-                title="Đăng xuất"
-                onPress={handleLogout}
-                style={[styles.button, styles.logoutButton]}
-                textStyle={styles.buttonText}
-              />
-              <Button.Main
-                onPress={handletest}
-                title="Đổi tài khoản"
-                style={[styles.button]}
-              />
-            </View>
-          </ScrollView>
-        </>
-      )}
+        <View style={styles.buttonContainer}>
+          <Button.Main
+            title="Đăng xuất"
+            onPress={handleLogout}
+            style={[styles.button, styles.logoutButton]}
+            textStyle={styles.buttonText}
+          />
+          <Button.Main
+            title="Đổi tài khoản"
+            onPress={handleSwitchAccount}
+            style={styles.button}
+          />
+        </View>
+      </ScrollView>
     </View>
   );
 };

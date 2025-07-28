@@ -23,7 +23,7 @@ export default StyleSheet.create({
     marginBottom: scale(12),
   },
   card: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.background,
     borderRadius: scale(8),
     paddingVertical: scale(4),
     ...Shadows.light,
@@ -46,7 +46,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: scale(12),
-    marginTop: scale(24),
+    marginTop: scale(20),
     paddingHorizontal: scale(16),
   },
   button: {

@@ -2,10 +2,10 @@ import React, {useState} from 'react';
 import {API_BASE_URL} from '@env';
 import {View, Text, StyleSheet, TouchableOpacity, Switch} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import {CameraIcon} from '../../../assets/icons/Icons';
-import {Colors, FontSizes, FontWeights} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
-import Images from '../../../assets/images/Images';
+import {CameraIcon} from '~/assets/icons/Icons';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
+import Images from '~/assets/images/Images';
 import {launchImageLibrary} from 'react-native-image-picker';
 
 const SettingsHeader = ({user}) => {
@@ -127,12 +127,12 @@ const styles = StyleSheet.create({
     marginLeft: scale(16),
   },
   userName: {
-    fontSize: FontSizes.semiLarge,
+    fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
   },
   userEmail: {
     marginTop: scale(4),
-    fontSize: FontSizes.medium,
+    fontSize: FontSizes.small,
   },
   notificationRow: {
     flexDirection: 'row',
@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   notificationText: {
-    fontSize: FontSizes.medium,
+    fontSize: FontSizes.small,
+    fontWeight: FontWeights.semiBold,
   },
 });
