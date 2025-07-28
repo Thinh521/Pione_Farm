@@ -2,7 +2,7 @@ import {useQuery} from '@tanstack/react-query';
 import {getProductPriceStats, getProvinceProducts} from '~/api/homeApi';
 
 const useWalletData = () => {
-  const query = useQuery({
+  return useQuery({
     queryKey: ['walletData'],
     queryFn: async () => {
       const res = await getProvinceProducts();
@@ -12,6 +12,7 @@ const useWalletData = () => {
       const provinceIds = products.map(p => p.provinceId || p._id);
 
       const priceRes = await getProductPriceStats(productIds, provinceIds);
+
       const stats = priceRes?.data || [];
 
       const merged = products.map(p => {
@@ -25,11 +26,6 @@ const useWalletData = () => {
     },
     staleTime: 1000 * 60 * 5,
   });
-
-  return {
-    ...query,
-    data: query.data,
-  };
 };
 
 export default useWalletData;

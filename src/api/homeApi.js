@@ -13,10 +13,7 @@ export const getProvinceProducts = async (payload = {}) => {
   }
 };
 
-export const getProductPriceStats = async (
-  productIds = [],
-  provinceId = '',
-) => {
+export const getProductPriceStats = async (productIds, provinceId) => {
   try {
     const res = await api.post('/api/statistical/product-price', {
       productIds,
