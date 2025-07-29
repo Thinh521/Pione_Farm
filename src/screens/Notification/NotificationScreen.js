@@ -324,6 +324,7 @@ const NotificationScreen = () => {
                     </View>
                   )
             }
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{paddingBottom: scale(280), flexGrow: 1}}
             getItemLayout={filteredData.length > 0 ? getItemLayout : undefined}
             removeClippedSubviews
