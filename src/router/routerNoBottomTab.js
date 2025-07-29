@@ -22,6 +22,8 @@ import ChatbotScreen from '~/screens/Chatbot/ChatbotScreen';
 import NewDetail from '~/screens/NewDetail/NewDetail';
 import ConnectWallet from '../screens/ConnectWallet/ConnectWallet';
 import CropZoneScreen from '../screens/CropZone/CropZoneScreen';
+import ProposeScreen from '../screens/Propose/ProposeScreen';
+import AllProposeScreen from '../screens/Propose/AllProposeScreen';
 
 const routerNoBottomTab = [
   {
@@ -224,6 +226,24 @@ const routerNoBottomTab = [
   },
   {
     name: 'CropZone',
+    component: ProposeScreen,
+    options: ({navigation}) => ({
+      header: () => (
+        <CustomHeader title="Thông tin vùng trồng" navigation={navigation} />
+      ),
+    }),
+  },
+  {
+    name: 'CropZoneAll',
+    component: AllProposeScreen,
+    options: ({navigation}) => ({
+      header: () => (
+        <CustomHeader title="Thông tin vùng trồng" navigation={navigation} />
+      ),
+    }),
+  },
+  {
+    name: 'CropZoneDetail',
     component: CropZoneScreen,
     options: ({navigation}) => ({
       header: () => (

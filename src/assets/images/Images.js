@@ -29,6 +29,7 @@ const Images = {
   chat_bot: require('./chat_bot.png'),
   post_1: require('./post_1.png'),
   avatar: require('./avatar.png'),
+  mekong: require('./mekong.png'),
 };
 
 export default Images;
