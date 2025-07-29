@@ -21,7 +21,7 @@ const AllProposeScreen = ({route}) => {
       style={styles.container}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{padding: scale(16)}}>
-      <Text style={styles.headerTitle}>Propose</Text>
+      <Text style={styles.headerTitle}>Vùng trồng</Text>
 
       {data.map(item => (
         <ProposeItem

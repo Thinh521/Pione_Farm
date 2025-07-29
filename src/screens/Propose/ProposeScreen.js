@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Images from '../../assets/images/Images';
+import Images from '~/assets/images/Images';
 import ProposeItem from './ProposeItem';
 import {useNavigation} from '@react-navigation/core';
-import {scale} from '../../utils/scaling';
-import {Colors, FontSizes, FontWeights} from '../../theme/theme';
+import {scale} from '~/utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 
 const data = [
   {
@@ -429,7 +429,7 @@ const ProposeScreen = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Propose</Text>
+        <Text style={styles.headerTitle}>Vùng trồng</Text>
         <TouchableOpacity onPress={navigateToAllPropose}>
           <Text>Xem tất cả</Text>
         </TouchableOpacity>
