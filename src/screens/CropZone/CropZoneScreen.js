@@ -5,7 +5,8 @@ import FeaturedFarms from './components/FeaturedFarms';
 import {useQuery} from '@tanstack/react-query';
 import {getFarmALl} from '../../api/farmAllApi';
 import {scale} from '../../utils/scaling';
-import LinearGradient from 'react-native-linear-gradient';
+import CropsSection from './components/CropsSection';
+import Background_2 from '../../components/Background/Background_2';
 
 const cropZone = {
   id: '1',
@@ -34,7 +35,7 @@ const cropZone = {
       area: '690,000 ha',
       yield: '18-20 tấn/ha',
       description:
-        'Cây trồng chủ lực, chiếm 60% diện tích canh tác. Chủ yếu là Robusta.',
+        'Cây trồng chủ lực, chiếm 60% diện tích canh tác. Chủ yếu là cà phê Robusta.',
       requirements: 'Nhiệt độ 18-24°C, lượng mưa 1,500-2,000mm',
       techniques: 'Trồng theo hàng, tỉa cành, bón phân định kỳ',
       diseases: 'Bệnh gỉ sắt, sâu đục cành, sâu đục quả',
@@ -109,154 +110,121 @@ const CropZoneScreen = () => {
   });
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{paddingBottom: scale(20)}}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.zoneName}>{cropZone.name}</Text>
-        <Text style={styles.location}>{cropZone.location}</Text>
-        <View style={styles.statsContainer}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{cropZone.area}</Text>
-            <Text style={styles.statLabel}>Diện tích</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{cropZone.population}</Text>
-            <Text style={styles.statLabel}>Dân số</Text>
-          </View>
-        </View>
-      </View>
+    <>
+      <Background_2 />
 
-      {/* Climate Section */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🌤 Khí hậu</Text>
-        <View style={styles.infoGrid}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Loại khí hậu:</Text>
-            <Text style={styles.infoValue}>{cropZone.climate.type}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Nhiệt độ:</Text>
-            <Text style={styles.infoValue}>{cropZone.climate.temperature}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Lượng mưa:</Text>
-            <Text style={styles.infoValue}>{cropZone.climate.rainfall}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Độ ẩm:</Text>
-            <Text style={styles.infoValue}>{cropZone.climate.humidity}</Text>
-          </View>
-        </View>
-        <Text style={styles.seasonText}>{cropZone.climate.seasons}</Text>
-      </View>
-
-      {/* Soil Section */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🌱 Đặc điểm đất đai</Text>
-        <View style={styles.infoGrid}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Loại đất:</Text>
-            <Text style={styles.infoValue}>{cropZone.soil.type}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Độ pH:</Text>
-            <Text style={styles.infoValue}>{cropZone.soil.ph}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Độ sâu:</Text>
-            <Text style={styles.infoValue}>{cropZone.soil.depth}</Text>
-          </View>
-        </View>
-        <Text style={styles.infoDescription}>
-          {cropZone.soil.characteristics}
-        </Text>
-        <Text style={styles.advantageText}>✓ {cropZone.soil.advantages}</Text>
-      </View>
-
-      {/* Crops Section */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>🌾 Cây trồng chủ lực</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalScroll}>
-          {cropZone.crops.map((crop, index) => (
-            <View key={index} style={styles.cropCardHorizontal}>
-              <View style={styles.cropHeader}>
-                <Text style={styles.cropName}>{crop.name}</Text>
-                <View style={styles.cropStats}>
-                  <Text style={styles.cropArea}>{crop.area}</Text>
-                  <Text style={styles.cropYield}>{crop.yield}</Text>
-                </View>
-              </View>
-
-              <Text style={styles.cropDescription}>{crop.description}</Text>
-
-              <View style={styles.cropDetails}>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>📅 Mùa vụ:</Text>
-                  <Text style={styles.detailValue}>{crop.season}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>🌡 Yêu cầu:</Text>
-                  <Text style={styles.detailValue}>{crop.requirements}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>🔧 Kỹ thuật:</Text>
-                  <Text style={styles.detailValue}>{crop.techniques}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>⚠️ Sâu bệnh:</Text>
-                  <Text style={styles.detailValue}>{crop.diseases}</Text>
-                </View>
-              </View>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{paddingBottom: scale(20)}}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.zoneName}>{cropZone.name}</Text>
+          <Text style={styles.location}>{cropZone.location}</Text>
+          <View style={styles.statsContainer}>
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>{cropZone.area}</Text>
+              <Text style={styles.statLabel}>Diện tích</Text>
             </View>
-          ))}
-        </ScrollView>
-      </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>{cropZone.population}</Text>
+              <Text style={styles.statLabel}>Dân số</Text>
+            </View>
+          </View>
+        </View>
 
-      <FeaturedFarms farms={farms} />
-
-      {/* Advantages & Challenges */}
-      <View>
-        <View style={[styles.card, styles.halfCard]}>
-          <Text style={styles.sectionTitle}>Ưu thế</Text>
-          {cropZone.advantages.map((advantage, index) => (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: scale(6),
-              }}>
-              <View style={styles.highlightDot} />
-              <Text key={index} style={styles.listItem}>
-                {advantage}
+        {/* Climate Section */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>🌤 Khí hậu</Text>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Loại khí hậu:</Text>
+              <Text style={styles.infoValue}>{cropZone.climate.type}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Nhiệt độ:</Text>
+              <Text style={styles.infoValue}>
+                {cropZone.climate.temperature}
               </Text>
             </View>
-          ))}
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Lượng mưa:</Text>
+              <Text style={styles.infoValue}>{cropZone.climate.rainfall}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Độ ẩm:</Text>
+              <Text style={styles.infoValue}>{cropZone.climate.humidity}</Text>
+            </View>
+          </View>
+          <Text style={styles.seasonText}>{cropZone.climate.seasons}</Text>
         </View>
 
-        <View style={[styles.card, styles.halfCard]}>
-          <Text style={styles.sectionTitle}>Thách thức</Text>
-          {cropZone.challenges.map((challenge, index) => (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: scale(6),
-              }}>
-              <View style={styles.highlightDot} />
-              <Text key={index} style={styles.listItem}>
-                {challenge}
-              </Text>
+        {/* Soil Section */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>🌱 Đặc điểm đất đai</Text>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Loại đất:</Text>
+              <Text style={styles.infoValue}>{cropZone.soil.type}</Text>
             </View>
-          ))}
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Độ pH:</Text>
+              <Text style={styles.infoValue}>{cropZone.soil.ph}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Độ sâu:</Text>
+              <Text style={styles.infoValue}>{cropZone.soil.depth}</Text>
+            </View>
+          </View>
+          <Text style={styles.advantageText}>
+            ✓ {cropZone.soil.characteristics}
+          </Text>
+          <Text style={styles.advantageText}>✓ {cropZone.soil.advantages}</Text>
         </View>
-      </View>
-    </ScrollView>
+
+        {/* Crops Section */}
+        <CropsSection cropZone={cropZone} />
+
+        <FeaturedFarms farms={farms} />
+
+        {/* Advantages & Challenges */}
+        <View>
+          <View style={[styles.card, styles.halfCard]}>
+            <Text style={styles.sectionTitle}>Ưu thế</Text>
+            {cropZone.advantages.map((advantage, index) => (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: scale(6),
+                }}>
+                <View style={styles.highlightDot} />
+                <Text key={index} style={styles.listItem}>
+                  {advantage}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={[styles.card, styles.halfCard]}>
+            <Text style={styles.sectionTitle}>Thách thức</Text>
+            {cropZone.challenges.map((challenge, index) => (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: scale(6),
+                }}>
+                <View style={styles.highlightDot} />
+                <Text key={index} style={styles.listItem}>
+                  {challenge}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </>
   );
 };
 

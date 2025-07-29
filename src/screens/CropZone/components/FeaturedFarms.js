@@ -15,8 +15,6 @@ const FeaturedFarms = ({farms}) => {
   const {width: windowWidth} = useWindowDimensions();
   const itemWidth = (windowWidth - 42) / 2;
 
-  console.log('farms', farms);
-
   return (
     <View>
       <Text style={styles.sectionTitle}>Các trang trại tiêu biểu</Text>
@@ -24,9 +22,9 @@ const FeaturedFarms = ({farms}) => {
         data={farms}
         keyExtractor={(item, index) => `${item.id || index}`}
         horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={itemWidth + 12}
         decelerationRate="fast"
+        snapToInterval={itemWidth + 12}
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
         renderItem={({item}) => (
           <TouchableOpacity style={[styles.card, {width: itemWidth}]}>

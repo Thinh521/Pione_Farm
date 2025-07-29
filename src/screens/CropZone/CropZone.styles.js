@@ -5,7 +5,6 @@ import {scale} from '../../utils/scaling';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     padding: scale(20),
@@ -31,7 +30,7 @@ export default StyleSheet.create({
   statBox: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: Colors.white,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: scale(10),
@@ -60,6 +59,7 @@ export default StyleSheet.create({
     fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
     marginBottom: scale(10),
+    marginHorizontal: scale(16),
   },
   infoGrid: {
     marginBottom: 12,
@@ -101,14 +101,6 @@ export default StyleSheet.create({
     color: '#4caf50',
     fontWeight: '500',
     marginTop: 8,
-  },
-  cropCard: {
-    backgroundColor: '#f9fff9',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4caf50',
   },
   cropHeader: {
     flexDirection: 'row',
