@@ -30,6 +30,7 @@ const Images = {
   post_1: require('./post_1.png'),
   avatar: require('./avatar.png'),
   mekong: require('./mekong.png'),
+  map: require('./map.png'),
 };
 
 export default Images;

@@ -1,9 +1,9 @@
 import React from 'react';
-import {View, Text, Image, StyleSheet} from 'react-native';
+import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
 
-const ProposeItem = ({title, description, image, value, percent}) => {
+const ProposeItem = ({title, description, image, value, percent, onPress}) => {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image source={image} style={styles.image} />
       <View style={styles.info}>
         <Text style={styles.title}>{title}</Text>
@@ -15,7 +15,7 @@ const ProposeItem = ({title, description, image, value, percent}) => {
           <Text style={styles.percent}>{percent}</Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

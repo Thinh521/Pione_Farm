@@ -24,6 +24,7 @@ import ConnectWallet from '../screens/ConnectWallet/ConnectWallet';
 import CropZoneScreen from '../screens/CropZone/CropZoneScreen';
 import ProposeScreen from '../screens/Propose/ProposeScreen';
 import AllProposeScreen from '../screens/Propose/AllProposeScreen';
+import PlantRegionMapScreen from '../screens/Propose/PlantRegionMapScreen';
 
 const routerNoBottomTab = [
   {
@@ -248,6 +249,15 @@ const routerNoBottomTab = [
     options: ({navigation}) => ({
       header: () => (
         <CustomHeader title="Thông tin vùng trồng" navigation={navigation} />
+      ),
+    }),
+  },
+  {
+    name: 'PlantRegionMap',
+    component: PlantRegionMapScreen,
+    options: ({navigation}) => ({
+      header: () => (
+        <CustomHeader title="Tọa độ vùng trồng" navigation={navigation} />
       ),
     }),
   },

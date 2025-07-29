@@ -1,18 +1,20 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
-  ScrollView,
+  View,
   Text,
   StyleSheet,
+  Dimensions,
+  Image,
+  FlatList,
   TouchableOpacity,
-  View,
+  StatusBar,
 } from 'react-native';
+import MapView, {Marker} from 'react-native-maps';
 import Images from '../../assets/images/Images';
-import ProposeItem from './ProposeItem';
-import {useNavigation} from '@react-navigation/core';
-import {scale} from '../../utils/scaling';
-import {Colors, FontSizes, FontWeights} from '../../theme/theme';
 
-const data = [
+const {width, height} = Dimensions.get('window');
+
+const regionData = [
   {
     id: '1',
     name: 'Đồng bằng sông Cửu Long',
@@ -413,57 +415,356 @@ const data = [
   },
 ];
 
-const ProposeScreen = () => {
-  const navigation = useNavigation();
+const PlantRegionMapScreen = () => {
+  const [selectedRegion, setSelectedRegion] = useState(regionData[0]);
+  const [showFilter, setShowFilter] = useState(false);
 
-  const navigateToAllPropose = () => {
-    navigation.navigate('NoBottomTab', {
-      screen: 'CropZoneAll',
-      params: {
-        title: 'Thông tin vùng trồng',
-        data: data,
-      },
-    });
-  };
+  const renderRegionCard = ({item}) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => setSelectedRegion(item)}>
+      <Image source={item.image} style={styles.cardImage} />
+
+      {/* Feature tag */}
+      <View style={styles.featureTag}>
+        <Text style={styles.featureText}></Text>
+      </View>
+
+      {/* Bed count */}
+      <View style={styles.bedCount}>
+        <Text style={styles.bedCountText}>🌾 1</Text>
+      </View>
+
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle} numberOfLines={1}>
+          {item.name}
+        </Text>
+
+        {/* Rating */}
+        <View style={styles.ratingContainer}>
+          <Text style={styles.starIcon}>⭐</Text>
+          <Text style={styles.ratingText}>Chưa có đánh giá</Text>
+        </View>
+
+        {/* Price */}
+        <Text style={styles.price} numberOfLines={2}>{item.description}</Text>
+
+        {/* Location */}
+        <View style={styles.locationContainer}>
+          <Text style={styles.locationIcon}>📍</Text>
+          <Text style={styles.locationText} numberOfLines={1}>
+            Vietnam, Ho Chi Minh City
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Propose</Text>
-        <TouchableOpacity onPress={navigateToAllPropose}>
-          <Text>Xem tất cả</Text>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      {/* Map */}
+      <MapView
+        style={styles.map}
+        initialRegion={selectedRegion.address}
+        region={selectedRegion.address}>
+        {regionData.map(region => (
+          <Marker
+            key={region.id}
+            coordinate={{
+              latitude: region.address.latitude,
+              longitude: region.address.longitude,
+            }}
+            onPress={() => setSelectedRegion(region)}>
+            <View style={styles.customMarker}>
+              <View style={styles.markerContent}>
+                <Text style={styles.markerIcon}>🏨</Text>
+              </View>
+              <View style={styles.markerTriangle} />
+            </View>
+          </Marker>
+        ))}
+      </MapView>
+
+      {/* Price bubble on map */}
+      <View style={styles.priceBubble}>
+        <Text style={styles.priceBubbleText}>Nông nghiệp đ900,000</Text>
       </View>
-      {data.slice(0, 3).map(item => (
-        <ProposeItem
-          key={item.id}
-          title={item.name}
-          description={item.description}
-          image={item.image}
-          value={item.value}
-          percent={item.percent}
+
+      {/* Filter button */}
+      <TouchableOpacity style={styles.filterButton}>
+        <Text style={styles.filterButtonText}>🔽 Bộ lọc</Text>
+      </TouchableOpacity>
+
+      {/* Location button */}
+      <TouchableOpacity style={styles.locationButton}>
+        <Text style={styles.locationButtonIcon}>🎯</Text>
+      </TouchableOpacity>
+
+      {/* Cards */}
+      <View style={styles.cardContainer}>
+        <FlatList
+          horizontal
+          data={regionData}
+          keyExtractor={item => item.id}
+          renderItem={renderRegionCard}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.cardList}
+          snapToInterval={width * 0.85}
+          decelerationRate="fast"
         />
-      ))}
-    </ScrollView>
+      </View>
+
+      {/* Add button */}
+      <TouchableOpacity style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
-
-export default ProposeScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginVertical: scale(20),
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  map: {
+    width: width,
+    height: height,
+  },
+  customMarker: {
     alignItems: 'center',
   },
-  headerTitle: {
-    color: Colors.title,
-    fontSize: FontSizes.large,
-    fontWeight: FontWeights.semiBold,
-    marginBottom: scale(10),
+  markerContent: {
+    backgroundColor: '#FF6B35',
+    padding: 8,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  markerIcon: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  markerTriangle: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#FF6B35',
+    marginTop: -2,
+  },
+  priceBubble: {
+    position: 'absolute',
+    top: height * 0.35,
+    left: width * 0.35,
+    backgroundColor: '#FF9500',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  priceBubbleText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  filterButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  locationButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  locationButtonIcon: {
+    fontSize: 18,
+  },
+  cardContainer: {
+    position: 'absolute',
+    bottom: 100,
+    left: 0,
+    right: 0,
+    height: 280,
+  },
+  cardList: {
+    paddingHorizontal: 15,
+  },
+  card: {
+    backgroundColor: '#fff',
+    marginHorizontal: 5,
+    width: width * 0.8,
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  cardImage: {
+    width: '100%',
+    height: 140,
+    resizeMode: 'cover',
+  },
+  featureTag: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: '#FF9500',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  featureText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  bedCount: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#fff',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  bedCountText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  cardContent: {
+    padding: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    color: '#333',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  starIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  ratingText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  price: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF9500',
+    marginBottom: 6,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationIcon: {
+    fontSize: 12,
+    marginRight: 4,
+  },
+  locationText: {
+    fontSize: 12,
+    color: '#666',
+    flex: 1,
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingBottom: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -2},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  navItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  activeNavItem: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  navIcon: {
+    fontSize: 20,
+    marginBottom: 2,
+  },
+  activeNavText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 120,
+    right: 20,
+    backgroundColor: '#666',
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
   },
 });
+
+export default PlantRegionMapScreen;
