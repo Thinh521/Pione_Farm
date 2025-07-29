@@ -31,6 +31,7 @@ const Images = {
   avatar: require('./avatar.png'),
   mekong: require('./mekong.png'),
   map: require('./map.png'),
+  wheat: require('./wheat.png'),
 };
 
 export default Images;

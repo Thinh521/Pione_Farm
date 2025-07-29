@@ -1,16 +1,20 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Dimensions,
-  Image,
   FlatList,
   TouchableOpacity,
-  StatusBar,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
 import MapView, {Marker} from 'react-native-maps';
 import Images from '../../assets/images/Images';
+import FastImage from 'react-native-fast-image';
+import {Colors, FontSizes, FontWeights} from '../../theme/theme';
+import {scale} from '../../utils/scaling';
 
 const {width, height} = Dimensions.get('window');
 
@@ -25,8 +29,8 @@ const regionData = [
       'Là vùng cực nam của Việt Nam, có hệ thống sông ngòi chằng chịt, đất đai màu mỡ và là vựa lúa lớn nhất cả nước.',
     location:
       'Bao gồm 13 tỉnh, thành: An Giang, Đồng Tháp, Tiền Giang, Vĩnh Long, Bến Tre, Trà Vinh, Sóc Trăng, Bạc Liêu, Cà Mau, Kiên Giang, Hậu Giang, Long An, Cần Thơ',
-    area: '40,577 km²',
-    population: '17.2 triệu người',
+    area: '40,577',
+    population: '17.2',
     climate: {
       type: 'Khí hậu nhiệt đới gió mùa',
       temperature: '26-28°C',
@@ -125,8 +129,8 @@ const regionData = [
     percent: '+72.15% this week',
     location:
       'Bao gồm: Hà Nội, Hải Phòng, Hải Dương, Hưng Yên, Hà Nam, Nam Định, Thái Bình, Ninh Bình, Vĩnh Phúc',
-    area: '14,900 km²',
-    population: '14.5 triệu người',
+    area: '14,900',
+    population: '14.5',
     climate: {
       type: 'Khí hậu cận nhiệt đới gió mùa',
       temperature: '16-28°C',
@@ -223,8 +227,8 @@ const regionData = [
     value: '9.1',
     percent: '+66.90% this week',
     location: 'Bao gồm các tỉnh: Kon Tum, Gia Lai, Đắk Lắk, Đắk Nông, Lâm Đồng',
-    area: '54,474 km²',
-    population: '5.8 triệu người',
+    area: '54,474',
+    population: '5.8',
     climate: {
       type: 'Khí hậu nhiệt đới gió mùa',
       temperature: '18-25°C',
@@ -324,8 +328,8 @@ const regionData = [
     percent: '+71.88% this week',
     location:
       'Bao gồm: TP.HCM, Bình Dương, Đồng Nai, Bà Rịa-Vũng Tàu, Tây Ninh, Bình Phước',
-    area: '23,598 km²',
-    population: '16.5 triệu người',
+    area: '23,598',
+    population: '16.5',
     climate: {
       type: 'Khí hậu nhiệt đới gió mùa',
       temperature: '25-29°C',
@@ -417,22 +421,67 @@ const regionData = [
 
 const PlantRegionMapScreen = () => {
   const [selectedRegion, setSelectedRegion] = useState(regionData[0]);
-  const [showFilter, setShowFilter] = useState(false);
+
+  useEffect(() => {
+    requestLocationPermission();
+  }, []);
+
+  const requestLocationPermission = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Yêu cầu quyền truy cập vị trí',
+            message: 'Ứng dụng cần quyền để truy cập vị trí hiện tại của bạn',
+            buttonNeutral: 'Hỏi lại sau',
+            buttonNegative: 'Từ chối',
+            buttonPositive: 'Đồng ý',
+          },
+        );
+
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Quyền vị trí bị từ chối');
+          return;
+        }
+      }
+
+      Geolocation.getCurrentPosition(
+        position => {
+          const {latitude, longitude} = position.coords;
+          console.log('Vị trí hiện tại:', latitude, longitude);
+
+          setSelectedRegion(prev => ({
+            ...prev,
+            address: {
+              latitude,
+              longitude,
+              latitudeDelta: 0.1,
+              longitudeDelta: 0.1,
+            },
+          }));
+        },
+        error => {
+          console.log('Lỗi lấy vị trí:', error);
+        },
+        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      );
+    } catch (err) {
+      console.warn(err);
+    }
+  };
 
   const renderRegionCard = ({item}) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => setSelectedRegion(item)}>
-      <Image source={item.image} style={styles.cardImage} />
-
-      {/* Feature tag */}
+      <FastImage
+        source={item.image}
+        style={styles.cardImage}
+        resizeMode={FastImage.resizeMode.cover}
+      />
       <View style={styles.featureTag}>
-        <Text style={styles.featureText}></Text>
-      </View>
-
-      {/* Bed count */}
-      <View style={styles.bedCount}>
-        <Text style={styles.bedCountText}>🌾 1</Text>
+        <Text style={styles.featureText}>Khu vực</Text>
       </View>
 
       <View style={styles.cardContent}>
@@ -440,20 +489,16 @@ const PlantRegionMapScreen = () => {
           {item.name}
         </Text>
 
-        {/* Rating */}
-        <View style={styles.ratingContainer}>
-          <Text style={styles.starIcon}>⭐</Text>
-          <Text style={styles.ratingText}>Chưa có đánh giá</Text>
-        </View>
+        <Text style={styles.cardDescription} numberOfLines={2}>
+          {item.description}
+        </Text>
 
-        {/* Price */}
-        <Text style={styles.price} numberOfLines={2}>{item.description}</Text>
-
-        {/* Location */}
-        <View style={styles.locationContainer}>
-          <Text style={styles.locationIcon}>📍</Text>
-          <Text style={styles.locationText} numberOfLines={1}>
-            Vietnam, Ho Chi Minh City
+        <View style={styles.infoContainer}>
+          <Text style={[styles.populationText, styles.infoText]}>
+            {item.population} triệu người
+          </Text>
+          <Text style={[styles.areaText, styles.infoText]}>
+            {item.area} km²
           </Text>
         </View>
       </View>
@@ -462,13 +507,12 @@ const PlantRegionMapScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-
-      {/* Map */}
       <MapView
         style={styles.map}
         initialRegion={selectedRegion.address}
-        region={selectedRegion.address}>
+        region={selectedRegion.address}
+        showsMyLocationButton={true}
+        showsUserLocation={true}>
         {regionData.map(region => (
           <Marker
             key={region.id}
@@ -479,7 +523,7 @@ const PlantRegionMapScreen = () => {
             onPress={() => setSelectedRegion(region)}>
             <View style={styles.customMarker}>
               <View style={styles.markerContent}>
-                <Text style={styles.markerIcon}>🏨</Text>
+                <Text style={styles.markerIcon}>🌾</Text>
               </View>
               <View style={styles.markerTriangle} />
             </View>
@@ -487,22 +531,6 @@ const PlantRegionMapScreen = () => {
         ))}
       </MapView>
 
-      {/* Price bubble on map */}
-      <View style={styles.priceBubble}>
-        <Text style={styles.priceBubbleText}>Nông nghiệp đ900,000</Text>
-      </View>
-
-      {/* Filter button */}
-      <TouchableOpacity style={styles.filterButton}>
-        <Text style={styles.filterButtonText}>🔽 Bộ lọc</Text>
-      </TouchableOpacity>
-
-      {/* Location button */}
-      <TouchableOpacity style={styles.locationButton}>
-        <Text style={styles.locationButtonIcon}>🎯</Text>
-      </TouchableOpacity>
-
-      {/* Cards */}
       <View style={styles.cardContainer}>
         <FlatList
           horizontal
@@ -515,11 +543,6 @@ const PlantRegionMapScreen = () => {
           decelerationRate="fast"
         />
       </View>
-
-      {/* Add button */}
-      <TouchableOpacity style={styles.addButton}>
-        <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -536,15 +559,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   markerContent: {
-    backgroundColor: '#FF6B35',
-    padding: 8,
-    borderRadius: 20,
+    backgroundColor: Colors.green,
+    padding: scale(4),
+    borderRadius: scale(20),
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: Colors.white,
   },
   markerIcon: {
-    fontSize: 16,
-    color: '#fff',
+    fontSize: 20,
   },
   markerTriangle: {
     width: 0,
@@ -554,68 +576,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: '#FF6B35',
+    borderTopColor: Colors.green,
     marginTop: -2,
-  },
-  priceBubble: {
-    position: 'absolute',
-    top: height * 0.35,
-    left: width * 0.35,
-    backgroundColor: '#FF9500',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  priceBubbleText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  filterButton: {
-    position: 'absolute',
-    top: 60,
-    left: 20,
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  locationButton: {
-    position: 'absolute',
-    top: 60,
-    right: 20,
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  locationButtonIcon: {
-    fontSize: 18,
   },
   cardContainer: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 60,
     left: 0,
     right: 0,
-    height: 280,
   },
   cardList: {
     paddingHorizontal: 15,
@@ -639,131 +607,47 @@ const styles = StyleSheet.create({
   },
   featureTag: {
     position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: '#FF9500',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    top: scale(10),
+    left: scale(10),
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingHorizontal: scale(10),
+    paddingVertical: scale(4),
+    borderRadius: scale(12),
   },
   featureText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  bedCount: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#fff',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  bedCountText: {
-    fontSize: 10,
-    fontWeight: 'bold',
+    color: Colors.title,
+    fontSize: FontSizes.xsmall,
+    fontWeight: FontWeights.bold,
   },
   cardContent: {
-    padding: 12,
+    padding: scale(12),
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 6,
-    color: '#333',
+    color: Colors.greenText,
+    marginBottom: scale(4),
+    fontSize: FontSizes.medium,
+    fontWeight: FontWeights.semiBold,
   },
-  ratingContainer: {
+  cardDescription: {
+    marginBottom: scale(8),
+    fontSize: FontSizes.small,
+    fontWeight: FontSizes.medium,
+    color: Colors.grayText_4,
+    lineHeight: scale(17),
+  },
+  infoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
   },
-  starIcon: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  ratingText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  price: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF9500',
-    marginBottom: 6,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationIcon: {
-    fontSize: 12,
-    marginRight: 4,
-  },
-  locationText: {
-    fontSize: 12,
-    color: '#666',
+  infoText: {
     flex: 1,
+    color: Colors.grayText_4,
+    fontSize: FontSizes.xsmall,
+    fontWeight: FontWeights.extraBold,
   },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingBottom: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: -2},
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  navItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  activeNavItem: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  navIcon: {
-    fontSize: 20,
-    marginBottom: 2,
-  },
-  activeNavText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-    marginTop: 2,
-  },
-  addButton: {
-    position: 'absolute',
-    bottom: 120,
-    right: 20,
-    backgroundColor: '#666',
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
+  areaText: {
+    textAlign: 'right',
   },
 });
 
