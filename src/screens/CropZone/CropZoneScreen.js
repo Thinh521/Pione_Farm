@@ -5,8 +5,9 @@ import FeaturedFarms from './components/FeaturedFarms';
 import {useQuery} from '@tanstack/react-query';
 import {getFarmALl} from '../../api/farmAllApi';
 import {scale} from '../../utils/scaling';
-import CropsSection from './components/CropsSection';
 import Background_2 from '../../components/Background/Background_2';
+import SoilClimateSection from './components/SoilClimateSection';
+import CropsSection from './components/CropsSection';
 
 const cropZone = {
   id: '1',
@@ -117,7 +118,6 @@ const CropZoneScreen = () => {
         style={styles.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{paddingBottom: scale(20)}}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.zoneName}>{cropZone.name}</Text>
           <Text style={styles.location}>{cropZone.location}</Text>
@@ -133,61 +133,12 @@ const CropZoneScreen = () => {
           </View>
         </View>
 
-        {/* Climate Section */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>🌤 Khí hậu</Text>
-          <View style={styles.infoGrid}>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Loại khí hậu:</Text>
-              <Text style={styles.infoValue}>{cropZone.climate.type}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Nhiệt độ:</Text>
-              <Text style={styles.infoValue}>
-                {cropZone.climate.temperature}
-              </Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Lượng mưa:</Text>
-              <Text style={styles.infoValue}>{cropZone.climate.rainfall}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Độ ẩm:</Text>
-              <Text style={styles.infoValue}>{cropZone.climate.humidity}</Text>
-            </View>
-          </View>
-          <Text style={styles.seasonText}>{cropZone.climate.seasons}</Text>
-        </View>
+        <SoilClimateSection cropZone={cropZone} />
 
-        {/* Soil Section */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>🌱 Đặc điểm đất đai</Text>
-          <View style={styles.infoGrid}>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Loại đất:</Text>
-              <Text style={styles.infoValue}>{cropZone.soil.type}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Độ pH:</Text>
-              <Text style={styles.infoValue}>{cropZone.soil.ph}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Độ sâu:</Text>
-              <Text style={styles.infoValue}>{cropZone.soil.depth}</Text>
-            </View>
-          </View>
-          <Text style={styles.advantageText}>
-            ✓ {cropZone.soil.characteristics}
-          </Text>
-          <Text style={styles.advantageText}>✓ {cropZone.soil.advantages}</Text>
-        </View>
-
-        {/* Crops Section */}
         <CropsSection cropZone={cropZone} />
 
         <FeaturedFarms farms={farms} />
 
-        {/* Advantages & Challenges */}
         <View>
           <View style={[styles.card, styles.halfCard]}>
             <Text style={styles.sectionTitle}>Ưu thế</Text>

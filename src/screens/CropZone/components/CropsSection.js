@@ -91,7 +91,6 @@ const CropsSection = ({cropZone}) => {
               </Text>
             </View>
 
-            {/* Details với icon và styling mới */}
             <View style={styles.cropDetails}>
               <DetailRow
                 icon={<DateIcon />}
@@ -115,7 +114,6 @@ const CropsSection = ({cropZone}) => {
               />
             </View>
 
-            {/* Progress indicator */}
             <View style={styles.progressContainer}>
               <View style={styles.progressBar}>
                 <LinearGradient
@@ -135,10 +133,7 @@ const CropsSection = ({cropZone}) => {
 
   return (
     <View style={styles.container}>
-      {/* Section Header với gradient */}
-      <LinearGradient
-        colors={['#f8f9fa', Colors.white]}
-        style={styles.sectionHeader}>
+      <View style={[styles.sectionHeader]}>
         <View style={styles.sectionTitleContainer}>
           <View style={styles.iconContainer}>
             <Text style={styles.sectionIcon}>🌾</Text>
@@ -150,7 +145,7 @@ const CropsSection = ({cropZone}) => {
             </Text>
           </View>
         </View>
-      </LinearGradient>
+      </View>
 
       <Animated.FlatList
         data={cropZone.crops}
@@ -209,10 +204,13 @@ const styles = StyleSheet.create({
     marginBottom: scale(24),
   },
   sectionHeader: {
-    marginHorizontal: scale(20),
-    marginBottom: scale(16),
+    backgroundColor: Colors.white,
+    marginHorizontal: scale(16),
+    marginBottom: scale(10),
     borderRadius: scale(12),
     padding: scale(16),
+    borderWidth: 1,
+    borderColor: Colors.border_3,
   },
   sectionTitleContainer: {
     flexDirection: 'row',
@@ -226,25 +224,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: scale(12),
-    shadowColor: '#4CAF50',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
   },
   sectionIcon: {
-    fontSize: scale(24),
+    fontSize: FontSizes.xlarge,
   },
   sectionTitle: {
-    fontSize: FontSizes.large,
+    color: Colors.greenText,
+    fontSize: FontSizes.regular,
     fontWeight: FontWeights.bold,
-    color: '#2E7D32',
     marginBottom: scale(2),
   },
   sectionSubtitle: {
+    color: Colors.grayText_2,
     fontSize: FontSizes.small,
-    color: '#666',
-    fontWeight: FontWeights.medium,
   },
   listContainer: {
     paddingRight: scale(20),
