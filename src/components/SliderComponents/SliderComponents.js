@@ -1,3 +1,4 @@
+import {API_BASE_URL} from '@env';
 import React, {useRef, useState, useEffect, useCallback, useMemo} from 'react';
 import {
   View,
@@ -71,7 +72,7 @@ const SliderComponents = ({images}) => {
         renderItem={({item}) => (
           <View style={[styles.imageContainer, {width, height}]}>
             <FastImage
-              source={item}
+              source={{uri: `${API_BASE_URL}/api/upload/${item}`}}
               style={styles.image}
               resizeMode={FastImage.resizeMode.cover}
             />

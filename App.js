@@ -18,6 +18,7 @@ import {
   setupFCMListeners,
   uploadFcmTokenIfNeeded,
 } from './src/utils/firebaseMessageHandler';
+import DidYouKnowTip from './src/components/DidYouKnowTip/DidYouKnowTip';
 
 const queryClient = new QueryClient();
 

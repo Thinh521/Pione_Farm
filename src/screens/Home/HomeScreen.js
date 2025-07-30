@@ -11,7 +11,6 @@ import {useSearchAndFilter} from '~/hook/useSearch';
 import styles from './Home.styles';
 import {Colors} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
-import Button from '../../components/ui/Button/ButtonComponent';
 import ProposeScreen from '../Propose/ProposeScreen';
 
 const HomeScreen = () => {

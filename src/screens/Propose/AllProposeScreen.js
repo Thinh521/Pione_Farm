@@ -10,10 +10,10 @@ const AllProposeScreen = ({route}) => {
   const {data} = route.params;
   const navigation = useNavigation();
 
-  const navigateToProposeDetail = item => {
+  const navigateToProposeDetail = id => {
     navigation.navigate('NoBottomTab', {
       screen: 'CropZoneDetail',
-      params: {item},
+      params: {id},
     });
   };
 
@@ -35,7 +35,7 @@ const AllProposeScreen = ({route}) => {
             images={item.images}
             value={item.value}
             percent={item.percent}
-            onPress={() => navigateToProposeDetail(item)}
+            onPress={() => navigateToProposeDetail(item.id)}
           />
         ))}
       </ScrollView>

@@ -1,12 +1,18 @@
 import React from 'react';
-import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {API_BASE_URL} from '@env';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
+import FastImage from 'react-native-fast-image';
 
-const ProposeItem = ({title, description, images, value, percent, onPress}) => {
+const ProposeItem = ({title, description, images, area, population, onPress}) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      <Image source={images[0]} style={styles.image} />
+      <FastImage
+        source={{uri: `${API_BASE_URL}/api/upload/${images}`}}
+        style={styles.image}
+        resizeMode={FastImage.resizeMode.cover}
+      />
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={1}>
           {title}
@@ -15,8 +21,8 @@ const ProposeItem = ({title, description, images, value, percent, onPress}) => {
           {description}
         </Text>
         <View style={styles.stats}>
-          <Text style={styles.value}>{value}</Text>
-          <Text style={styles.percent}>{percent}</Text>
+          <Text style={styles.value}>{area}</Text>
+          <Text style={styles.percent}>{population}</Text>
         </View>
       </View>
     </TouchableOpacity>

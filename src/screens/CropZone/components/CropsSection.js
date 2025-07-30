@@ -19,10 +19,12 @@ import {
 
 const ITEM_SPACING = scale(16);
 
-const CropsSection = ({cropZone}) => {
+const CropsSection = ({crops}) => {
   const {width: windowWidth} = useWindowDimensions();
   const itemWidth = windowWidth * 0.9;
   const scrollX = new Animated.Value(0);
+
+  console.log('crops', crops);
 
   const renderItem = ({item: crop, index}) => {
     const inputRange = [
@@ -49,7 +51,7 @@ const CropsSection = ({cropZone}) => {
           {
             width: itemWidth,
             marginLeft: index === 0 ? 20 : 0,
-            marginRight: index === cropZone.crops.length - 1 ? 0 : ITEM_SPACING,
+            marginRight: index === crops.length - 1 ? 0 : ITEM_SPACING,
             transform: [{scale}],
             opacity,
           },
@@ -95,22 +97,32 @@ const CropsSection = ({cropZone}) => {
               <DetailRow
                 icon={<DateIcon />}
                 label="Mùa vụ"
-                value={crop.season}
+                value={`(gieo trồng: ${
+                  crop.season.sowing || 'Không có'
+                })  (chính vụ: ${crop.season.harvest || 'Không có'})`}
               />
               <DetailRow
                 icon={<TemperatureIcon />}
                 label="Yêu cầu"
-                value={crop.requirements}
+                value={`Nhiệt độ: ${
+                  crop.requirements.temperature || 'Không có'
+                }, lượng mưa: ${
+                  crop.requirements.rainfall || 'Không có'
+                }, độ ẩm: ${crop.requirements.humidity || 'Không có'})`}
               />
               <DetailRow
                 icon={<SliceIcon />}
                 label="Kỹ thuật"
-                value={crop.techniques}
+                value={`Kỹ thuật: ${crop.techniques[0] || 'Không có'}, ${
+                  crop.techniques[1] || 'Không có'
+                }`}
               />
               <DetailRow
                 icon={<WarningIcon />}
                 label="Sâu bệnh"
-                value={crop.diseases}
+                value={`Sâu bệnh: ${crop.diseases[0] || 'Không có'}, ${
+                  crop.diseases[1] || 'Không có'
+                }`}
               />
             </View>
 
@@ -141,14 +153,14 @@ const CropsSection = ({cropZone}) => {
           <View>
             <Text style={styles.sectionTitle}>Cây trồng chủ lực</Text>
             <Text style={styles.sectionSubtitle}>
-              {cropZone.crops?.length || 0} loại cây trồng
+              {crops?.length || 0} loại cây trồng
             </Text>
           </View>
         </View>
       </View>
 
       <Animated.FlatList
-        data={cropZone.crops}
+        data={crops}
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderItem}
         horizontal
@@ -171,7 +183,7 @@ const CropsSection = ({cropZone}) => {
 
       {/* Dots indicator */}
       <View style={styles.dotsContainer}>
-        {cropZone.crops?.map((_, index) => (
+        {crops?.map((_, index) => (
           <View key={index} style={styles.dot} />
         ))}
       </View>

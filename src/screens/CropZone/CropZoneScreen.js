@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import styles from './CropZone.styles';
 import FeaturedFarms from './components/FeaturedFarms';
@@ -8,19 +8,46 @@ import {scale} from '~/utils/scaling';
 import Background_2 from '~/components/Background/Background_2';
 import SoilClimateSection from './components/SoilClimateSection';
 import CropsSection from './components/CropsSection';
-import {useNavigation} from '@react-navigation/core';
+import {useNavigation, useRoute} from '@react-navigation/core';
 import FastImage from 'react-native-fast-image';
 import Images from '~/assets/images/Images';
 import SliderComponents from '~/components/SliderComponents/SliderComponents';
+import {getAccessToken} from '~/utils/storage/tokenStorage';
+import {getRegionById} from '~/api/regionApi';
 
-const CropZoneScreen = ({route}) => {
-  const {item} = route.params;
+const CropZoneScreen = () => {
   const navigation = useNavigation();
+  const {id} = useRoute().params;
+
+  const [accessToken, setAccessToken] = useState(null);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const token = await getAccessToken();
+      setAccessToken(token);
+    };
+    fetchToken();
+  }, []);
+
+  const {
+    data: item,
+    isLoading: isLoadingRegion,
+    isError: errorRegion,
+  } = useQuery({
+    queryKey: ['regionById', id],
+    queryFn: () => getRegionById({id, accessToken}),
+    select: res => res.data,
+    retry: 1,
+    enabled: !!id && !!accessToken,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  console.log('item', item);
 
   const {
     data: farms,
-    isLoading,
-    isError,
+    isLoading: isLoadingFarms,
+    isError: errorFarm,
   } = useQuery({
     queryKey: ['FarmAll'],
     queryFn: getFarmALl,
@@ -31,23 +58,25 @@ const CropZoneScreen = ({route}) => {
   const navigateToMap = useCallback(() => {
     navigation.navigate('NoBottomTab', {
       screen: 'PlantRegionMap',
-      params: {
-        regionData: item,
-      },
     });
-  }, [navigation, item]);
+  }, [navigation]);
+
+  if (!item || isLoadingRegion) {
+    return <Text style={{padding: 20}}>Đang tải dữ liệu vùng trồng...</Text>;
+  }
 
   return (
     <>
       <Background_2 />
-
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{paddingBottom: scale(20)}}>
         <Text style={styles.zoneName}>{item.name}</Text>
 
-        <SliderComponents images={item.images} />
+        {Array.isArray(item.images) && item.images.length > 0 && (
+          <SliderComponents images={item.images} />
+        )}
 
         <View style={styles.header}>
           <Text style={styles.location}>{item.location}</Text>
@@ -87,45 +116,43 @@ const CropZoneScreen = ({route}) => {
           </View>
         </TouchableOpacity>
 
-        <CropsSection cropZone={item} />
+        <CropsSection crops={item.crops} />
 
         <FeaturedFarms farms={farms} />
 
         <View>
           <View style={[styles.card, styles.halfCard]}>
             <Text style={styles.sectionTitle}>Ưu thế</Text>
-            {item.advantages.map((advantage, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: scale(6),
-                }}>
-                <View style={styles.highlightDot} />
-                <Text key={index} style={styles.listItem}>
-                  {advantage}
-                </Text>
-              </View>
-            ))}
+            {Array.isArray(item.strengths) &&
+              item.strengths.map((strength, index) => (
+                <View
+                  key={index}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: scale(6),
+                  }}>
+                  <View style={styles.highlightDot} />
+                  <Text style={styles.listItem}>{strength}</Text>
+                </View>
+              ))}
           </View>
 
           <View style={[styles.card, styles.halfCard]}>
             <Text style={styles.sectionTitle}>Thách thức</Text>
-            {item.challenges.map((challenge, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: scale(6),
-                }}>
-                <View style={styles.highlightDot} />
-                <Text key={index} style={styles.listItem}>
-                  {challenge}
-                </Text>
-              </View>
-            ))}
+            {Array.isArray(item.challenges) &&
+              item.challenges.map((challenge, index) => (
+                <View
+                  key={index}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: scale(6),
+                  }}>
+                  <View style={styles.highlightDot} />
+                  <Text style={styles.listItem}>{challenge}</Text>
+                </View>
+              ))}
           </View>
         </View>
       </ScrollView>

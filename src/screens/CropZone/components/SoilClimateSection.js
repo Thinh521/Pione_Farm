@@ -1,57 +1,66 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {Colors, FontSizes, FontWeights} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 const SoilClimateSection = ({cropZone}) => {
   return (
     <>
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Đặc điểm đất đai</Text>
-        <View style={styles.infoGrid}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Loại đất:</Text>
-            <Text style={styles.infoValue}>{cropZone.soil.type}</Text>
+      {cropZone.soil?.length > 0 && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Đặc điểm đất đai</Text>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Loại đất:</Text>
+              <Text style={styles.infoValue}>{cropZone.soil[0].type}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Độ pH:</Text>
+              <Text style={styles.infoValue}>{cropZone.soil[0].pH}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Độ sâu:</Text>
+              <Text style={styles.infoValue}>{cropZone.soil[0].depth}</Text>
+            </View>
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Độ pH:</Text>
-            <Text style={styles.infoValue}>{cropZone.soil.ph}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Độ sâu:</Text>
-            <Text style={styles.infoValue}>{cropZone.soil.depth}</Text>
-          </View>
+          <Text style={styles.advantageText} numberOfLines={2}>
+            ✓ {cropZone.soil[0].description}
+          </Text>
+          <Text style={styles.advantageText} numberOfLines={2}>
+            ✓ {cropZone.soil[0].note}
+          </Text>
         </View>
-        <Text style={styles.advantageText} numberOfLines={2}>
-          ✓ {cropZone.soil.characteristics}
-        </Text>
-        <Text style={styles.advantageText} numberOfLines={2}>
-          ✓ {cropZone.soil.advantages}
-        </Text>
-      </View>
+      )}
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Khí hậu</Text>
-        <View style={styles.infoGrid}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Loại khí hậu:</Text>
-            <Text style={styles.infoValue}>{cropZone.climate.type}</Text>
+      {cropZone.climate && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Khí hậu</Text>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Loại khí hậu:</Text>
+              <Text style={styles.infoValue}>{cropZone.climate.type}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Nhiệt độ:</Text>
+              <Text style={styles.infoValue}>
+                {cropZone.climate.temperature}
+              </Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Lượng mưa:</Text>
+              <Text style={styles.infoValue}>{cropZone.climate.rainfall}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Độ ẩm:</Text>
+              <Text style={styles.infoValue}>{cropZone.climate.humidity}</Text>
+            </View>
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Nhiệt độ:</Text>
-            <Text style={styles.infoValue}>{cropZone.climate.temperature}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Lượng mưa:</Text>
-            <Text style={styles.infoValue}>{cropZone.climate.rainfall}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Độ ẩm:</Text>
-            <Text style={styles.infoValue}>{cropZone.climate.humidity}</Text>
-          </View>
+          <Text style={styles.seasonText}>
+            Mùa khô: {cropZone.climate.rainySeason}, Mùa mưa:{' '}
+            {cropZone.climate.drySeason}
+          </Text>
         </View>
-        <Text style={styles.seasonText}>{cropZone.climate.seasons}</Text>
-      </View>
+      )}
     </>
   );
 };

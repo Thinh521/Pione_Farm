@@ -24,8 +24,6 @@ const TrendScreen = () => {
   const [provinceOptions, setProvinceOptions] = useState([]);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
 
-  console.log('date', date);
-
   const {data: trendList = [], isLoading} = useQuery({
     queryKey: ['trend-data', date],
     queryFn: () => getTrendAll(date),

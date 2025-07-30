@@ -17,8 +17,6 @@ export const getTrendAll = async date => {
   try {
     const body = date ? {date} : {};
 
-    console.log('getTrendAll body:', body);
-
     const res = await api.post('/api/statistical/get-trend', body);
 
     return res.data || [];
