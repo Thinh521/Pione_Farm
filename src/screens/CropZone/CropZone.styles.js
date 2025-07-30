@@ -1,26 +1,28 @@
 import {StyleSheet} from 'react-native';
-import {Colors, FontSizes, FontWeights} from '../../theme/theme';
-import {scale} from '../../utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
   },
   header: {
-    padding: scale(20),
-    marginBottom: scale(16),
+    paddingHorizontal: scale(16),
+    marginBottom: scale(20),
   },
   zoneName: {
     fontSize: FontSizes.large,
     fontWeight: FontWeights.semiBold,
-    textAlign: 'center',
-    marginBottom: scale(8),
+    textAlign: 'left',
+    marginTop: scale(20),
+    marginBottom: scale(10),
+    marginLeft: scale(16),
   },
   location: {
     fontSize: FontSizes.small,
     textAlign: 'center',
     marginBottom: 16,
-    paddingHorizontal: scale(40),
+    paddingHorizontal: scale(20),
   },
   statsContainer: {
     gap: scale(10),
@@ -111,7 +113,6 @@ export default StyleSheet.create({
     fontSize: FontSizes.regular,
     fontWeight: FontWeights.semiBold,
     marginBottom: scale(10),
-    marginHorizontal: scale(16),
   },
   highlightDot: {
     width: scale(6),
@@ -124,8 +125,5 @@ export default StyleSheet.create({
     fontSize: FontSizes.small,
     color: Colors.grayText_2,
     lineHeight: scale(20),
-  },
-  horizontalScroll: {
-    paddingRight: 16,
   },
 });

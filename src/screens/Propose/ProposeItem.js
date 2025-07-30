@@ -3,10 +3,10 @@ import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
 
-const ProposeItem = ({title, description, image, value, percent, onPress}) => {
+const ProposeItem = ({title, description, images, value, percent, onPress}) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      <Image source={image} style={styles.image} />
+      <Image source={images[0]} style={styles.image} />
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={1}>
           {title}

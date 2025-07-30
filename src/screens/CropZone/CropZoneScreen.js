@@ -1,16 +1,17 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import styles from './CropZone.styles';
 import FeaturedFarms from './components/FeaturedFarms';
 import {useQuery} from '@tanstack/react-query';
-import {getFarmALl} from '../../api/farmAllApi';
-import {scale} from '../../utils/scaling';
-import Background_2 from '../../components/Background/Background_2';
+import {getFarmALl} from '~/api/farmAllApi';
+import {scale} from '~/utils/scaling';
+import Background_2 from '~/components/Background/Background_2';
 import SoilClimateSection from './components/SoilClimateSection';
 import CropsSection from './components/CropsSection';
 import {useNavigation} from '@react-navigation/core';
 import FastImage from 'react-native-fast-image';
-import Images from '../../assets/images/Images';
+import Images from '~/assets/images/Images';
+import SliderComponents from '~/components/SliderComponents/SliderComponents';
 
 const CropZoneScreen = ({route}) => {
   const {item} = route.params;
@@ -27,14 +28,14 @@ const CropZoneScreen = ({route}) => {
     staleTime: 10 * 60 * 1000,
   });
 
-  const navigateToMap = () => {
+  const navigateToMap = useCallback(() => {
     navigation.navigate('NoBottomTab', {
       screen: 'PlantRegionMap',
       params: {
-        item: item,
+        regionData: item,
       },
     });
-  };
+  }, [navigation, item]);
 
   return (
     <>
@@ -44,8 +45,11 @@ const CropZoneScreen = ({route}) => {
         style={styles.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{paddingBottom: scale(20)}}>
+        <Text style={styles.zoneName}>{item.name}</Text>
+
+        <SliderComponents images={item.images} />
+
         <View style={styles.header}>
-          <Text style={styles.zoneName}>{item.name}</Text>
           <Text style={styles.location}>{item.location}</Text>
           <View style={styles.statsContainer}>
             <View style={styles.statBox}>
@@ -79,9 +83,7 @@ const CropZoneScreen = ({route}) => {
             </View>
           </View>
           <View style={styles.buttonFooter}>
-            <Text style={styles.buttonAction}>
-              Nhấn để xem bản đồ chi tiết
-            </Text>
+            <Text style={styles.buttonAction}>Nhấn để xem bản đồ chi tiết</Text>
           </View>
         </TouchableOpacity>
 
@@ -94,6 +96,7 @@ const CropZoneScreen = ({route}) => {
             <Text style={styles.sectionTitle}>Ưu thế</Text>
             {item.advantages.map((advantage, index) => (
               <View
+                key={index}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -111,6 +114,7 @@ const CropZoneScreen = ({route}) => {
             <Text style={styles.sectionTitle}>Thách thức</Text>
             {item.challenges.map((challenge, index) => (
               <View
+                key={index}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',

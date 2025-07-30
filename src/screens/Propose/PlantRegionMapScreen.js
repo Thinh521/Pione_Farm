@@ -22,15 +22,15 @@ const regionData = [
   {
     id: '1',
     name: 'Đồng bằng sông Cửu Long',
-    image: Images.mekong,
+    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
     value: '10.2',
     percent: '+89.01% this week',
     description:
       'Là vùng cực nam của Việt Nam, có hệ thống sông ngòi chằng chịt, đất đai màu mỡ và là vựa lúa lớn nhất cả nước.',
     location:
       'Bao gồm 13 tỉnh, thành: An Giang, Đồng Tháp, Tiền Giang, Vĩnh Long, Bến Tre, Trà Vinh, Sóc Trăng, Bạc Liêu, Cà Mau, Kiên Giang, Hậu Giang, Long An, Cần Thơ',
-    area: '40,577',
-    population: '17.2',
+    area: '40,577 km²',
+    population: '17.2 triệu người',
     climate: {
       type: 'Khí hậu nhiệt đới gió mùa',
       temperature: '26-28°C',
@@ -124,13 +124,13 @@ const regionData = [
     name: 'Đồng bằng Bắc Bộ',
     description:
       'Là cái nôi văn minh lúa nước, vùng này có hệ thống sông Hồng và điều kiện thuận lợi cho trồng lúa, rau màu.',
-    image: Images.mekong,
+    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
     value: '8.4',
     percent: '+72.15% this week',
     location:
       'Bao gồm: Hà Nội, Hải Phòng, Hải Dương, Hưng Yên, Hà Nam, Nam Định, Thái Bình, Ninh Bình, Vĩnh Phúc',
-    area: '14,900',
-    population: '14.5',
+    area: '14,900 km²',
+    population: '14.5 triệu người',
     climate: {
       type: 'Khí hậu cận nhiệt đới gió mùa',
       temperature: '16-28°C',
@@ -223,12 +223,12 @@ const regionData = [
     name: 'Tây Nguyên',
     description:
       'Vùng cao nguyên đất đỏ bazan nổi tiếng với cây công nghiệp như cà phê, hồ tiêu, cao su.',
-    image: Images.mekong,
+    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
     value: '9.1',
     percent: '+66.90% this week',
     location: 'Bao gồm các tỉnh: Kon Tum, Gia Lai, Đắk Lắk, Đắk Nông, Lâm Đồng',
-    area: '54,474',
-    population: '5.8',
+    area: '54,474 km²',
+    population: '5.8 triệu người',
     climate: {
       type: 'Khí hậu nhiệt đới gió mùa',
       temperature: '18-25°C',
@@ -323,13 +323,13 @@ const regionData = [
     name: 'Đông Nam Bộ',
     description:
       'Vùng kinh tế trọng điểm với khí hậu ôn hòa, thuận lợi cho phát triển cây ăn quả, cao su, điều.',
-    image: Images.mekong,
+    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
     value: '7.6',
     percent: '+71.88% this week',
     location:
       'Bao gồm: TP.HCM, Bình Dương, Đồng Nai, Bà Rịa-Vũng Tàu, Tây Ninh, Bình Phước',
-    area: '23,598',
-    population: '16.5',
+    area: '23,598 km²',
+    population: '16.5 triệu người',
     climate: {
       type: 'Khí hậu nhiệt đới gió mùa',
       temperature: '25-29°C',
@@ -417,6 +417,164 @@ const regionData = [
       'Thiếu lao động nông nghiệp',
     ],
   },
+  {
+    id: '5',
+    name: 'Đồng bằng sông Hồng',
+    description:
+      'Vùng trọng điểm về sản xuất lúa, rau màu và chăn nuôi, có mật độ dân số cao và trình độ thâm canh lớn.',
+    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
+    value: '9.3',
+    percent: '+64.25% this week',
+    location:
+      'Bao gồm: Hà Nội, Hải Dương, Hưng Yên, Nam Định, Thái Bình, Hà Nam, Ninh Bình, Vĩnh Phúc, Bắc Ninh',
+    area: '14,862 km²',
+    population: '21.0 triệu người',
+    climate: {
+      type: 'Khí hậu nhiệt đới ẩm gió mùa',
+      temperature: '23-27°C',
+      rainfall: '1,500-1,800mm/năm',
+      seasons: 'Mùa khô: tháng 11-4, Mùa mưa: tháng 5-10',
+      humidity: '80-85%',
+    },
+    soil: {
+      type: 'Đất phù sa sông Hồng',
+      ph: '6.0-6.8',
+      characteristics: 'Đất màu mỡ, dễ canh tác',
+      depth: '1.0-1.8m',
+      advantages: 'Thích hợp trồng lúa, rau màu, cây ăn quả',
+    },
+    address: {
+      latitude: 20.9,
+      longitude: 105.9,
+      latitudeDelta: 1.2,
+      longitudeDelta: 1.2,
+    },
+    crops: [
+      {
+        name: 'Lúa',
+        season: 'Vụ chiêm, vụ mùa, vụ đông xuân',
+        area: '720,000 ha',
+        yield: '6.0-6.8 tấn/ha',
+        description: 'Cây lương thực chủ đạo, canh tác 3 vụ/năm.',
+        requirements: 'Khí hậu ẩm, nhiều nước tưới',
+        techniques: 'Cấy thâm canh, gieo sạ hàng',
+        diseases: 'Đạo ôn, rầy nâu, sâu cuốn lá',
+      },
+      {
+        name: 'Rau màu',
+        season: 'Trồng quanh năm',
+        area: '210,000 ha',
+        yield: '25-30 tấn/ha',
+        description: 'Đa dạng chủng loại, phục vụ nội địa và xuất khẩu.',
+        requirements: 'Đất tơi xốp, thoát nước tốt',
+        techniques: 'Trồng nhà lưới, canh tác sạch',
+        diseases: 'Sâu xanh, rệp, bệnh héo rũ',
+      },
+      {
+        name: 'Cây ăn quả (chuối, nhãn, vải)',
+        season: 'Thu hoạch từ tháng 5-8',
+        area: '85,000 ha',
+        yield: '15-20 tấn/ha',
+        description: 'Chủ yếu phục vụ thị trường phía Bắc và xuất khẩu.',
+        requirements: 'Ánh sáng tốt, tưới tiêu hợp lý',
+        techniques: 'Tỉa cành, bón phân hữu cơ',
+        diseases: 'Ruồi vàng, sâu đục trái',
+      },
+    ],
+    advantages: [
+      'Thị trường tiêu thụ lớn',
+      'Trình độ canh tác cao',
+      'Hệ thống thủy lợi phát triển',
+      'Gần các trung tâm nghiên cứu nông nghiệp',
+      'Nguồn lao động dồi dào',
+    ],
+    challenges: [
+      'Thiếu đất sản xuất do đô thị hóa',
+      'Ô nhiễm nguồn nước',
+      'Biến đổi khí hậu ảnh hưởng mùa vụ',
+      'Ngập úng vào mùa mưa',
+      'Chi phí đầu vào tăng cao',
+    ],
+  },
+  {
+    id: '6',
+    name: 'Trung du và miền núi Bắc Bộ',
+    description:
+      'Vùng có địa hình đồi núi, khí hậu đa dạng, thuận lợi cho cây công nghiệp dài ngày, cây ăn quả ôn đới và phát triển rừng.',
+    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
+    value: '6.1',
+    percent: '+55.72% this week',
+    location:
+      'Bao gồm: Lào Cai, Yên Bái, Tuyên Quang, Hà Giang, Sơn La, Lai Châu, Điện Biên, Cao Bằng, Bắc Kạn, Lạng Sơn, Thái Nguyên, Phú Thọ',
+    area: '101,000 km²',
+    population: '12.3 triệu người',
+    climate: {
+      type: 'Cận nhiệt đới ẩm, vùng cao có khí hậu ôn đới',
+      temperature: '15-25°C',
+      rainfall: '1,800-2,500mm/năm',
+      seasons: 'Mùa mưa: tháng 5-10, Mùa khô: tháng 11-4',
+      humidity: '75-90%',
+    },
+    soil: {
+      type: 'Đất feralit trên đá vôi, bazan',
+      ph: '4.5-6.0',
+      characteristics: 'Chua, thoát nước tốt',
+      depth: '1.0-2.0m',
+      advantages: 'Phù hợp trồng cây công nghiệp dài ngày',
+    },
+    address: {
+      latitude: 22.0,
+      longitude: 104.0,
+      latitudeDelta: 1.8,
+      longitudeDelta: 1.8,
+    },
+    crops: [
+      {
+        name: 'Chè',
+        season: 'Thu hoạch quanh năm (chính vụ: tháng 4-11)',
+        area: '125,000 ha',
+        yield: '8-10 tấn/ha',
+        description: 'Cây công nghiệp lâu năm chủ lực của vùng.',
+        requirements: 'Đất đồi, độ cao > 500m, ẩm mát',
+        techniques: 'Cắt tỉa thường xuyên, thu hái non',
+        diseases: 'Bọ xít, rầy xanh, nấm lá',
+      },
+      {
+        name: 'Ngô',
+        season: 'Xuân hè và hè thu',
+        area: '320,000 ha',
+        yield: '4.5-5.5 tấn/ha',
+        description: 'Cây lương thực thay thế cho lúa trên đất dốc.',
+        requirements: 'Đất tơi xốp, khí hậu khô mát',
+        techniques: 'Gieo theo hàng, phân chuồng hoai',
+        diseases: 'Sâu đục thân, rệp hại ngô',
+      },
+      {
+        name: 'Mận/Đào',
+        season: 'Ra hoa: tháng 2-3, Thu hoạch: tháng 5-6',
+        area: '30,000 ha',
+        yield: '8-12 tấn/ha',
+        description: 'Cây ăn quả ôn đới đặc sản vùng cao.',
+        requirements: 'Nhiệt độ thấp, có mùa đông lạnh',
+        techniques: 'Tỉa thưa, xử lý ra hoa bằng nhiệt',
+        diseases: 'Nấm đốm lá, sâu đục quả',
+      },
+    ],
+    advantages: [
+      'Tài nguyên đất đai và rừng lớn',
+      'Khí hậu đa dạng theo độ cao',
+      'Phù hợp cây đặc sản và dược liệu',
+      'Có tiềm năng du lịch nông nghiệp',
+      'Chi phí đất thấp hơn đồng bằng',
+    ],
+    challenges: [
+      'Địa hình chia cắt, giao thông khó khăn',
+      'Khó cơ giới hóa sản xuất',
+      'Thiếu nước vào mùa khô',
+      'Tỉ lệ nghèo đói cao',
+      'Biến đổi khí hậu ảnh hưởng nặng',
+    ],
+  },
 ];
 
 const PlantRegionMapScreen = () => {
@@ -476,7 +634,7 @@ const PlantRegionMapScreen = () => {
       style={styles.card}
       onPress={() => setSelectedRegion(item)}>
       <FastImage
-        source={item.image}
+        source={item.images[0]}
         style={styles.cardImage}
         resizeMode={FastImage.resizeMode.cover}
       />

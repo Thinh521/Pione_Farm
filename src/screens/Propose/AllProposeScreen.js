@@ -4,6 +4,7 @@ import ProposeItem from './ProposeItem';
 import {scale} from '../../utils/scaling';
 import {Colors, FontSizes, FontWeights} from '../../theme/theme';
 import {useNavigation} from '@react-navigation/core';
+import Background_2 from '../../components/Background/Background_2';
 
 const AllProposeScreen = ({route}) => {
   const {data} = route.params;
@@ -17,24 +18,28 @@ const AllProposeScreen = ({route}) => {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{padding: scale(16)}}>
-      <Text style={styles.headerTitle}>Vùng trồng</Text>
+    <>
+      <Background_2 />
 
-      {data.map(item => (
-        <ProposeItem
-          key={item.id}
-          title={item.name}
-          description={item.description}
-          image={item.image}
-          value={item.value}
-          percent={item.percent}
-          onPress={() => navigateToProposeDetail(item)}
-        />
-      ))}
-    </ScrollView>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{padding: scale(16)}}>
+        <Text style={styles.headerTitle}>Vùng trồng</Text>
+
+        {data.map(item => (
+          <ProposeItem
+            key={item.id}
+            title={item.name}
+            description={item.description}
+            images={item.images}
+            value={item.value}
+            percent={item.percent}
+            onPress={() => navigateToProposeDetail(item)}
+          />
+        ))}
+      </ScrollView>
+    </>
   );
 };
 
@@ -48,6 +53,7 @@ const styles = StyleSheet.create({
     color: Colors.title,
     fontSize: FontSizes.large,
     fontWeight: FontWeights.semiBold,
-    marginBottom: scale(10),
+    marginBottom: scale(6),
+    marginTop: scale(4),
   },
 });
