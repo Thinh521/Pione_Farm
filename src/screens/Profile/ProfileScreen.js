@@ -8,9 +8,9 @@ import {
 } from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/core';
 import styles from './Profile.styles';
-import {Colors} from '../../theme/theme';
-import Background_2 from '../../components/Background/Background_2';
-import {UserIcon, RightIcon} from '../../assets/icons/Icons';
+import {Colors} from '~/theme/theme';
+import Background_2 from '~/components/Background/Background_2';
+import {UserIcon, RightIcon} from '~/assets/icons/Icons';
 
 const ProfileItem = ({title, subtitle, onPress, subtitleStyle}) => (
   <TouchableOpacity style={[styles.item, styles.noBorder]} onPress={onPress}>

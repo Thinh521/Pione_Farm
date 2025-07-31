@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, View, TouchableOpacity, FlatList} from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/core';
-import {Colors, FontSizes, FontWeights} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
-import Button from '../../../components/ui/Button/ButtonComponent';
-import Background_2 from '../../../components/Background/Background_2';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
+import Button from '~/components/ui/Button/ButtonComponent';
+import Background_2 from '~/components/Background/Background_2';
 
 const LANGUAGE_OPTIONS = [
   {key: 'Vietnamese', label: 'Vietnamese', flag: '🇻🇳'},

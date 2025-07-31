@@ -11,8 +11,8 @@ import {useNavigation} from '@react-navigation/core';
 import {scale} from '~/utils/scaling';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {useQuery} from '@tanstack/react-query';
-import {getRegionAll} from '../../api/regionApi';
-import {getAccessToken} from '../../utils/storage/tokenStorage';
+import {getRegionAll} from '~/api/regionApi';
+import {getAccessToken} from '~/utils/storage/tokenStorage';
 
 const ProposeScreen = () => {
   const navigation = useNavigation();

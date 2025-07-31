@@ -18,14 +18,14 @@ import Button from '~/components/ui/Button/ButtonComponent';
 import {MailIcon, LockIcon} from '~/assets/icons/Icons';
 import {registerUser} from '~/api/authApi';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {Colors} from '../../../theme/theme';
+import {Colors} from '~/theme/theme';
 import FastImage from 'react-native-fast-image';
-import Images from '../../../assets/images/Images';
+import Images from '~/assets/images/Images';
 import {
   showErrorMessage,
   showSuccessMessage,
-} from '../../../components/ToastMessage/ToastMessage';
-import LoadingOverlay from '../../../components/Loading/LoadingOverlay';
+} from '~/components/ToastMessage/ToastMessage';
+import LoadingOverlay from '~/components/Loading/LoadingOverlay';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();

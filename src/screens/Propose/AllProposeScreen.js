@@ -1,10 +1,10 @@
 import React from 'react';
 import {ScrollView, Text, StyleSheet} from 'react-native';
 import ProposeItem from './ProposeItem';
-import {scale} from '../../utils/scaling';
-import {Colors, FontSizes, FontWeights} from '../../theme/theme';
+import {scale} from '~/utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {useNavigation} from '@react-navigation/core';
-import Background_2 from '../../components/Background/Background_2';
+import Background_2 from '~/components/Background/Background_2';
 
 const AllProposeScreen = ({route}) => {
   const {data} = route.params;

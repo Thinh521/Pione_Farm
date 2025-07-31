@@ -18,15 +18,12 @@ const FruitListScreen = () => {
     try {
       const response = await fetch(API_URL);
 
-      // Kiểm tra status code HTTP
       if (!response.ok) {
         throw new Error(`Lỗi HTTP: ${response.status}`);
       }
 
-      // Parse JSON
       const json = await response.json();
 
-      // Kiểm tra dữ liệu hợp lệ
       if (!Array.isArray(json)) {
         throw new Error('Dữ liệu trả về không phải là mảng');
       }

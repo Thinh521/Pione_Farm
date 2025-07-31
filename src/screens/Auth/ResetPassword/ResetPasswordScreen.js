@@ -8,13 +8,13 @@ import {
   Animated,
 } from 'react-native';
 import styles from './ResetPassword.styles';
-import Button from '../../../components/ui/Button/ButtonComponent';
-import Input from '../../../components/ui/Input/InputComponents';
-import {getUserData} from '../../../utils/storage/userStorage';
-import {newPassword} from '../../../api/forgotPasswordApi';
+import Button from '~/components/ui/Button/ButtonComponent';
+import Input from '~/components/ui/Input/InputComponents';
+import {getUserData} from '~/utils/storage/userStorage';
+import {newPassword} from '~/api/forgotPasswordApi';
 import {showMessage} from 'react-native-flash-message';
 import {Controller, useForm} from 'react-hook-form';
-import {VALIDATION_RULES} from '../../../validations/authValidations';
+import {VALIDATION_RULES} from '~/validations/authValidations';
 
 const ResetPasswordScreen = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);

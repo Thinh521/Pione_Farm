@@ -1,7 +1,7 @@
 import {StyleSheet} from 'react-native';
 import {Colors} from '~/theme/theme';
-import {scale} from '../../../utils/scaling';
-import {FontSizes} from '../../../theme/theme';
+import {scale} from '~/utils/scaling';
+import {FontSizes} from '~/theme/theme';
 
 export default StyleSheet.create({
   keyboardView: {

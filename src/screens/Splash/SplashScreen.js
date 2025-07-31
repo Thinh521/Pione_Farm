@@ -1,7 +1,7 @@
 import React from 'react';
 import {StatusBar,View} from 'react-native';
 import styles from './Splash.styles';
-import Images from '../../assets/images/Images';
+import Images from '~/assets/images/Images';
 import FastImage from 'react-native-fast-image';
 
 const SplashScreen = () => {

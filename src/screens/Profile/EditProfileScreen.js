@@ -18,14 +18,14 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import {API_BASE_URL} from '@env';
 import {Controller, useForm} from 'react-hook-form';
 import styles from './EditProfile.styles';
-import Input from '../../components/ui/Input/InputComponents';
-import {updateUser} from '../../api/userApi';
-import {resendOtp, verifyOtp} from '../../api/verifyOtpApi';
-import Background_2 from '../../components/Background/Background_2';
-import {CameraIcon, RightIcon} from '../../assets/icons/Icons';
-import Button from '../../components/ui/Button/ButtonComponent';
-import Images from '../../assets/images/Images';
-import {VALIDATION_RULES} from '../../validations/authValidations';
+import Input from '~/components/ui/Input/InputComponents';
+import {updateUser} from '~/api/userApi';
+import {resendOtp, verifyOtp} from '~/api/verifyOtpApi';
+import Background_2 from '~/components/Background/Background_2';
+import {CameraIcon, RightIcon} from '~/assets/icons/Icons';
+import Button from '~/components/ui/Button/ButtonComponent';
+import Images from '~/assets/images/Images';
+import {VALIDATION_RULES} from '~/validations/authValidations';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 

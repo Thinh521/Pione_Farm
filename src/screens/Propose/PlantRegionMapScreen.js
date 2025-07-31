@@ -11,10 +11,10 @@ import {
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, {Marker} from 'react-native-maps';
-import Images from '../../assets/images/Images';
+import Images from '~/assets/images/Images';
 import FastImage from 'react-native-fast-image';
-import {Colors, FontSizes, FontWeights} from '../../theme/theme';
-import {scale} from '../../utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 const {width, height} = Dimensions.get('window');
 

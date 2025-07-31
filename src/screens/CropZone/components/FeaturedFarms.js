@@ -7,8 +7,8 @@ import {
   useWindowDimensions,
   TouchableOpacity,
 } from 'react-native';
-import {Colors, FontSizes, FontWeights, Shadows} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
+import {Colors, FontSizes, FontWeights, Shadows} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 import FastImage from 'react-native-fast-image';
 
 const FeaturedFarms = ({farms}) => {

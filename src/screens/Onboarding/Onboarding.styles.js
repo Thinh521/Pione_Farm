@@ -1,6 +1,6 @@
 import {Dimensions, StyleSheet} from 'react-native';
-import {Colors, FontSizes, FontWeights} from '../../theme/theme';
-import {scale} from '../../utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width;

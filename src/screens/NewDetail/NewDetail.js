@@ -13,8 +13,8 @@ import {
   BookmarkFillIcon,
   BookmarkIcon,
   ShareIcon,
-} from '../../assets/icons/Icons';
-import {Colors} from '../../theme/theme';
+} from '~/assets/icons/Icons';
+import {Colors} from '~/theme/theme';
 
 const LoadingSkeleton = () => {
   return (

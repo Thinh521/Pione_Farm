@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {scale} from '~/utils/scaling';
-import animalQuizData from '../../data/animalQuizData';
-import Background_2 from '../../components/Background/Background_2';
+import animalQuizData from '~/data/animalQuizData';
+import Background_2 from '~/components/Background/Background_2';
 
 const {width, height} = Dimensions.get('window');
 

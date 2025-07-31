@@ -11,10 +11,10 @@ import {useNavigation} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
-import {storage} from '../../utils/storage/onboardingStorage';
-import {onboardingData} from '../../data/onboardingData';
+import {storage} from '~/utils/storage/onboardingStorage';
+import {onboardingData} from '~/data/onboardingData';
 import styles from './Onboarding.styles';
-import Button from '../../components/ui/Button/ButtonComponent';
+import Button from '~/components/ui/Button/ButtonComponent';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width;

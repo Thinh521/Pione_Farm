@@ -7,20 +7,19 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Animated,
-  Dimensions,
   StatusBar,
 } from 'react-native';
 import {showMessage} from 'react-native-flash-message';
 import {Controller, useForm} from 'react-hook-form';
 import styles from './ForgotPassword.styles';
-import Button from '../../../components/ui/Button/ButtonComponent';
-import Input from '../../../components/ui/Input/InputComponents';
+import Button from '~/components/ui/Button/ButtonComponent';
+import Input from '~/components/ui/Input/InputComponents';
 import {
   forgotPassword,
   stopUpdatePassword,
-} from '../../../api/forgotPasswordApi';
-import {VALIDATION_RULES} from '../../../validations/authValidations';
-import {verifyOtp} from '../../../api/verifyOtpApi';
+} from '~/api/forgotPasswordApi';
+import {VALIDATION_RULES} from '~/validations/authValidations';
+import {verifyOtp} from '~/api/verifyOtpApi';
 
 const ForgotPasswordScreen = ({navigation}) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
