@@ -265,7 +265,7 @@ const routerNoBottomTab = [
     component: QuizScreen,
     options: ({navigation}) => ({
       header: () => (
-        <CustomHeader title="Tọa độ vùng trồng" navigation={navigation} />
+        <CustomHeader title="Trò chơi" navigation={navigation} />
       ),
     }),
   },

@@ -453,17 +453,7 @@ const EditProfileScreen = () => {
       <Background_2 />
       <ScrollView
         contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            colors={['#4CAF50']}
-            tintColor="#4CAF50"
-            title="Đang cập nhật..."
-            titleColor="#666"
-          />
-        }>
+        showsVerticalScrollIndicator={false}>
         <View style={styles.avatarWrapper}>
           <FastImage
             source={
