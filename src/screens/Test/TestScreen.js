@@ -12,8 +12,7 @@ const TestScreen = () => {
     <View style={styles.container}>
       <View style={{flexDirection: 'column', gap: 20}}>
         <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 10}}>
-          <Button title="Đăng nhập" onPress={() => navigateTo('Login')} />
-          <Button title="Thông tin" onPress={() => navigateTo('CropZone')} />
+          <Button title="Trò chơi" onPress={() => navigateTo('QuizGame')} />
         </View>
       </View>
     </View>

@@ -39,6 +39,8 @@ const SettingsScreen = () => {
     retry: 1,
   });
 
+  console.log('userData', userData);
+
   const handleLogout = useCallback(async () => {
     try {
       await logoutUser();

@@ -10,6 +10,7 @@ import {
   Dimensions,
   Platform,
   Vibration,
+  RefreshControl,
 } from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/core';
 import FastImage from 'react-native-fast-image';
@@ -452,7 +453,17 @@ const EditProfileScreen = () => {
       <Background_2 />
       <ScrollView
         contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            colors={['#4CAF50']}
+            tintColor="#4CAF50"
+            title="Đang cập nhật..."
+            titleColor="#666"
+          />
+        }>
         <View style={styles.avatarWrapper}>
           <FastImage
             source={

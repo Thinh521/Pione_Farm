@@ -23,13 +23,10 @@ export const getProductTypesByProvince = async (provinceId, dateRange = {}) => {
   }
 };
 
-export const getFarmMarketPrices = async ({
-  categoryId,
-  provinceId,
-  date,
-  typeId,
-  scope,
-} = {}) => {
+export const getFarmMarketPrices = async (
+  {categoryId, provinceId, date, typeId, scope} = {},
+  accessToken,
+) => {
   try {
     const payload = {};
 
@@ -39,7 +36,11 @@ export const getFarmMarketPrices = async ({
     if (typeId) payload.typeId = typeId;
     if (scope) payload.scope = scope;
 
-    const res = await api.post('/api/statistical/farm-market-price', payload);
+    const res = await api.post('/api/statistical/farm-market-price', payload, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     return res.data;
   } catch (error) {

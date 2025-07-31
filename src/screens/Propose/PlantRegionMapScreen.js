@@ -124,7 +124,7 @@ const regionData = [
     name: 'Đồng bằng Bắc Bộ',
     description:
       'Là cái nôi văn minh lúa nước, vùng này có hệ thống sông Hồng và điều kiện thuận lợi cho trồng lúa, rau màu.',
-    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
+    images: [Images.dbbb, Images.mekong, Images.mekong, Images.mekong],
     value: '8.4',
     percent: '+72.15% this week',
     location:
@@ -223,7 +223,7 @@ const regionData = [
     name: 'Tây Nguyên',
     description:
       'Vùng cao nguyên đất đỏ bazan nổi tiếng với cây công nghiệp như cà phê, hồ tiêu, cao su.',
-    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
+    images: [Images.taynguyen, Images.mekong, Images.mekong, Images.mekong],
     value: '9.1',
     percent: '+66.90% this week',
     location: 'Bao gồm các tỉnh: Kon Tum, Gia Lai, Đắk Lắk, Đắk Nông, Lâm Đồng',
@@ -323,7 +323,7 @@ const regionData = [
     name: 'Đông Nam Bộ',
     description:
       'Vùng kinh tế trọng điểm với khí hậu ôn hòa, thuận lợi cho phát triển cây ăn quả, cao su, điều.',
-    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
+    images: [Images.dongnambo, Images.mekong, Images.mekong, Images.mekong],
     value: '7.6',
     percent: '+71.88% this week',
     location:
@@ -422,7 +422,12 @@ const regionData = [
     name: 'Đồng bằng sông Hồng',
     description:
       'Vùng trọng điểm về sản xuất lúa, rau màu và chăn nuôi, có mật độ dân số cao và trình độ thâm canh lớn.',
-    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
+    images: [
+      Images.dongbangsonghong,
+      Images.mekong,
+      Images.mekong,
+      Images.mekong,
+    ],
     value: '9.3',
     percent: '+64.25% this week',
     location:
@@ -501,7 +506,7 @@ const regionData = [
     name: 'Trung du và miền núi Bắc Bộ',
     description:
       'Vùng có địa hình đồi núi, khí hậu đa dạng, thuận lợi cho cây công nghiệp dài ngày, cây ăn quả ôn đới và phát triển rừng.',
-    images: [Images.mekong, Images.mekong, Images.mekong, Images.mekong],
+    images: [Images.trudu, Images.mekong, Images.mekong, Images.mekong],
     value: '6.1',
     percent: '+55.72% this week',
     location:

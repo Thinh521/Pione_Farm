@@ -20,11 +20,12 @@ import CustomHeader from '~/components/CustomNavigation/CustomHeader';
 import WalletAllScreen from '~/screens/Home/WalletAll/WalletAllScreen';
 import ChatbotScreen from '~/screens/Chatbot/ChatbotScreen';
 import NewDetail from '~/screens/NewDetail/NewDetail';
-import ConnectWallet from '../screens/ConnectWallet/ConnectWallet';
-import CropZoneScreen from '../screens/CropZone/CropZoneScreen';
-import ProposeScreen from '../screens/Propose/ProposeScreen';
-import AllProposeScreen from '../screens/Propose/AllProposeScreen';
-import PlantRegionMapScreen from '../screens/Propose/PlantRegionMapScreen';
+import ConnectWallet from '~/screens/ConnectWallet/ConnectWallet';
+import CropZoneScreen from '~/screens/CropZone/CropZoneScreen';
+import ProposeScreen from '~/screens/Propose/ProposeScreen';
+import AllProposeScreen from '~/screens/Propose/AllProposeScreen';
+import PlantRegionMapScreen from '~/screens/Propose/PlantRegionMapScreen';
+import QuizScreen from '~/screens/Quiz/AnimalQuizGame';
 
 const routerNoBottomTab = [
   {
@@ -170,11 +171,9 @@ const routerNoBottomTab = [
   {
     name: 'Test',
     component: TestScreen,
-    hasLayout: true,
-    options: {
-      title: 'Thị trường',
-      headerShown: true,
-    },
+    options: ({navigation}) => ({
+      header: () => <CustomHeader title="Thị trường" navigation={navigation} />,
+    }),
   },
   {
     name: 'Fruit',
@@ -255,6 +254,15 @@ const routerNoBottomTab = [
   {
     name: 'PlantRegionMap',
     component: PlantRegionMapScreen,
+    options: ({navigation}) => ({
+      header: () => (
+        <CustomHeader title="Tọa độ vùng trồng" navigation={navigation} />
+      ),
+    }),
+  },
+  {
+    name: 'QuizGame',
+    component: QuizScreen,
     options: ({navigation}) => ({
       header: () => (
         <CustomHeader title="Tọa độ vùng trồng" navigation={navigation} />

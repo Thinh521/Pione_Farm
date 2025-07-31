@@ -2,6 +2,7 @@ import {useEffect, useState, useCallback} from 'react';
 import useProvince from '~/hook/useProvince';
 import useFruitCategory from '~/hook/useFruitCategory';
 import {getFarmMarketPrices, getProductTypesByProvince} from '~/api/productApi';
+import {getAccessToken} from '../utils/storage/tokenStorage';
 
 const debounce = (func, wait) => {
   let timeout;
@@ -91,7 +92,9 @@ export const useHarvestFilter = () => {
         payload.scope = 'abroad';
       }
 
-      const res = await getFarmMarketPrices(payload);
+      const accessToken = getAccessToken();
+      console.log('Access Token:', accessToken);
+      const res = await getFarmMarketPrices(payload, accessToken);
       setResultData(res.data || []);
     } catch (err) {
       console.log('Lỗi dữ liệu thu gom:', err.message);

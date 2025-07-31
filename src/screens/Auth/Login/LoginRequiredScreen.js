@@ -41,13 +41,13 @@ const LoginRequiredScreen = () => {
         <Button.Main
           title="Create an account"
           style={styles.createButton}
-          onPress={NavigationToLogin}
+          onPress={NavigationToRegister}
         />
         <Button.Main
           title="Sign In"
           style={styles.signInButton}
           textStyle={styles.signInButtonText}
-          onPress={NavigationToRegister}
+          onPress={NavigationToLogin}
         />
       </View>
     </>

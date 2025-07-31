@@ -90,6 +90,7 @@ export const registerUser = async ({
       fullName,
       password,
       userName,
+      userType: 'statistical',
       ...(email ? {email} : {}),
       ...(phone ? {phone} : {}),
       ...(yearOfBirth ? {yearOfBirth: Number(yearOfBirth)} : {}),

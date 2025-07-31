@@ -30,6 +30,11 @@ const Images = {
   post_1: require('./post_1.png'),
   avatar: require('./avatar.png'),
   mekong: require('./mekong.png'),
+  taynguyen: require('./tay_nguyen.jpg'),
+  dongnambo: require('./dongnambo.jpg'),
+  dongbangsonghong: require('./dong_bang_song_hong.png'),
+  trudu: require('./trung_du_mien_nui_phia_bac.png'),
+  dbbb: require('./BAC_TRUNG_BO_VA_DUYEN_HAI_NAM_TRUNG_BO.png'),
   map: require('./map.png'),
   wheat: require('./wheat.png'),
 };
