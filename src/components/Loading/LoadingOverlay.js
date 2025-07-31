@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, ActivityIndicator, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import Images from '../../assets/images/Images';
+import Images from '~/assets/images/Images';
 
 const LoadingOverlay = () => {
   return (

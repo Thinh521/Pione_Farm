@@ -1,8 +1,8 @@
 import React from 'react';
 import {StyleSheet, TouchableOpacity} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import {scale} from '../../utils/scaling';
-import Images from '../../assets/images/Images';
+import {scale} from '~/utils/scaling';
+import Images from '~/assets/images/Images';
 import {useNavigation} from '@react-navigation/core';
 
 const ChatBot = ({style}) => {

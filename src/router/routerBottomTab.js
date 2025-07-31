@@ -1,17 +1,16 @@
-import HomeScreen from '../screens/Home/HomeScreen';
-import SettingsScreen from '../screens/Settings/SettingsScreen';
-import TrendScreen from '../screens/Trend/TrendScreen';
+import HomeScreen from '~/screens/Home/HomeScreen';
+import SettingsScreen from '~/screens/Settings/SettingsScreen';
+import TrendScreen from '~/screens/Trend/TrendScreen';
 import {
   AnalyticsIcon,
   ChartIconTab,
   GlobalMarketIcon,
   SettingIcon,
   UserProfileIcon,
-} from '../assets/icons/Icons';
-import StatisticalScreen from '../screens/Statistical/StatisticalScreen';
-import NotificationScreen from '../screens/Notification/NotificationScreen';
-import LinearGradient from 'react-native-linear-gradient';
-import {Colors, FontWeights} from '../theme/theme';
+} from '~/assets/icons/Icons';
+import StatisticalScreen from '~/screens/Statistical/StatisticalScreen';
+import NotificationScreen from '~/screens/Notification/NotificationScreen';
+import {Colors, FontWeights} from '~/theme/theme';
 
 const routerBottomTab = [
   {

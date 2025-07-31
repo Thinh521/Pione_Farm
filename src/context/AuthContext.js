@@ -1,5 +1,5 @@
 import React, {createContext, useEffect, useState} from 'react';
-import {getToken, removeToken} from '../utils/storage/tokenStorage';
+import {getToken, removeToken} from '~/utils/storage/tokenStorage';
 
 export const AuthContext = createContext();
 

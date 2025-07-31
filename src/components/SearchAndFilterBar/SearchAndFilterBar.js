@@ -11,10 +11,9 @@ import {useNavigation} from '@react-navigation/core';
 import Input from '~/components/ui/Input/InputComponents';
 import {SearchIcon, DownIcon_2, DownIcon_3} from '~/assets/icons/Icons';
 import {scale} from '~/utils/scaling';
-import {FontSizes, FontWeights, Colors} from '~/theme/theme';
+import {FontSizes, FontWeights, Colors, Shadows} from '~/theme/theme';
 import Button from '../ui/Button/ButtonComponent';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {Shadows} from '../../theme/theme';
 
 const DROPDOWN_OPTIONS = [
   {label: 'Tra cứu tổng hợp', route: 'PriceComparison'},

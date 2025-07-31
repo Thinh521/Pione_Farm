@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {CommonActions} from '@react-navigation/native';
-import {FontSizes, FontWeights, Shadows} from '../../theme/theme';
-import {useTheme} from '../../context/ThemeContext';
-import {getAccessToken} from '../../utils/storage/tokenStorage';
+import {FontSizes, FontWeights, Shadows} from '~/theme/theme';
+import {useTheme} from '~/context/ThemeContext';
+import {getAccessToken} from '~/utils/storage/tokenStorage';
 
 const CustomTabBar = ({state, descriptors, navigation, config = {}}) => {
   const insets = useSafeAreaInsets();

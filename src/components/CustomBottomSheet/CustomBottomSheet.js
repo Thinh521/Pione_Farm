@@ -10,8 +10,8 @@ import {
   ScrollView,
 } from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {Colors, FontSizes, FontWeights} from '../../theme/theme';
-import {scale} from '../../utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 

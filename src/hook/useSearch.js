@@ -1,5 +1,5 @@
 import {useMemo, useState} from 'react';
-import {removeVietnameseTones} from '../utils/normalize';
+import {removeVietnameseTones} from '~/utils/normalize';
 
 export const useSearchAndFilter = ({
   data = [],

@@ -1,7 +1,7 @@
 import {Dimensions, ImageBackground, StyleSheet} from 'react-native';
 import React from 'react';
-import Images from '../../assets/images/Images';
-import {scale} from '../../utils/scaling';
+import Images from '~/assets/images/Images';
+import {scale} from '~/utils/scaling';
 
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
 

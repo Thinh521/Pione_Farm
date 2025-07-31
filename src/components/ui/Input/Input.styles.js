@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
-import {Colors} from '../../../theme/theme';
-import {scale} from '../../../utils/scaling';
+import {Colors} from '~/theme/theme';
+import {scale} from '~/utils/scaling';
 
 export default StyleSheet.create({
   label: {

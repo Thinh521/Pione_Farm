@@ -1,9 +1,9 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Platform} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {LeftIcon} from '../../assets/icons/Icons';
-import {scale} from '../../utils/scaling';
-import {Colors, FontWeights} from '../../theme/theme';
+import {LeftIcon} from '~/assets/icons/Icons';
+import {scale} from '~/utils/scaling';
+import {Colors, FontWeights} from '~/theme/theme';
 
 const CustomHeader = ({title, navigation, rightComponent}) => {
   const insets = useSafeAreaInsets();

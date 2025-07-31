@@ -2,7 +2,7 @@ import React, {useMemo, useCallback} from 'react';
 import {View, Text, StyleSheet, ScrollView, Platform} from 'react-native';
 import {scale} from '~/utils/scaling';
 import CustomTableSkeleton from '../Skeleton/CustomTableSkeleton';
-import {Colors} from '../../theme/theme';
+import {Colors} from '~/theme/theme';
 
 const CustomTable = ({
   columns,
