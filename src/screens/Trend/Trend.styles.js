@@ -26,10 +26,4 @@ export default StyleSheet.create({
     fontSize: FontSizes.xlarge,
     fontWeight: FontWeights.semiBold,
   },
-  loadingOverlay: {
-    flex: 1,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
 });

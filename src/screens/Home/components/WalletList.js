@@ -8,6 +8,7 @@ import ErrorView from '~/components/ErrorView/ErrorView';
 import {scale} from '~/utils/scaling';
 import {formatCurrencyVND} from '~/utils/format';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import SearchEmpty from '../../../components/SearchLoading/SearchEmpty';
 
 const WalletItem = memo(
   ({
@@ -90,12 +91,7 @@ const WalletList = ({data = [], loading, error}) => {
       scrollEnabled={false}
       initialNumToRender={5}
       removeClippedSubviews
-      ListEmptyComponent={() => (
-        <View style={styles.empty}>
-          <Text style={styles.emptyText}>Không tìm thấy trái cây nào</Text>
-          <Text style={styles.emptySub}>Thử từ khóa hoặc bộ lọc khác</Text>
-        </View>
-      )}
+      ListEmptyComponent={() => <SearchEmpty />}
       contentContainerStyle={
         data.length === 0 ? styles.emptyContainer : undefined
       }
@@ -107,20 +103,6 @@ const styles = StyleSheet.create({
   emptyContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-  },
-  empty: {
-    alignItems: 'center',
-    paddingVertical: scale(40),
-  },
-  emptyText: {
-    color: Colors.title,
-    fontSize: FontSizes.medium,
-    fontWeight: FontWeights.medium,
-  },
-  emptySub: {
-    color: Colors.grayText_3,
-    fontSize: FontSizes.small,
-    marginTop: scale(2),
   },
   itemContainer: {
     flexDirection: 'row',

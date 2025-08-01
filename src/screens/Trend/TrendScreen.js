@@ -1,30 +1,38 @@
 import React, {useEffect, useMemo, useState, useCallback} from 'react';
-import {ScrollView, Text, View, TouchableOpacity} from 'react-native';
+import {FlatList, Text, View, TouchableOpacity} from 'react-native';
 import styles from './Trend.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import WalletList from '../Home/components/WalletList';
 import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
 import {scale} from '~/utils/scaling';
-import * as Animatable from 'react-native-animatable';
 import {useNavigation} from '@react-navigation/native';
-import {Flame} from 'lucide-react-native';
 import {useQuery} from '@tanstack/react-query';
 import {useSearchAndFilter} from '~/hook/useSearch';
 import useProvince from '~/hook/useProvince';
 import {getTrendAll} from '~/api/trendApi';
+import ErrorView from '~/components/ErrorView/ErrorView';
+import SearchEmpty from '~/components/SearchLoading/SearchEmpty';
+import useDebouncedSearching from '~/hook/useDebouncedSearching';
+import SearchLoading from '~/components/SearchLoading/SearchLoading';
 
 const INITIAL_COUNT = 7;
 const LOAD_MORE_COUNT = 7;
 
 const TrendScreen = () => {
   const navigation = useNavigation();
-  const [searchText, setSearchText] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
   const [date, setDate] = useState(null);
   const [provinceOptions, setProvinceOptions] = useState([]);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const {data: trendList = [], isLoading} = useQuery({
+  const {provinceList} = useProvince();
+
+  const {
+    data: trendList = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['trend-data', date],
     queryFn: () => getTrendAll(date),
     staleTime: 10 * 60 * 1000,
@@ -34,7 +42,11 @@ const TrendScreen = () => {
     },
   });
 
-  const {provinceList} = useProvince();
+  useEffect(() => {
+    if (provinceList.length) {
+      setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
+    }
+  }, [provinceList]);
 
   const {
     filteredData: filteredTrendList,
@@ -43,37 +55,14 @@ const TrendScreen = () => {
   } = useSearchAndFilter({
     data: trendList,
     searchableFields: ['productName', 'provinceName'],
-    searchKeyword: searchText,
     filters: selectedFilters,
   });
+
+  const isSearching = useDebouncedSearching(searchKeyword);
 
   const visibleItems = useMemo(() => {
     return filteredTrendList.slice(0, visibleCount);
   }, [filteredTrendList, visibleCount]);
-
-  const handleScroll = event => {
-    const {layoutMeasurement, contentOffset, contentSize} = event.nativeEvent;
-    const isCloseToBottom =
-      layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-
-    if (isCloseToBottom && visibleCount < filteredTrendList.length) {
-      setVisibleCount(prev => prev + LOAD_MORE_COUNT);
-    }
-  };
-
-  useEffect(() => {
-    if (provinceList.length) {
-      setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
-    }
-  }, [provinceList]);
-
-  const filterOptions = useMemo(() => {
-    return [
-      {label: 'Ngày', options: []},
-      {label: 'Tỉnh', options: provinceOptions},
-      {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
-    ];
-  }, [provinceOptions]);
 
   const handleFilterSelect = useCallback((type, value) => {
     setSelectedFilters(prev => ({...prev, [type]: value}));
@@ -92,6 +81,16 @@ const TrendScreen = () => {
     }
   }, []);
 
+  const handleLoadMore = () => {
+    if (visibleCount < filteredTrendList.length && !isLoadingMore) {
+      setIsLoadingMore(true);
+      setTimeout(() => {
+        setVisibleCount(prev => prev + LOAD_MORE_COUNT);
+        setIsLoadingMore(false);
+      }, 500);
+    }
+  };
+
   const navigateToWalletAll = useCallback(() => {
     navigation.navigate('NoBottomTab', {
       screen: 'WalletAll',
@@ -102,34 +101,36 @@ const TrendScreen = () => {
     });
   }, [navigation, trendList]);
 
-  const renderTrendSection = useMemo(() => {
-    return (
-      <Animatable.View
-        animation="fadeInUp"
-        duration={400}
-        style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <View style={styles.headerTitle}>
-            <Flame size={20} color="orange" style={{marginRight: 8}} />
-            <Text style={[styles.title, {color: 'orange'}]}>Xu hướng</Text>
-          </View>
-          <TouchableOpacity
-            onPress={navigateToWalletAll}
-            style={styles.seeMoreButton}>
-            <Text style={styles.seeMoreText}>Xem Tất cả</Text>
-          </TouchableOpacity>
-        </View>
+  const filterOptions = useMemo(() => {
+    return [
+      {label: 'Ngày', options: []},
+      {label: 'Tỉnh', options: provinceOptions},
+      {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
+    ];
+  }, [provinceOptions]);
 
-        {isLoading ? (
-          <WalletListSkeleton itemCount={7} />
-        ) : visibleItems.length === 0 ? (
-          <Text style={styles.emptyText}>Không có dữ liệu</Text>
-        ) : (
-          <WalletList data={visibleItems} />
-        )}
-      </Animatable.View>
-    );
-  }, [isLoading, visibleItems, navigateToWalletAll]);
+  const renderHeader = () => (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.headerTitle}>
+          <Text style={styles.title}>Xu hướng</Text>
+        </View>
+        <TouchableOpacity
+          onPress={navigateToWalletAll}
+          style={styles.seeMoreButton}>
+          <Text style={styles.seeMoreText}>Xem Tất cả</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderFooter = () => {
+    if (isLoading) return <WalletListSkeleton itemCount={7} />;
+    if (isError) return <ErrorView />;
+    if (visibleItems.length === 0) return <SearchEmpty />;
+    if (isLoadingMore) return <WalletListSkeleton itemCount={3} />;
+    return null;
+  };
 
   return (
     <View style={styles.container}>
@@ -145,13 +146,21 @@ const TrendScreen = () => {
         />
       </View>
 
-      <ScrollView
-        contentContainerStyle={{paddingBottom: scale(150)}}
-        showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}>
-        <View style={styles.main}>{renderTrendSection}</View>
-      </ScrollView>
+      {isSearching ? (
+        <SearchLoading />
+      ) : (
+        <FlatList
+          data={visibleItems}
+          keyExtractor={(item, index) => item._id || index.toString()}
+          renderItem={({item}) => <WalletList data={[item]} />}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.2}
+          ListHeaderComponent={renderHeader}
+          ListFooterComponent={renderFooter}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom: scale(80)}}
+        />
+      )}
     </View>
   );
 };
