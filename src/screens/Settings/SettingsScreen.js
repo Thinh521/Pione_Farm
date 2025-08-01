@@ -22,6 +22,7 @@ import AccountSupportSettings from './components/AccountSupportSettings';
 import Button from '~/components/ui/Button/ButtonComponent';
 import Background_2 from '~/components/Background/Background_2';
 import ErrorView from '~/components/ErrorView/ErrorView';
+import {LogoutIcon, RepeatIcon} from '~/assets/icons/Icons';
 
 const SettingsScreen = () => {
   const navigation = useNavigation();
@@ -38,8 +39,6 @@ const SettingsScreen = () => {
     staleTime: 10 * 60 * 1000,
     retry: 1,
   });
-
-  console.log('userData', userData);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -99,14 +98,17 @@ const SettingsScreen = () => {
         <View style={styles.buttonContainer}>
           <Button.Main
             title="Đăng xuất"
+            iconLeft={<LogoutIcon />}
             onPress={handleLogout}
             style={[styles.button, styles.logoutButton]}
             textStyle={styles.buttonText}
           />
           <Button.Main
             title="Đổi tài khoản"
+            iconLeft={<RepeatIcon />}
             onPress={handleSwitchAccount}
             style={styles.button}
+            textStyle={styles.buttonText}
           />
         </View>
       </ScrollView>

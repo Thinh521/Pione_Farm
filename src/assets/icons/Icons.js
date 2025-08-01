@@ -827,3 +827,39 @@ export const SliceIcon = ({style = {}}) => {
     </Svg>
   );
 };
+
+export const LogoutIcon = ({style = {}}) => {
+  const width = style?.width || 20;
+  const height = style?.height || 20;
+  const fill = style?.color || '#fff';
+
+  return (
+    <Svg
+      width={width}
+      height={height}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill={fill}
+      style={style}>
+      <Path d="M4 15H6V20H18V4H6V9H4V3C4 2.44772 4.44772 2 5 2H19C19.5523 2 20 2.44772 20 3V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V15ZM10 11V8L15 12L10 16V13H2V11H10Z" />
+    </Svg>
+  );
+};
+
+export const RepeatIcon = ({style = {}}) => {
+  const width = style?.width || 20;
+  const height = style?.height || 20;
+  const fill = style?.color || '#fff';
+
+  return (
+    <Svg
+      width={width}
+      height={height}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill={fill}
+      style={style}>
+      <Path d="M6 4H21C21.5523 4 22 4.44772 22 5V12H20V6H6V9L1 5L6 1V4ZM18 20H3C2.44772 20 2 19.5523 2 19V12H4V18H18V15L23 19L18 23V20Z" />
+    </Svg>
+  );
+};

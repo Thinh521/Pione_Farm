@@ -51,13 +51,11 @@ export default StyleSheet.create({
   },
   button: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   logoutButton: {
     backgroundColor: '#D32F2F',
   },
   buttonText: {
-    color: Colors.white,
+    fontSize: FontSizes.medium,
   },
 });
