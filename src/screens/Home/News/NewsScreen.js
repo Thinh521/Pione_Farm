@@ -12,6 +12,8 @@ import {getNewsList} from '~/api/newsApi';
 import {useSearchAndFilter} from '~/hook/useSearch';
 import useProvince from '~/hook/useProvince';
 import ErrorView from '~/components/ErrorView/ErrorView';
+import useDebouncedSearching from '~/hook/useDebouncedSearching';
+import SearchLoading from '~/components/SearchLoading/SearchLoading';
 
 const Section = memo(({title, subtitle, data = [], loading}) => {
   if (!data.length && !loading) return null;
@@ -82,6 +84,8 @@ const NewsScreen = () => {
     filters: selectedFilters,
   });
 
+  const isSearching = useDebouncedSearching(searchKeyword);
+
   const handleFilterSelect = useCallback((type, value) => {
     setSelectedFilters(prev => ({...prev, [type]: value}));
     if (type === 'Ngày') {
@@ -122,7 +126,11 @@ const NewsScreen = () => {
         />
       </View>
 
-      <View>
+      {isSearching ? (
+        <View style={{marginTop: scale(20)}}>
+          <SearchLoading />
+        </View>
+      ) : (
         <FlatList
           data={[]}
           keyExtractor={() => 'news-screen'}
@@ -164,11 +172,11 @@ const NewsScreen = () => {
           removeClippedSubviews={true}
           contentContainerStyle={{
             marginTop: scale(20),
-            paddingBottom: scale(170),
+            paddingBottom: scale(20),
             paddingHorizontal: scale(16),
           }}
         />
-      </View>
+      )}
 
       <ChatBot style={{bottom: scale(40)}} />
     </View>
