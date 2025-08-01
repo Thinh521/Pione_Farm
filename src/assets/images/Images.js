@@ -37,6 +37,7 @@ const Images = {
   dbbb: require('./BAC_TRUNG_BO_VA_DUYEN_HAI_NAM_TRUNG_BO.png'),
   map: require('./map.png'),
   wheat: require('./wheat.png'),
+  empty_box: require('./empty_box.png'),
 };
 
 export default Images;

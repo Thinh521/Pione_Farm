@@ -2,14 +2,12 @@ import {API_BASE_URL} from '@env';
 import FastImage from 'react-native-fast-image';
 import React, {memo, useMemo, useCallback} from 'react';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
-
 import LineChartWrapper from '~/components/LineChart/LineChartWrapper';
 import WalletListSkeleton from '~/components/Skeleton/WalletListSkeleton';
-
+import ErrorView from '~/components/ErrorView/ErrorView';
 import {scale} from '~/utils/scaling';
 import {formatCurrencyVND} from '~/utils/format';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
-import ErrorView from '~/components/ErrorView/ErrorView';
 
 const WalletItem = memo(
   ({

@@ -21,6 +21,7 @@ export const Colors = {
   grayText_2: '#4a5568',
   grayText_3: '#9ca3af',
   grayText_4: '#666',
+  blueText: '#2A7DFF',
 };
 
 export const FontSizes = {

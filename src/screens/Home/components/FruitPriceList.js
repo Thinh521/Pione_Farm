@@ -1,11 +1,5 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import React, {useMemo, useState} from 'react';
+import {View, Text, FlatList, StyleSheet} from 'react-native';
 import {SearchIcon} from '~/assets/icons/Icons';
 import Input from '~/components/ui/Input/InputComponents';
 import FruitPriceListSkeleton from '~/components/Skeleton/FruitPriceListSkeleton';
@@ -13,25 +7,22 @@ import ErrorView from '~/components/ErrorView/ErrorView';
 import {removeVietnameseTones} from '~/utils/normalize';
 import {scale} from '~/utils/scaling';
 import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import SearchLoading from '~/components/SearchLoading/SearchLoading';
+import useDebouncedSearching from '~/hook/useDebouncedSearching';
 
 const FruitPriceList = ({products = [], loading, error}) => {
   const [searchText, setSearchText] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
 
+  // Search
   const filteredFruits = useMemo(() => {
     const keyword = removeVietnameseTones(searchText);
-
     return products.filter(item =>
       removeVietnameseTones(item.productName || '').includes(keyword),
     );
   }, [searchText, products]);
 
-  useEffect(() => {
-    if (!searchText) return setIsSearching(false);
-    setIsSearching(true);
-    const timer = setTimeout(() => setIsSearching(false), 500);
-    return () => clearTimeout(timer);
-  }, [searchText]);
+  // Debounce search
+  const isSearching = useDebouncedSearching(searchText);
 
   const renderItem = ({item}) => (
     <View style={styles.row}>
@@ -95,9 +86,7 @@ const FruitPriceList = ({products = [], loading, error}) => {
       ) : error ? (
         <ErrorView />
       ) : isSearching ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={Colors.green} />
-        </View>
+        <SearchLoading />
       ) : (
         <FlatList
           data={filteredFruits}

@@ -1,7 +1,7 @@
-import {View} from 'react-native';
 import React from 'react';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import {View} from 'react-native';
 import {scale} from '~/utils/scaling';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
 const NewsSkeleton = ({itemCount = 3}) => {
   return (
@@ -30,24 +30,24 @@ const NewsSkeleton = ({itemCount = 3}) => {
             <View
               style={{
                 width: '100%',
-                height: scale(12),
-                borderRadius: 4,
+                height: scale(15),
+                borderRadius: scale(4),
               }}
             />
             <View
               style={{
-                marginTop: scale(6),
-                width: '100%',
+                marginTop: scale(8),
+                width: '90%',
                 height: scale(15),
-                borderRadius: 4,
+                borderRadius: scale(4),
               }}
             />
             <View
               style={{
-                marginTop: scale(6),
-                width: '100%',
+                marginTop: scale(8),
+                width: '80%',
                 height: scale(15),
-                borderRadius: 4,
+                borderRadius: scale(4),
               }}
             />
           </View>

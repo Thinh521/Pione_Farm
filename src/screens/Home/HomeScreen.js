@@ -5,13 +5,15 @@ import WalletList from './components/WalletList';
 import FruitPriceList from './components/FruitPriceList';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import ChatBot from '~/components/ChatBot/ChatBot';
+import ProposeScreen from '../Propose/ProposeScreen';
 import useWalletData from '~/hook/useWalletData';
 import useProvince from '~/hook/useProvince';
 import {useSearchAndFilter} from '~/hook/useSearch';
 import styles from './Home.styles';
 import {Colors} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
-import ProposeScreen from '../Propose/ProposeScreen';
+import useDebouncedSearching from '~/hook/useDebouncedSearching';
+import SearchLoading from '~/components/SearchLoading/SearchLoading';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -37,6 +39,8 @@ const HomeScreen = () => {
     searchableFields: ['productName', 'provinceName', 'typeName'],
     filters: selectedFilters,
   });
+
+  const isSearching = useDebouncedSearching(searchKeyword);
 
   const filterOptions = useMemo(
     () => [
@@ -93,11 +97,15 @@ const HomeScreen = () => {
                 </TouchableOpacity>
               </View>
 
-              <WalletList
-                loading={isLoading}
-                error={error}
-                data={filteredWalletData.slice(0, 5)}
-              />
+              {isSearching ? (
+                <SearchLoading />
+              ) : (
+                <WalletList
+                  loading={isLoading}
+                  error={error}
+                  data={filteredWalletData.slice(0, 5)}
+                />
+              )}
 
               <ProposeScreen />
 

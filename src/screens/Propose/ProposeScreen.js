@@ -13,6 +13,8 @@ import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {useQuery} from '@tanstack/react-query';
 import {getRegionAll} from '~/api/regionApi';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
+import NewsSkeleton from '~/components/Skeleton/NewsSkeleton';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
 const ProposeScreen = () => {
   const navigation = useNavigation();
@@ -54,17 +56,26 @@ const ProposeScreen = () => {
           <Text>Xem tất cả</Text>
         </TouchableOpacity>
       </View>
-      {regionData.slice(0, 3).map(item => (
-        <ProposeItem
-          key={item.id}
-          title={item.name}
-          description={item.description}
-          images={item.images}
-          area={item.area}
-          population={item.population}
-          onPress={() => navigateToProposeDetail(item.id)}
-        />
-      ))}
+
+      {isLoading ? (
+        <NewsSkeleton itemCount={3} />
+      ) : error ? (
+        <ErrorView />
+      ) : (
+        regionData
+          .slice(0, 3)
+          .map(item => (
+            <ProposeItem
+              key={item.id}
+              title={item.name}
+              description={item.description}
+              images={item.images}
+              area={item.area}
+              population={item.population}
+              onPress={() => navigateToProposeDetail(item.id)}
+            />
+          ))
+      )}
     </ScrollView>
   );
 };
