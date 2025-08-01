@@ -7,17 +7,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import dayjs from 'dayjs';
+import {useQuery} from '@tanstack/react-query';
+import {getStatisticalApi, fetchProductTypeList} from '~/api/statisticalApi';
 import styles from './Statistical.styles';
-import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import {scale} from '~/utils/scaling';
+import {Colors} from '~/theme/theme';
 import {DownIcon} from '~/assets/icons/Icons';
+import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import TrendAnalyticsCard from './components/TrendAnalyticsCard';
 import PriceMovementSummary from './components/PriceMovementSummary';
 import TopTrend from './components/TopTrend';
-import {Colors} from '~/theme/theme';
-import {useQuery} from '@tanstack/react-query';
-import {getStatisticalApi, fetchProductTypeList} from '~/api/statisticalApi';
-import dayjs from 'dayjs';
 import CustomBottomSheet from '~/components/CustomBottomSheet/CustomBottomSheet';
 
 const TIME_OPTIONS = ['Tháng', 'Năm'];
@@ -50,7 +50,6 @@ const StatisticalScreen = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState('Năm');
   const [selectedOrderType, setSelectedOrderType] = useState(null);
   const [selectedProductType, setSelectedProductType] = useState(null);
-
   const [showTimeDropdown, setShowTimeDropdown] = useState(false);
   const [showProductBottomSheet, setShowProductBottomSheet] = useState(false);
 

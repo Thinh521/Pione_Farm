@@ -1,5 +1,11 @@
-import React, {useEffect, useMemo, useState, useCallback} from 'react';
-import {FlatList, Text, View, TouchableOpacity} from 'react-native';
+import React, {useMemo, useState, useCallback} from 'react';
+import {
+  FlatList,
+  Text,
+  View,
+  TouchableOpacity,
+  RefreshControl,
+} from 'react-native';
 import styles from './Trend.styles';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
 import WalletList from '../Home/components/WalletList';
@@ -20,33 +26,31 @@ const LOAD_MORE_COUNT = 7;
 
 const TrendScreen = () => {
   const navigation = useNavigation();
+
   const [selectedFilters, setSelectedFilters] = useState({});
   const [date, setDate] = useState(null);
-  const [provinceOptions, setProvinceOptions] = useState([]);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const {provinceList} = useProvince();
+  const provinceOptions = useMemo(
+    () => ['Tất cả', ...provinceList.map(p => p.name)],
+    [provinceList],
+  );
 
   const {
     data: trendList = [],
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ['trend-data', date],
     queryFn: () => getTrendAll(date),
     staleTime: 10 * 60 * 1000,
     select: res => res.data,
-    onSuccess: () => {
-      setVisibleCount(INITIAL_COUNT);
-    },
+    onSuccess: () => setVisibleCount(INITIAL_COUNT),
   });
-
-  useEffect(() => {
-    if (provinceList.length) {
-      setProvinceOptions(['Tất cả', ...provinceList.map(p => p.name)]);
-    }
-  }, [provinceList]);
 
   const {
     filteredData: filteredTrendList,
@@ -60,24 +64,23 @@ const TrendScreen = () => {
 
   const isSearching = useDebouncedSearching(searchKeyword);
 
-  const visibleItems = useMemo(() => {
-    return filteredTrendList.slice(0, visibleCount);
-  }, [filteredTrendList, visibleCount]);
+  const visibleItems = useMemo(
+    () => filteredTrendList.slice(0, visibleCount),
+    [filteredTrendList, visibleCount],
+  );
 
   const handleFilterSelect = useCallback((type, value) => {
     setSelectedFilters(prev => ({...prev, [type]: value}));
 
     if (type === 'Ngày') {
-      if (value) {
-        const [day, month, year] = value.split('/');
-        const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(
-          2,
-          '0',
-        )}`;
-        setDate(formattedDate);
-      } else {
-        setDate(null);
-      }
+      const formattedDate = value
+        ? value
+            .split('/')
+            .reverse()
+            .map((v, i) => (i === 1 ? v.padStart(2, '0') : v))
+            .join('-')
+        : null;
+      setDate(formattedDate);
     }
   }, []);
 
@@ -91,23 +94,30 @@ const TrendScreen = () => {
     }
   };
 
-  const navigateToWalletAll = useCallback(() => {
-    navigation.navigate('NoBottomTab', {
-      screen: 'WalletAll',
-      params: {
-        title: 'Xu hướng',
-        data: trendList,
-      },
-    });
-  }, [navigation, trendList]);
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
-  const filterOptions = useMemo(() => {
-    return [
+  const filterOptions = useMemo(
+    () => [
       {label: 'Ngày', options: []},
       {label: 'Tỉnh', options: provinceOptions},
       {label: 'Giá', options: ['Tất cả', 'Tăng dần', 'Giảm dần']},
-    ];
-  }, [provinceOptions]);
+    ],
+    [provinceOptions],
+  );
+
+  const navigateToWalletAll = useCallback(() => {
+    navigation.navigate('NoBottomTab', {
+      screen: 'WalletAll',
+      params: {title: 'Xu hướng', data: trendList},
+    });
+  }, [navigation, trendList]);
 
   const renderHeader = () => (
     <View style={styles.section}>
@@ -159,6 +169,16 @@ const TrendScreen = () => {
           ListFooterComponent={renderFooter}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: scale(80)}}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={['#4CAF50']}
+              tintColor="#4CAF50"
+              title="Đang cập nhật dữ liệu..."
+              titleColor="#666"
+            />
+          }
         />
       )}
     </View>
