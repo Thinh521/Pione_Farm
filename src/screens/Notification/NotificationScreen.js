@@ -11,11 +11,15 @@ import {
 import styles from './Notification.styles';
 import {scale} from '~/utils/scaling';
 import SearchAndFilterBar from '~/components/SearchAndFilterBar/SearchAndFilterBar';
+import ErrorView from '~/components/ErrorView/ErrorView';
+import SearchLoading from '~/components/SearchLoading/SearchLoading';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
 import {getNotification, getFilterNotification} from '~/api/notificationApi';
 import {useQuery, useMutation} from '@tanstack/react-query';
 import {useSearchAndFilter} from '~/hook/useSearch';
-import ErrorView from '~/components/ErrorView/ErrorView';
+import FastImage from 'react-native-fast-image';
+import Images from '~/assets/images/Images';
+import useDebouncedSearching from '~/hook/useDebouncedSearching';
 
 const FILTER_OPTIONS = [
   {
@@ -24,15 +28,7 @@ const FILTER_OPTIONS = [
   },
   {
     label: 'Giờ',
-    options: [
-      'Tất cả',
-      '8:00 AM',
-      '9:00 AM',
-      '10:00 AM',
-      '1:00 PM',
-      '2:00 PM',
-      '3:07 PM',
-    ],
+    options: ['Tất cả'],
   },
 ];
 
@@ -222,6 +218,8 @@ const NotificationScreen = () => {
     searchableFields: ['label', 'desc'],
   });
 
+  const isSearching = useDebouncedSearching(searchKeyword);
+
   const filteredData = useMemo(() => {
     const grouped = {};
     for (const item of searchedData) {
@@ -269,81 +267,86 @@ const NotificationScreen = () => {
         />
       </View>
 
-      <View>
-        <View style={styles.headerTitle}>
-          <Text style={styles.title}>
-            Thông báo
-            {filteredData.length > 0 && (
-              <Text>
-                {' '}
-                (
-                {filteredData.reduce(
-                  (sum, section) => sum + section.data.length,
-                  0,
-                )}
-                )
-              </Text>
-            )}
-          </Text>
-          {hasFilters && (
-            <TouchableOpacity
-              style={styles.resetButton}
-              onPress={handleResetFilters}
-              activeOpacity={0.7}>
-              <Text style={styles.resetText}>Đặt lại</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {isError ? (
+      {isError ? (
+        <View style={styles.errorWrapper}>
           <ErrorView />
-        ) : isLoading || filterMutation.isPending ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4CAF50" />
-            <Text style={styles.loadingText}>Đang tải thông báo...</Text>
-          </View>
-        ) : (
-          <SectionList
-            sections={
-              filteredData.length > 0 ? filteredData : [{title: '', data: []}]
-            }
-            keyExtractor={item => item.id.toString()}
-            renderSectionHeader={
-              filteredData.length > 0 ? renderSectionHeader : undefined
-            }
-            renderItem={
-              filteredData.length > 0
-                ? renderItem
-                : () => (
-                    <View style={styles.emptyContainer}>
-                      <Text style={styles.emptyText}>
-                        {searchText.trim()
-                          ? 'Không tìm thấy thông báo phù hợp'
-                          : 'Chưa có thông báo nào'}
-                      </Text>
-                    </View>
+        </View>
+      ) : (
+        <>
+          <View style={styles.headerTitle}>
+            <Text style={styles.title}>
+              Thông báo
+              {filteredData.length > 0 && (
+                <Text>
+                  {' '}
+                  (
+                  {filteredData.reduce(
+                    (sum, section) => sum + section.data.length,
+                    0,
+                  )}
                   )
-            }
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{paddingBottom: scale(280), flexGrow: 1}}
-            getItemLayout={filteredData.length > 0 ? getItemLayout : undefined}
-            removeClippedSubviews
-            maxToRenderPerBatch={10}
-            initialNumToRender={10}
-            windowSize={10}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefetching}
-                onRefresh={refetch}
-                colors={['#4CAF50']}
-                tintColor="#4CAF50"
-                title="Đang cập nhật..."
-                titleColor="#666"
-              />
-            }
-          />
-        )}
-      </View>
+                </Text>
+              )}
+            </Text>
+            {hasFilters && (
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={handleResetFilters}
+                activeOpacity={0.7}>
+                <Text style={styles.resetText}>Đặt lại</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {isLoading || filterMutation.isPending ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#4CAF50" />
+              <Text style={styles.loadingText}>Đang tải thông báo...</Text>
+            </View>
+          ) : isSearching ? (
+            <SearchLoading />
+          ) : filteredData.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              {!searchKeyword.trim() && (
+                <FastImage
+                  source={Images.no_distraction}
+                  style={styles.emptyImage}
+                  resizeMode={FastImage.resizeMode.contain}
+                />
+              )}
+              <Text style={styles.emptyText}>
+                {searchKeyword.trim()
+                  ? 'Không tìm thấy thông báo phù hợp'
+                  : 'Chưa có thông báo nào'}
+              </Text>
+            </View>
+          ) : (
+            <SectionList
+              sections={filteredData}
+              keyExtractor={item => item.id.toString()}
+              renderSectionHeader={renderSectionHeader}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{paddingBottom: scale(280), flexGrow: 1}}
+              getItemLayout={getItemLayout}
+              removeClippedSubviews
+              maxToRenderPerBatch={10}
+              initialNumToRender={10}
+              windowSize={10}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefetching}
+                  onRefresh={refetch}
+                  colors={['#4CAF50']}
+                  tintColor="#4CAF50"
+                  title="Đang cập nhật..."
+                  titleColor="#666"
+                />
+              }
+            />
+          )}
+        </>
+      )}
     </View>
   );
 };

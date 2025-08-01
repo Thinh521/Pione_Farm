@@ -102,4 +102,29 @@ export default StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
   },
+  errorWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 160,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 160,
+  },
+  emptyImage: {
+    width: scale(100),
+    height: scale(100),
+    marginLeft: scale(20),
+    marginBottom: scale(16),
+  },
+  emptyText: {
+    lineHeight: 22,
+    textAlign: 'center',
+    color: Colors.grayText_2,
+    fontSize: FontSizes.medium,
+    fontWeight: FontWeights.semiBold,
+  },
 });

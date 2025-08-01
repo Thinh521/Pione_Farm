@@ -38,6 +38,7 @@ const Images = {
   map: require('./map.png'),
   wheat: require('./wheat.png'),
   empty_box: require('./empty_box.png'),
+  no_distraction: require('./no-distraction.png'),
 };
 
 export default Images;
