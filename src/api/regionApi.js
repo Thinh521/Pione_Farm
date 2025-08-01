@@ -1,4 +1,4 @@
-import api from './baseApi';
+import api from './api';
 
 export const getRegionAll = async accessToken => {
   try {
