@@ -24,8 +24,6 @@ const CropsSection = ({crops}) => {
   const itemWidth = windowWidth * 0.9;
   const scrollX = new Animated.Value(0);
 
-  console.log('crops', crops);
-
   const renderItem = ({item: crop, index}) => {
     const inputRange = [
       (index - 1) * (itemWidth + ITEM_SPACING),
@@ -181,7 +179,6 @@ const CropsSection = ({crops}) => {
         })}
       />
 
-      {/* Dots indicator */}
       <View style={styles.dotsContainer}>
         {crops?.map((_, index) => (
           <View key={index} style={styles.dot} />

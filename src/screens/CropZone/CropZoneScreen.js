@@ -188,13 +188,13 @@ const CropZoneScreen = () => {
           </View>
         </TouchableOpacity>
 
-        <CropsSection
-          crops={item.crops}
+        <CropsSection crops={item.crops} />
+
+        <FeaturedFarms
+          farms={farms}
           loading={isLoadingFarms}
           error={errorFarm}
         />
-
-        <FeaturedFarms farms={farms} />
 
         <View>
           <View style={[styles.card, styles.halfCard]}>
