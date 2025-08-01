@@ -52,6 +52,7 @@ const StatisticalScreen = () => {
   const [selectedProductType, setSelectedProductType] = useState(null);
   const [showTimeDropdown, setShowTimeDropdown] = useState(false);
   const [showProductBottomSheet, setShowProductBottomSheet] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const {data: productTypes = []} = useQuery({
     queryKey: ['product-types'],
@@ -60,7 +61,7 @@ const StatisticalScreen = () => {
     staleTime: 10 * 60 * 1000,
   });
 
-  const {data, isLoading, isError, error, isRefetching, refetch} = useQuery({
+  const {data, isLoading, isError, error, refetch} = useQuery({
     queryKey: ['order-stats', selectedProductType?._id],
     queryFn: () => getStatisticalApi(selectedProductType?._id),
     select: res => res.data,
@@ -84,6 +85,15 @@ const StatisticalScreen = () => {
 
   const handleProductSelect = product => {
     setSelectedProductType(product);
+  };
+
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -185,8 +195,8 @@ const StatisticalScreen = () => {
           )}
           refreshControl={
             <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={refetch}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
               colors={['#4CAF50']}
               tintColor="#4CAF50"
               title="Đang cập nhật dữ liệu..."

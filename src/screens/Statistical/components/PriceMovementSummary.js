@@ -1,24 +1,25 @@
 import React from 'react';
 import {API_BASE_URL} from '@env';
-import {View, Text, StyleSheet, FlatList} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import {View, Text, StyleSheet, FlatList} from 'react-native';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {
   TrendDownIcon,
   TrendUpIcon,
   NeutralTrendIcon,
 } from '~/assets/icons/Icons';
-import {Colors, FontSizes, FontWeights} from '~/theme/theme';
 import {scale} from '~/utils/scaling';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
 const PriceSkeletonItem = () => (
-  <SkeletonPlaceholder borderRadius={4}>
+  <SkeletonPlaceholder speed={1000}>
     <View style={[styles.itemContainer]}>
       <View style={{flex: 1}}>
-        <View style={{width: 120, height: 16, borderRadius: 4}} />
+        <View style={{width: 120, height: 14, borderRadius: 4}} />
         <View style={{width: 80, height: 14, marginTop: 12, borderRadius: 4}} />
         <View
-          style={{width: 100, height: 12, marginTop: 12, borderRadius: 4}}
+          style={{width: 100, height: 14, marginTop: 12, borderRadius: 4}}
         />
       </View>
       <View
@@ -126,11 +127,7 @@ const PriceMovementSummary = ({data, isLoading, isError}) => {
   }
 
   if (isError || !Array.isArray(data)) {
-    return (
-      <View style={styles.errorWrapper}>
-        <Text style={{color: 'red'}}>Không thể tải dữ liệu</Text>
-      </View>
-    );
+    return <ErrorView />;
   }
 
   const increasedData = data.filter(item => item.changePrice > 0);

@@ -1,10 +1,11 @@
 import React from 'react';
-import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
-import {LineChart, XAxis, YAxis} from 'react-native-svg-charts';
 import * as shape from 'd3-shape';
 import {Rect, Circle, Text as SvgText} from 'react-native-svg';
-import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import {LineChart, XAxis, YAxis} from 'react-native-svg-charts';
+import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
 import {scale} from '~/utils/scaling';
+import {Colors, FontSizes, FontWeights} from '~/theme/theme';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
 const TrendAnalyticsCard = ({
   selectedOrderType,
@@ -16,9 +17,6 @@ const TrendAnalyticsCard = ({
   const onlineData = data?.onlineOrders || [];
   const offlineData = data?.offlineOrders || [];
   const rawLabels = data?.labels || [];
-
-  console.log('onlineData', onlineData);
-  console.log('offlineData', offlineData);
 
   const monthNames = [
     'Jan',
@@ -111,8 +109,8 @@ const TrendAnalyticsCard = ({
 
   if (isError) {
     return (
-      <View style={styles.cardSkelenton}>
-        <Text style={{color: 'red'}}>Lỗi tải dữ liệu</Text>
+      <View style={{height: scale(348), marginBottom: scale(30)}}>
+        <ErrorView />
       </View>
     );
   }
