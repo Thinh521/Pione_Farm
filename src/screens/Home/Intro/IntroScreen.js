@@ -12,6 +12,8 @@ import {useSearchAndFilter} from '~/hook/useSearch';
 import NewsList from '~/components/NewsCard/NewsList';
 import useProvince from '~/hook/useProvince';
 import ErrorView from '~/components/ErrorView/ErrorView';
+import useDebouncedSearching from '~/hook/useDebouncedSearching';
+import SearchLoading from '~/components/SearchLoading/SearchLoading';
 
 const INITIAL_COUNT = 5;
 const LOAD_MORE_COUNT = 5;
@@ -76,6 +78,8 @@ const IntroScreen = () => {
     filters: selectedFilters,
   });
 
+  const isSearching = useDebouncedSearching(searchKeyword);
+
   const visibleItems = useMemo(() => {
     return filteredData.slice(0, visibleCount);
   }, [filteredData, visibleCount]);
@@ -128,31 +132,37 @@ const IntroScreen = () => {
         />
       </View>
 
-      <FlatList
-        data={visibleItems}
-        keyExtractor={item => item._id || item.title}
-        renderItem={({item}) => <NewsList data={[item]} />}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0}
-        ListHeaderComponent={
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Tin tức & Thông tin</Text>
-            <Text style={styles.headerSubtitle}>
-              Cập nhật thông tin mới nhất về nông nghiệp
-            </Text>
-          </View>
-        }
-        ListFooterComponent={renderFooter()}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: scale(20),
-          paddingInline: scale(16),
-        }}
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        windowSize={10}
-        removeClippedSubviews
-      />
+      {isSearching ? (
+        <View style={{marginTop: scale(20)}}>
+          <SearchLoading />
+        </View>
+      ) : (
+        <FlatList
+          data={visibleItems}
+          keyExtractor={item => item._id || item.title}
+          renderItem={({item}) => <NewsList data={[item]} />}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0}
+          ListHeaderComponent={
+            <View style={styles.headerContent}>
+              <Text style={styles.headerTitle}>Tin tức & Thông tin</Text>
+              <Text style={styles.headerSubtitle}>
+                Cập nhật thông tin mới nhất về nông nghiệp
+              </Text>
+            </View>
+          }
+          ListFooterComponent={renderFooter()}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingBottom: scale(20),
+            paddingInline: scale(16),
+          }}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={10}
+          removeClippedSubviews
+        />
+      )}
 
       <ChatBot style={{bottom: scale(40)}} />
     </View>

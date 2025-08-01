@@ -25,7 +25,6 @@ import CropZoneScreen from '~/screens/CropZone/CropZoneScreen';
 import ProposeScreen from '~/screens/Propose/ProposeScreen';
 import AllProposeScreen from '~/screens/Propose/AllProposeScreen';
 import PlantRegionMapScreen from '~/screens/Propose/PlantRegionMapScreen';
-import QuizScreen from '~/screens/Quiz/AnimalQuizGame';
 
 const routerNoBottomTab = [
   {
@@ -257,15 +256,6 @@ const routerNoBottomTab = [
     options: ({navigation}) => ({
       header: () => (
         <CustomHeader title="Tọa độ vùng trồng" navigation={navigation} />
-      ),
-    }),
-  },
-  {
-    name: 'QuizGame',
-    component: QuizScreen,
-    options: ({navigation}) => ({
-      header: () => (
-        <CustomHeader title="Trò chơi" navigation={navigation} />
       ),
     }),
   },
