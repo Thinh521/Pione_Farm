@@ -10,7 +10,6 @@ import {
   Dimensions,
   Platform,
   Vibration,
-  RefreshControl,
 } from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/core';
 import FastImage from 'react-native-fast-image';
