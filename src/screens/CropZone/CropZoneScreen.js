@@ -1,5 +1,11 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import styles from './CropZone.styles';
 import FeaturedFarms from './components/FeaturedFarms';
 import {useQuery} from '@tanstack/react-query';
@@ -14,6 +20,70 @@ import Images from '~/assets/images/Images';
 import SliderComponents from '~/components/SliderComponents/SliderComponents';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
 import {getRegionById} from '~/api/regionApi';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import ErrorView from '../../components/ErrorView/ErrorView';
+
+const {width} = Dimensions.get('window');
+
+const LoadingSkeleton = () => {
+  return (
+    <SkeletonPlaceholder speed={1000}>
+      <SkeletonPlaceholder.Item padding={16}>
+        <SkeletonPlaceholder.Item
+          width={width * 0.6}
+          height={24}
+          borderRadius={4}
+          marginBottom={16}
+        />
+        <SkeletonPlaceholder.Item
+          width="100%"
+          height={180}
+          borderRadius={8}
+          marginBottom={20}
+        />
+        <SkeletonPlaceholder.Item
+          width={width * 0.5}
+          height={18}
+          borderRadius={4}
+          marginBottom={12}
+        />
+        <SkeletonPlaceholder.Item
+          flexDirection="row"
+          justifyContent="space-between"
+          marginBottom={24}>
+          <SkeletonPlaceholder.Item
+            width={width * 0.4}
+            height={20}
+            borderRadius={4}
+          />
+          <SkeletonPlaceholder.Item
+            width={width * 0.4}
+            height={20}
+            borderRadius={4}
+          />
+        </SkeletonPlaceholder.Item>
+        <SkeletonPlaceholder.Item
+          width="100%"
+          height={100}
+          borderRadius={8}
+          marginBottom={20}
+        />
+        <SkeletonPlaceholder.Item
+          width="100%"
+          height={100}
+          borderRadius={10}
+          marginBottom={20}
+        />
+        <SkeletonPlaceholder.Item
+          width="100%"
+          height={80}
+          borderRadius={8}
+          marginBottom={20}
+        />
+      </SkeletonPlaceholder.Item>
+    </SkeletonPlaceholder>
+  );
+};
 
 const CropZoneScreen = () => {
   const navigation = useNavigation();
@@ -42,8 +112,6 @@ const CropZoneScreen = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  console.log('item', item);
-
   const {
     data: farms,
     isLoading: isLoadingFarms,
@@ -62,7 +130,11 @@ const CropZoneScreen = () => {
   }, [navigation]);
 
   if (!item || isLoadingRegion) {
-    return <Text style={{padding: 20}}>Đang tải dữ liệu vùng trồng...</Text>;
+    return <LoadingSkeleton />;
+  }
+
+  if (errorRegion) {
+    return <ErrorView />;
   }
 
   return (

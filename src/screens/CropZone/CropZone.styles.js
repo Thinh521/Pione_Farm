@@ -126,4 +126,70 @@ export default StyleSheet.create({
     color: Colors.grayText_2,
     lineHeight: scale(20),
   },
+  loadingContainer: {
+    flex: 1,
+  },
+  skeletonContent: {
+    position: 'absolute',
+    top: scale(20),
+    left: scale(20),
+    right: scale(20),
+  },
+  skeletonCategory: {
+    width: scale(150),
+    height: scale(24),
+    borderRadius: scale(12),
+    marginBottom: scale(20),
+  },
+  skeletonImage: {
+    width: '100%',
+    height: scale(200),
+    borderRadius: scale(16),
+    marginBottom: scale(20),
+  },
+  skeletonTitle: {
+    width: '100%',
+    height: scale(20),
+    borderRadius: scale(10),
+    marginBottom: scale(8),
+  },
+  skeletonTitleSecond: {
+    width: '80%',
+    height: scale(20),
+    borderRadius: scale(10),
+    marginBottom: scale(20),
+  },
+  skeletonMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: scale(20),
+  },
+  skeletonMetaItem: {
+    width: scale(120),
+    height: scale(24),
+    borderRadius: scale(12),
+  },
+  skeletonSummary: {
+    width: '100%',
+    height: scale(80),
+    borderRadius: scale(12),
+    marginBottom: scale(16),
+  },
+  skeletonContent1: {
+    width: '100%',
+    height: scale(16),
+    borderRadius: scale(8),
+    marginBottom: scale(8),
+  },
+  skeletonContent2: {
+    width: '90%',
+    height: scale(16),
+    borderRadius: scale(8),
+    marginBottom: scale(8),
+  },
+  skeletonContent3: {
+    width: '70%',
+    height: scale(16),
+    borderRadius: scale(8),
+  },
 });
