@@ -9,33 +9,59 @@ import {getNewsById} from '~/api/newsApi';
 import FastImage from 'react-native-fast-image';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Button from '~/components/ui/Button/ButtonComponent';
-import {
-  BookmarkFillIcon,
-  BookmarkIcon,
-  ShareIcon,
-} from '~/assets/icons/Icons';
+import {BookmarkFillIcon, BookmarkIcon, ShareIcon} from '~/assets/icons/Icons';
 import {Colors} from '~/theme/theme';
+import ErrorView from '../../components/ErrorView/ErrorView';
 
 const LoadingSkeleton = () => {
   return (
-    <SkeletonPlaceholder borderRadius={4}>
-      <View style={styles.loadingContainer}>
-        <View style={styles.skeletonContent}>
-          <View style={styles.skeletonImage} />
-          <View style={styles.skeletonTitle} />
-          <View style={styles.skeletonTitleSecond} />
-
-          <View style={styles.skeletonMeta}>
-            <View style={styles.skeletonMetaItem} />
-            <View style={styles.skeletonMetaItem} />
-          </View>
-
-          <View style={styles.skeletonSummary} />
-          <View style={styles.skeletonContent1} />
-          <View style={styles.skeletonContent2} />
-          <View style={styles.skeletonContent3} />
-        </View>
-      </View>
+    <SkeletonPlaceholder borderRadius={4} speed={1000}>
+      <SkeletonPlaceholder.Item padding={16}>
+        <SkeletonPlaceholder.Item
+          width="100%"
+          height={240}
+          borderRadius={16}
+          marginBottom={20}
+        />
+        <SkeletonPlaceholder.Item
+          width="100%"
+          height={20}
+          borderRadius={10}
+          marginBottom={8}
+        />
+        <SkeletonPlaceholder.Item
+          width="80%"
+          height={20}
+          borderRadius={10}
+          marginBottom={20}
+        />
+        <SkeletonPlaceholder.Item
+          flexDirection="row"
+          justifyContent="space-between"
+          marginBottom={20}>
+          <SkeletonPlaceholder.Item width={120} height={24} borderRadius={12} />
+          <SkeletonPlaceholder.Item width={120} height={24} borderRadius={12} />
+        </SkeletonPlaceholder.Item>
+        <SkeletonPlaceholder.Item
+          width="100%"
+          height={100}
+          borderRadius={12}
+          marginBottom={16}
+        />
+        <SkeletonPlaceholder.Item
+          width="100%"
+          height={16}
+          borderRadius={8}
+          marginBottom={8}
+        />
+        <SkeletonPlaceholder.Item
+          width="90%"
+          height={16}
+          borderRadius={8}
+          marginBottom={8}
+        />
+        <SkeletonPlaceholder.Item width="70%" height={16} borderRadius={8} />
+      </SkeletonPlaceholder.Item>
     </SkeletonPlaceholder>
   );
 };
@@ -156,16 +182,7 @@ const NewDetail = () => {
   }
 
   if (!news) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Không tìm thấy bài viết</Text>
-        <Button.Main
-          title="Quay lại"
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        />
-      </View>
-    );
+    return <ErrorView />;
   }
 
   return (
