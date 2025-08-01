@@ -11,7 +11,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Button from '~/components/ui/Button/ButtonComponent';
 import {BookmarkFillIcon, BookmarkIcon, ShareIcon} from '~/assets/icons/Icons';
 import {Colors} from '~/theme/theme';
-import ErrorView from '../../components/ErrorView/ErrorView';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
 const LoadingSkeleton = () => {
   return (
