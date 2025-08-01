@@ -21,7 +21,7 @@ import SliderComponents from '~/components/SliderComponents/SliderComponents';
 import {getAccessToken} from '~/utils/storage/tokenStorage';
 import {getRegionById} from '~/api/regionApi';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
-import ErrorView from '../../components/ErrorView/ErrorView';
+import ErrorView from '~/components/ErrorView/ErrorView';
 
 const {width} = Dimensions.get('window');
 
@@ -188,7 +188,11 @@ const CropZoneScreen = () => {
           </View>
         </TouchableOpacity>
 
-        <CropsSection crops={item.crops} />
+        <CropsSection
+          crops={item.crops}
+          loading={isLoadingFarms}
+          error={errorFarm}
+        />
 
         <FeaturedFarms farms={farms} />
 
