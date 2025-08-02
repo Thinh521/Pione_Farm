@@ -1,19 +1,9 @@
-import axios from 'axios';
-import {API_BASE_URL} from '@env';
+import api from './baseApi';
 import {
   getRefreshToken,
   saveTokens,
   removeTokens,
 } from '../utils/storage/tokenStorage';
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-});
 
 export const loginUser = async ({email, phone, password}) => {
   try {
@@ -39,40 +29,6 @@ export const loginUser = async ({email, phone, password}) => {
   } catch (error) {
     const message = error?.response?.data?.message || 'Đăng nhập thất bại';
     console.log('Lỗi đăng nhập:', message);
-    throw new Error(message);
-  }
-};
-
-export const logoutUser = async () => {
-  try {
-    const refreshToken = await getRefreshToken();
-
-    if (!refreshToken) {
-      console.warn('Không có refresh token - xóa local');
-      await removeTokens();
-      return {success: true, message: 'Đã xóa token local'};
-    }
-
-    const response = await api.post('/api/authentication/log-out', {
-      refreshToken,
-    });
-
-    if (response.data?.success) {
-      await removeTokens();
-      return response.data;
-    }
-
-    throw new Error(response.data?.message || 'Đăng xuất thất bại');
-  } catch (error) {
-    const status = error?.response?.status;
-    const message = error?.response?.data?.message || 'Đăng xuất thất bại';
-
-    if (status === 401 || status === 403) {
-      await removeTokens();
-      return {success: true, message: 'Token hết hạn - xóa local'};
-    }
-
-    console.error('Lỗi đăng xuất:', message);
     throw new Error(message);
   }
 };
@@ -120,7 +76,58 @@ export const registerUser = async ({
   } catch (error) {
     const message =
       error?.response?.data?.message || error.message || 'Đăng ký thất bại';
-    console.error('Lỗi đăng ký:', message);
+    console.log('Lỗi đăng ký:', message);
+    throw new Error(message);
+  }
+};
+
+export const logoutUser = async () => {
+  try {
+    const refreshToken = await getRefreshToken();
+
+    if (!refreshToken) {
+      console.warn('Không có refresh token - xóa local');
+      await removeTokens();
+      return {success: true, message: 'Đã xóa token local'};
+    }
+
+    const response = await api.post('/api/authentication/log-out', {
+      refreshToken,
+    });
+
+    if (response.data?.success) {
+      await removeTokens();
+      return response.data;
+    }
+
+    throw new Error(response.data?.message || 'Đăng xuất thất bại');
+  } catch (error) {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message || 'Đăng xuất thất bại';
+
+    if (status === 401 || status === 403) {
+      await removeTokens();
+      return {success: true, message: 'Token hết hạn - xóa local'};
+    }
+
+    console.error('Lỗi đăng xuất:', message);
+    throw new Error(message);
+  }
+};
+
+export const deleteUser = async accessToken => {
+  try {
+    const response = await api.delete('/api/user/user', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const message =
+      error?.response?.data?.message || error.message || 'Đăng ký thất bại';
+    console.log('Lỗi xoá tài khoản:', message);
     throw new Error(message);
   }
 };
